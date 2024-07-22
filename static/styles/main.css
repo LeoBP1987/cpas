@@ -255,4 +255,8 @@
         gap: 4rem; 
     }
 
+    .main-config__botoes_link {
+        text-decoration: none;
+    }
+
 }
