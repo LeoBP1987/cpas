@@ -6,11 +6,11 @@ class TipoAtividade(models.Model):
 
 class Instituicao(models.Model):
     nome_inst = models.CharField(max_length=33, null=False, blank=False)
-    imagem = models.ImageField(upload_to='intituicao/%Y/%m/%d', blank=True)
-    valor_padrao = models.DecimalField(max_digits=10, decimal_places=2)
-    endereco = models.CharField(max_length=150,)
-    telefone = models.CharField(max_length=12,)
-    contato = models.CharField(max_length=30,)
+    imagem = models.ImageField(upload_to='instituicao/%Y/%m/%d', blank='True', null='True')
+    valor_padrao = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    endereco = models.CharField(max_length=255,)
+    telefone = models.CharField(max_length=15,)
+    contato = models.CharField(max_length=35,)
 
 class Atividades(models.Model):
     intituicao = models.ForeignKey(

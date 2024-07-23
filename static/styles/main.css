@@ -206,6 +206,12 @@
     gap: 2rem;
 }
 
+.main-config__botoes_link {
+    text-decoration: none;
+    align-self: center;
+    justify-self: center;
+}
+
 .main-config__botoes_botao {
     background: var(--cor-detalhes-primaria);
     border: 1px solid black;
@@ -253,10 +259,6 @@
     .main-config__botoes {
         margin-top: 2rem;
         gap: 4rem; 
-    }
-
-    .main-config__botoes_link {
-        text-decoration: none;
     }
 
 }

@@ -1,0 +1,65 @@
+<footer class="rodape">
+    <p class="rodape-paragrafo">Desenvolvido por Leonardo Pereira</p>
+</footer>
+<script>
+    document.getElementById('dia').addEventListener('change', function() {
+        const dateInput = this.value;
+        const diadasemanaLabel = document.getElementById('diadasemana');
+
+        if (dia) {
+            const date = new Date(dateInput);
+            const diadasemana = getDayOfWeek(date);
+            diadasemanaLabel.textContent = `${diadasemana}`;
+        } else {
+            diadasemanaLabel.textContent = '';
+        }
+    });
+
+    function getDayOfWeek(date) {
+        const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+        return daysOfWeek[date.getDay()];
+    }
+
+    const radioButtons = document.querySelectorAll('input[name="opcoes"]');
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', function() {
+            const opcao = document.querySelector('input[name="opcoes"]:checked').value;
+            const diafinal = document.getElementById('diafinal');
+
+            if (opcao) {
+
+                if (opcao != 4) {
+                    diafinal.classList.remove('main-forms__sequencia_datafinal_hidden');
+                    diafinal.classList.add('main-forms__sequencia_datafinal');
+                } else {
+                    diafinal.classList.remove('main-forms__sequencia_datafinal');
+                    diafinal.classList.add('main-forms__sequencia_datafinal_hidden');
+                }
+            }
+        })
+    });
+
+    
+    document.getElementById('diafinalcampo').addEventListener('change', function() {
+        const diafinal = this.value;
+        const repeticaolabel = document.getElementById('repeticaolabel');
+        const opcao = document.querySelector('input[name="opcoes"]:checked').value;
+        if (opcao) {
+            const date = new Date(diafinal);
+            const formatacao = { year: 'numeric', month: 'long', day: 'numeric' };
+            const dataformatada = date.toLocaleDateString('pt-BR', formatacao);
+            if (opcao == 1) {
+                repeticaolabel.textContent = `Esta atividade será repetida em todo dia útil até o dia ${dataformatada}`;
+            } else if (opcao == 2) {
+                repeticaolabel.textContent = `Esta atividade será repetida semanal até o dia ${dataformatada}`;
+            } else if (opcao == 3) {
+                repeticaolabel.textContent = `Esta atividade será repetida mensalmente até o dia ${dataformatada}`;
+            } else {
+                repeticaolabel.textContent = '';
+            }
+        }
+       
+    });
+</script>
+</body>
+</html>

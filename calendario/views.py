@@ -11,8 +11,9 @@ def gerar_calendario(request):
 
     calendario = Calendario.objects.all()
 
+    ano_atual = date.today().year
+
     if not calendario.exists():
-        ano_atual = date.today().year
 
         data_registro = date.today()
 
@@ -26,8 +27,10 @@ def gerar_calendario(request):
                 )
             data_registro = data_registro + timedelta(days=1)
 
+        messages.success(request, f'Calendário para o ano de {ano_atual} gerado com sucesso!')
         return redirect('index')
     else:
+        messages.error(request,f'O calendário para o ano de {ano_atual} já foi gerado')
         return redirect('configuracoes')
 
 def apagar(request):

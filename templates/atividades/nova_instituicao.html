@@ -1,0 +1,26 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+    {% block content %}
+    <main class="main">
+        <h2 class="main-titulo">Nova Instituição</h2>
+        <form class="main-forms" action="{% url 'nova_instituicao' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="main-forms__campos">
+                {% for field in forms %}
+                    <div class="main-forms__campos_campo">
+                        <label for="instituicao" class="main-forms__campo_label">{{field.label}}</label>
+                        {{field}}
+                    </div>
+                    {% for error in field.errors %}
+                        <div>
+                            {{error}}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            <div class="main-forms__botoes">
+                <button class="main-forms__botoes_botao" type="submit">CADASTRAR</button>
+                <button class="main-forms__botoes_botao" type="submit" onclick=window.location.href="{% url 'index' %}">CANCELAR</button>
+            </div>
+        </form>
+    </main>
+    {% endblock %}

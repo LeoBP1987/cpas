@@ -1,0 +1,119 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/style.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/header.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/aside.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/footer.css' %}">
+    <title>Cadastro de Plantões e Atividades</title>
+</head>
+<body>
+    <header class="header">
+        {% for message in messages %}
+            <div>
+                <p id="messages">{{message}}</p>
+            </div>
+        {% endfor %}                
+        <div class="header-cabecalho">
+            <img class="header-cabecalho-imagem" src="{% static 'assets/imagem/logo.png' %}" alt="Logo do CPAS">
+            <div class="header-cabecalho-lateral">
+                <input type="text" id="pesquisa" class="header-cabecalho_pesquisa">
+                <h1 class="header-cabecalho-titulo">CADASTRO DE PLANTÕES E ATIVIDADES</h1>
+            </div>
+        </div>
+        
+        <div class="header-menu">
+            <input type="checkbox" id="menu" class="header-menu__checkbox">
+            <label for="menu" class="header-menu__rotulo">
+                <spam class="header-menu__hamburguer"></spam>
+            </label>
+            <ul class="header-lista">
+                <li class="header-lista__item">
+                    <a class="header-lista__item_link" href="#">Atividades</a>
+                </li>
+                <li class="header-lista__item">
+                    <a class="header-lista__item_link" href="#">Add Atividades</a>
+                </li>
+                <li class="header-lista__item">
+                    <a class="header-lista__item_link" href="{% url 'nova_instituicao' %}">Instituições</a>
+                </li>
+                <li class="header-lista__item">
+                    <a class="header-lista__item_link" href="#">Financeiro</a>
+                </li>
+                <li class="header-lista__item">
+                    <a class="header-lista__item_link" href="#">Rotina</a>
+                </li>
+                <li class="header-lista__item">
+                    <a class="header-lista__item_link" href="#">Calendário</a>
+                </li>
+                <li class="header-lista__item">
+                    <a class="header-lista__item_link" href="{% url 'configuracoes' %}">Configurações</a>
+                </li>
+                <li class="header-lista__item">
+                    <a class="header-lista__item_link" href="#">Sair</a>
+                </li>
+            </ul>
+            <h2 class="header-menu__subtitulo">CPAS</h2>
+            <input type="checkbox" id="ck_pesquisa" class="header-menu__checkbox_pesquisa">
+            <label for="ck_pesquisa" class="header-menu__rotulo_pesquisa">
+                <img class="header-menu__imagem_pesquisa" src="{% static 'assets/icones/lupa_branco.png' %}" alt="Icone de Lupa de Pesquisa">
+            </label>
+            <input type="text" id="pesquisa" class="header-menu__input_pesquisa">
+        </div>
+    </header>
+    <aside class="menu-lateral">
+        <div class="menu-lateral__item">
+            <a class="item__link" href="#">
+                <img class="item__imagem" src="{% static 'assets/icones/atividade.png' %}" alt="Icone Atividades">
+                <h2 class="item__tituto">Atividades</h2>
+            </a>
+        </div>
+        <div class="menu-lateral__item">
+            <a class="item__link" href="#">
+                <img class="item__imagem" src="{% static 'assets/icones/add.png' %}" alt="Icone Add Atividades">
+                <h2 class="item__tituto">Add Atividades</h2>
+            </a>
+        </div>
+        <div class="menu-lateral__item">
+            <a class="item__link" href="{% url 'nova_instituicao' %}">
+                <img class="item__imagem" src="{% static 'assets/icones/instituicao.png' %}" alt="Icone Instituição">
+                <h2 class="item__tituto">Instituições</h2>
+            </a>
+        </div>
+        <div class="menu-lateral__item">
+            <a class="item__link" href="#">
+                <img class="item__imagem" src="{% static 'assets/icones/financeiro.png' %}" alt="Icone Financeiro">
+                <h2 class="item__tituto">Financeiro</h2>
+            </a>
+        </div>
+        <div class="menu-lateral__item">
+            <a class="item__link" href="#">
+                <img class="item__imagem" src="{% static 'assets/icones/rotina.png' %}" alt="Icone Rotina">
+                <h2 class="item__tituto">Rotina</h2>
+            </a>
+        </div>
+        <div class="menu-lateral__item">
+            <a class="item__link" href="#">
+                <img class="item__imagem" src="{% static 'assets/icones/calendario.png' %}" alt="Icone Calendario">
+                <h2 class="item__tituto">Calendário</h2>
+            </a>
+        </div>
+        <div class="menu-lateral__item">
+            <a class="item__link" href="{% url 'configuracoes' %}">
+                <img class="item__imagem" src="{% static 'assets/icones/configuracoes.png' %}" alt="Icone Configurações">
+                <h2 class="item__tituto">Configurações</h2>
+            </a>
+        </div>
+        <div class="menu-lateral__item">
+            <a class="item__link" href="#">
+                <img class="item__imagem" src="{% static 'assets/icones/sair.png' %}" alt="Icone Sair">
+                <h2 class="item__tituto">Sair</h2>
+            </a>
+        </div>
+    </aside>
+    {% block content %} {% endblock %}
+    {% include 'partials/_footer.html' %}
