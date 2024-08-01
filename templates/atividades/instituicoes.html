@@ -1,0 +1,32 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+    {% block content %}
+    <main class="main">
+        <h2 class="main-titulo">Instituições</h2>
+       <ul class="main-lista">
+        {% for instituicao in instituicoes %}
+            <li class="main-lista__item">
+                <h2 class="main-lista__titulo">{{instituicao.nome_inst}}</h2>
+                <div class="main-lista__subtitulo">
+                    <p class="main-lista__subtitulo_paragrafo">Telefone: {{instituicao.telefone}}</p>
+                </div>
+                {% if instituicao.imagem %}
+                    <img class="main-lista__imagem" src="{{ instituicao.imagem.url }}" alt="Imagem da Instituição">
+                {% else %}
+                <img class="main-lista__imagem" src="{% static 'assets/icones/hospital.png' %}" alt="Imagem Padrão de Hospital">
+                {% endif %}
+                <div class="main-lista__descricao">
+                    <p class="main-lista__descricao_paragrafo"><strong>Endereço:</strong> {{instituicao.endereco}}</p>
+                    <p class="main-lista__descricao_paragrafo"><strong>Contato:</strong> {{instituicao.contato}}</p>
+                </div>
+                <div class="main-lista__botoes">
+                    <a class="main-novo__tipo_link" href="{% url 'editar_instituicao' instituicao.id %}"><button class="main-lista__botoes_botao">EDIT</button></a>
+                    <a class="main-novo__tipo_link" href="{% url 'deletar_instituicao' instituicao.id %}"><button class="main-lista__botoes_botao">DEL</button></a>
+                </div>
+            </li>
+        {% endfor %}
+        <div class="main-botao__novos">
+        <a class="main-novo__tipo_link" href="{% url 'nova_instituicao' %}"><button class="main-novo__tipo">Nova Instituição</button></a>
+        </div>
+    </main>
+    {% endblock %}

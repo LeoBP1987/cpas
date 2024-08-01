@@ -1,0 +1,51 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+    {% block content %}
+    <main class="main">
+        <h2 class="main-titulo">Editar Instituição</h2>
+        <form id="form_edit_ativ" class="main-forms" action="{% url 'editar_atividade' atividade.id %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="main-forms__campos">
+                <div class="main-forms__campos_campo">
+                    <label for="{{forms.instituicao.id_for_label}}" class="main-forms__campo_label">{{forms.instituicao.label}}</label>
+                    {{forms.instituicao}}
+                </div>
+                <div class="main-forms__campos_campo">
+                    <label for="{{forms.tipo_atividade.id_for_label}}" class="main-forms__campo_label">{{forms.tipo_atividade.label}}</label>
+                    {{forms.tipo_atividade}}
+                </div>
+                <div class="main-forms__campos_campo_valor">
+                    <div class="main-forms__valor_dif">
+                        <label for="{{forms.valor.id_for_label}}" class="main-forms__campo_label">{{forms.valor.label}}</label>
+                        {{forms.valor}}
+                        <input type="hidden" id="valor_padrao_instituicao" value="{{ forms.valor.initial }}">
+                    </div>
+                </div>
+                <div class="main-forms__campos_campo">
+                    <label for="{{ forms.obs.id_for_label }}" class="main-forms__campo_label">{{ forms.obs.label }}</label>
+                    {{ forms.obs }}
+                </div>       
+                <input type="hidden" name="extra_param" id="extra_param" value="0">
+                <input type="hidden" name="data" id="data" value="{{atividade.data|date:'Y-m-d'}}">
+                <input type="hidden" name="entrada" id="entrada" value="{{atividade.entrada}}">
+                <input type="hidden" name="saida" id="saida" value="{{atividade.saida}}">
+                {% if atividade.sequencia %}
+                    <input type="hidden" name="sequencia" id="sequencia" value="{{atividade.sequencia}}">
+                    <input type="hidden" name="data_final_seq" id="data_final_seq" value="{{atividade.data_final_seq|date:'Y-m-d'}}">
+                {% endif %}
+            <div class="main-forms__botoes">
+                <button class="main-forms__botoes_botao" type="submit">EDITAR</button>
+                <a class="link_cancelar_edit_atividade" href="{% url 'index' %}"><div class="main-forms__botoes_botao div_cancelar">CANCELAR</div></a>
+            </div>
+        </form>        
+    </main>
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <p class="txt-modal">Escolha uma ação:</p>
+            <button class="bt-modal" data-action="atividade">Editar Atividade</button>
+            <button class="bt-modal" data-action="sequencia">Editar Sequência</button>
+            <button class="bt-modal" data-action="cancelar"  >Cancelar</button>
+        </div>
+    </div>
+    {% endblock %}

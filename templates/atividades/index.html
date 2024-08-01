@@ -1,44 +1,42 @@
 {% extends 'partials/base.html' %}
 {% load static %}
-    {% block content %}
+{% block content %}
     <main class="main">
         <h2 class="main-titulo">CPAS</h2>
         <ul class="main-lista">
+            {% for atividade in atividades %}
             <li class="main-lista__item">
-                <h2 class="main-lista__titulo">07h00m às 19h00m</h2>
+                <h2 class="main-lista__titulo">{{atividade.periodo}}</h2>
                 <div class="main-lista__subtitulo">
-                    <p class="main-lista__subtitulo_paragrafo">Terça-Feira –</p>
-                    <p class="main-lista__subtitulo_paragrafo">16/07/2024</p>
+                    <p class="main-lista__subtitulo_paragrafo">{{atividade.data}} – </p>
+                    <p class="main-lista__subtitulo_paragrafo">{{atividade.dia_semana}}</p>
                 </div>
-                <img class="main-lista__imagem" src="{% static 'assets/icones/hospital.png' %}" alt="Imagem Padrão de Hospital">
+                <img class="main-lista__imagem" src="{{atividade.imagem_url}}" alt="Imagem da Instituição onde será a atividade">
                 <div class="main-lista__descricao">
-                    <p class="main-lista__descricao_paragrafo"><strong>Inst:</strong> Complexo Hospital dos Estivadores</p>
-                    <p class="main-lista__descricao_paragrafo"><strong>Tipo:</strong> Plantão</p>
-                    <p class="main-lista__descricao_paragrafo"><strong>Período:</strong> 12hrs</p>
+                    <p class="main-lista__descricao_paragrafo"><strong>Inst:</strong> {{atividade.inst}}</p>
+                    <p class="main-lista__descricao_paragrafo_descr"><strong>Desc:</strong> {{atividade.descricao}}</p>
+                    {% if atividade.obs %}
+                        <p class="main-lista__descricao_paragrafo_descr"><strong>Obs:</strong> {{atividade.obs}}</p>
+                    {% endif %}    
+                    <input type="hidden" id="id_atividade" value="{{atividade.id}}">
                 </div>
                 <div class="main-lista__botoes">
-                    <button class="main-lista__botoes_botao">EDIT</button>
-                    <button class="main-lista__botoes_botao">DEL</button>
+                    <a class="main-novo__tipo_link" href="{% url 'editar_atividade' atividade.id %}"><button class="main-lista__botoes_botao">EDIT</button></a>
+                    <button class="main-lista__botoes_botao delete-button" data-atividade-id="{{atividade.id}}">DEL</button>
                 </div>
             </li>
-            <li class="main-lista__item">
-                <h2 class="main-lista__titulo">07h00m às 11h00m</h2>
-                <div class="main-lista__subtitulo">
-                    <p class="main-lista__subtitulo_paragrafo">Quarta-Feira –</p>
-                    <p class="main-lista__subtitulo_paragrafo">17/07/2024</p>
-                </div>
-                <img class="main-lista__imagem" src="{% static 'assets/icones/hospital.png' %}" alt="Imagem Padrão de Hospital">
-                <div class="main-lista__descricao">
-                    <p class="main-lista__descricao_paragrafo"><strong>Inst:</strong> UNAERP</p>
-                    <p class="main-lista__descricao_paragrafo"><strong>Tipo:</strong> Aula</p>
-                    <p class="main-lista__descricao_paragrafo"><strong>Período:</strong> 4hrs</p>
-                </div>
-                <div class="main-lista__botoes">
-                    <button class="main-lista__botoes_botao">EDIT</button>
-                    <button class="main-lista__botoes_botao">DEL</button>
-                </div>
-            </li>
+            {% endfor %}
         </ul>
     </main>
-    {% endblock %}
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeDeleteModal()">&times;</span>
+            <p class="txt-modal">Escolha uma ação:</p>
+            <button class="bt-modal" onclick="handleDeleteAction('atividade')">Deletar Atividade</button>
+            <button class="bt-modal" onclick="handleDeleteAction('sequencia')">Deletar Sequência</button>
+            <button class="bt-modal" onclick="closeDeleteModal()">Cancelar</button>
+        </div>
+    </div>
+
+{% endblock %}
     

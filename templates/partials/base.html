@@ -33,13 +33,13 @@
             </label>
             <ul class="header-lista">
                 <li class="header-lista__item">
-                    <a class="header-lista__item_link" href="#">Atividades</a>
+                    <a class="header-lista__item_link" href="{% url 'index' %}">Atividades</a>
                 </li>
                 <li class="header-lista__item">
-                    <a class="header-lista__item_link" href="#">Add Atividades</a>
+                    <a class="header-lista__item_link" href="{% url 'nova_atividade' %}">Add Atividades</a>
                 </li>
                 <li class="header-lista__item">
-                    <a class="header-lista__item_link" href="{% url 'nova_instituicao' %}">Instituições</a>
+                    <a class="header-lista__item_link" href="{% url 'instituicoes' %}">Instituições</a>
                 </li>
                 <li class="header-lista__item">
                     <a class="header-lista__item_link" href="#">Financeiro</a>
@@ -54,7 +54,7 @@
                     <a class="header-lista__item_link" href="{% url 'configuracoes' %}">Configurações</a>
                 </li>
                 <li class="header-lista__item">
-                    <a class="header-lista__item_link" href="#">Sair</a>
+                    <a class="header-lista__item_link" href="{% url 'logout' %}">Sair</a>
                 </li>
             </ul>
             <h2 class="header-menu__subtitulo">CPAS</h2>
@@ -67,19 +67,19 @@
     </header>
     <aside class="menu-lateral">
         <div class="menu-lateral__item">
-            <a class="item__link" href="#">
+            <a class="item__link" href="{% url 'index' %}">
                 <img class="item__imagem" src="{% static 'assets/icones/atividade.png' %}" alt="Icone Atividades">
                 <h2 class="item__tituto">Atividades</h2>
             </a>
         </div>
         <div class="menu-lateral__item">
-            <a class="item__link" href="#">
+            <a class="item__link" href="{% url 'nova_atividade' %}">
                 <img class="item__imagem" src="{% static 'assets/icones/add.png' %}" alt="Icone Add Atividades">
                 <h2 class="item__tituto">Add Atividades</h2>
             </a>
         </div>
         <div class="menu-lateral__item">
-            <a class="item__link" href="{% url 'nova_instituicao' %}">
+            <a class="item__link" href="{% url 'instituicoes' %}">
                 <img class="item__imagem" src="{% static 'assets/icones/instituicao.png' %}" alt="Icone Instituição">
                 <h2 class="item__tituto">Instituições</h2>
             </a>
@@ -109,7 +109,7 @@
             </a>
         </div>
         <div class="menu-lateral__item">
-            <a class="item__link" href="#">
+            <a class="item__link" href="{% url 'logout' %}">
                 <img class="item__imagem" src="{% static 'assets/icones/sair.png' %}" alt="Icone Sair">
                 <h2 class="item__tituto">Sair</h2>
             </a>

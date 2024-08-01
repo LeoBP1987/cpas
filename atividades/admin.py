@@ -16,7 +16,7 @@ class ListandoInstituicao(admin.ModelAdmin):
     list_per_page = 10
 
 class ListandoAtividades(admin.ModelAdmin):
-    list_display = ('id', 'tipo_atividade', 'data', 'valor', 'sequencia')
+    list_display = ('id', 'tipo_atividade', 'data', 'valor',)
     list_display_links = ('id', 'data')
     search_fields = ('instituicao', 'data', 'valor')
     list_filter = ('data', 'valor')

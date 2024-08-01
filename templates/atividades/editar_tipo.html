@@ -2,8 +2,8 @@
 {% load static %}
     {% block content %}
     <main class="main">
-        <h2 class="main-titulo">Novo Tipo</h2>
-        <form class="main-forms" action="{% url 'novo_tipo' %}" method="POST" enctype="multipart/form-data">
+        <h2 class="main-titulo">Editar Tipo</h2>
+        <form class="main-forms" action="{% url 'editar_tipo' tipo.id %}" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="main-forms__campos">
                 {% for field in forms %}
@@ -13,7 +13,7 @@
                 </div>
                 {% endfor %}
             <div class="main-forms__botoes">
-                <button class="main-forms__botoes_botao" type="submit">CADASTRAR</button>
+                <button class="main-forms__botoes_botao" type="submit">EDITAR</button>
                 <button class="main-forms__botoes_botao" type="submit" onclick=window.location.href="{% url 'tipos' %}">CANCELAR</button>
             </div>
         </form>

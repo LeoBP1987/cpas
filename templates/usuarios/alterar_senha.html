@@ -1,0 +1,21 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+    {% block content %}
+    <main class="main">
+        <h2 class="main-titulo">CPAS</h2>
+        <form class="main-forms" action="{% url 'alterar_senha' %}" method="POST">
+            {% csrf_token %}
+            <div class="main-forms__campos">
+                {% for field in form %}
+                <div class="main-forms__campos_campo">
+                    <label class="main-forms__campo_label">{{field.label}}</label>
+                    {{field}}
+                </div>
+                {% endfor %}
+            <div class="main-forms__botoes">
+                <button class="main-forms__botoes_botao" type="submit">ALTERAR</button>
+                <button class="main-forms__botoes_botao" type="submit" onclick=window.location.href="{% url 'configuracoes' %}">CANCELAR</button>
+            </div>
+        </form>
+    </main>
+    {% endblock %}

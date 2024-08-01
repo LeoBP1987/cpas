@@ -1,0 +1,20 @@
+{% extends 'usuarios/partials/base_user.html' %}
+{% load static %}
+    {% block content %}
+    <main class="main">
+        <h2 class="main-titulo">CPAS</h2>
+        <form class="main-forms" action="{% url 'login' %}" method="POST">
+            {% csrf_token %}
+            <div class="main-forms__campos">
+                {% for field in form %}
+                <div class="main-forms__campos_campo">
+                    <label class="main-forms__campo_label">{{field.label}}</label>
+                    {{field}}
+                </div>
+                {% endfor %}
+            <div class="main-forms__botoes">
+                <button class="main-forms__botoes_botao" type="submit">LOGAR</button>
+            </div>
+        </form>
+    </main>
+    {% endblock %}

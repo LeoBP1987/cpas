@@ -4,10 +4,10 @@
     <main class="main">
         <h2 class="main-titulo">Configurações</h2>
         <div class="main-config__botoes">
-            <a href="{% url 'apagar' %}" class="main-config__botoes_link"><button class="main-config__botoes_botao">ALTERAR SENHA</button></a>
-            <a href="{% url 'novo_tipo' %}" class="main-config__botoes_link"><button class="main-config__botoes_botao">TIPOS DE ATIVIDADE</button></a>
+            <a href="{% url 'alterar_senha' %}" class="main-config__botoes_link"><button class="main-config__botoes_botao">ALTERAR SENHA</button></a>
+            <a href="{% url 'tipos' %}" class="main-config__botoes_link"><button class="main-config__botoes_botao">TIPOS DE ATIVIDADE</button></a>
             <a href="{% url 'gerar_calendario' %}" class="main-config__botoes_link"><button class="main-config__botoes_botao">GERAR CALENDÁRIO PARA NOVO ANO CORRENTE</button></a>
-            <a href="#" class="main-config__botoes_link"><button class="main-config__botoes_botao">COPIA DE ESTRUTURA ENTRE ANOS CORRENTES</button></a>
+            <a href="{% url 'apagar' %}" class="main-config__botoes_link"><button class="main-config__botoes_botao">COPIA DE ESTRUTURA ENTRE ANOS CORRENTES</button></a>
         </div>
     </main>
     {% endblock %}

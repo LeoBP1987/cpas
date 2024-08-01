@@ -72,12 +72,6 @@
     color: var(--cor-fonte-primaria);
 }
 
-.main-forms__campos_campo_vpadrao {
-    display: flex;
-    gap: 1rem;
-    align-items: baseline;
-}
-
 .main-lista {
     display: flex;
     flex-direction: column;
@@ -104,6 +98,7 @@
 .main-lista__titulo {
     grid-area: titulo;
     font-size: 1.8rem;
+    text-align: center;
     justify-self: center;
     align-self: center;
     margin-top: 0.5rem;
@@ -132,18 +127,18 @@
     grid-area: descricao;
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 1rem;
     font-size: 1.2rem;
     margin: 0.5rem 0 0.5rem 0.5rem;
 }
 
-.main-forms__valor_dif {
-    display: none;
-    margin-top: 1rem;
+.main-forms__campos_campo_valor {
+    display: flex;
+    flex-direction: column;
 }
 
-.main-forms__valor_checkbox:checked~.main-forms__valor_dif {
-    display: block;
+.main-forms__valor_dif {
+    margin-top: 1rem;
 }
 
 .main-forms__valor_label {
@@ -222,6 +217,135 @@
     width: 75%;
     padding: 1.5rem;
 }
+
+.main-tabela {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 18px;
+    text-align: center;
+}
+
+.main-tabela__cabecalho {
+    padding: 10px;
+    border: 2px solid var(--cor-fonte-primaria);
+    font-size: 1.6rem;
+}
+
+.main-tabela__conteudo {
+    padding: 10px;
+    border: 2px solid var(--cor-fonte-primaria);
+}
+
+.main-tabela__edit_botoes {
+    border: none;
+}
+
+.main-tabela__link {
+    text-decoration: none;
+}
+
+.main-tabela__link--delete {
+    color: var(--cor-fonte-terciaria);
+}
+
+.main-tabela__botoes {
+    width: 45px;
+}
+
+.main-botao__novos {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.main-novo__tipo_link {
+    width: 60%;
+    align-self: center;
+    justify-self: center;
+}
+
+.main-novo__tipo {
+    width: 60%;
+    background: var(--cor-detalhes-primaria);
+    color: var(--cor-fonte-secundaria);
+    font-size: 1rem;
+    font-weight: bold;
+    align-self: center;
+    justify-self: center;
+    border-radius: 20px;
+    padding: 0.5rem;
+    margin-top: 2rem;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.4);
+    align-items: center;
+  }
+  
+  .modal-content {
+    background-color: var(--cor-primaria);
+    border-radius: 20px;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%;
+  }
+  
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .bt-modal {
+    background-color: var(--cor-detalhes-primaria);
+    border-radius: 20px;
+    color: var(--cor-fonte-secundaria);
+    font-weight: bold;
+    padding: 1%;
+    border: 1px solid black;
+  }
+
+  .txt-modal {
+    font-weight: bold;
+    margin-bottom: 1rem;
+    box-shadow: var(--sombra-primaria);
+  }
+
+  .link_cancelar_edit_atividade {
+    text-decoration: none;
+    text-align: center;
+  }
+
+  .div_cancelar {
+    border: 2px solid black;
+  }
+
+  .hidden_edit {
+    display: none;
+  }
+
+  .main-lista__descricao_paragrafo_descr {
+    font-size: 1rem;
+  }
 
 @media screen and (min-width:1200px){
 

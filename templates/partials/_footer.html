@@ -2,63 +2,446 @@
     <p class="rodape-paragrafo">Desenvolvido por Leonardo Pereira</p>
 </footer>
 <script>
-    document.getElementById('dia').addEventListener('change', function() {
-        const dateInput = this.value;
-        const diadasemanaLabel = document.getElementById('diadasemana');
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('id_data').addEventListener('change', function() {
+            const dateInput = this.value;
+            const diadasemanaLabel = document.getElementById('diadasemana');
+            if (dateInput) {
+                const date = new Date(dateInput);
+                const diadasemana = getDayOfWeek(date);
+                diadasemanaLabel.textContent = `${diadasemana}`;
+            } else {
+                diadasemanaLabel.textContent = '';
+            }
+        });
 
-        if (dia) {
-            const date = new Date(dateInput);
-            const diadasemana = getDayOfWeek(date);
-            diadasemanaLabel.textContent = `${diadasemana}`;
-        } else {
-            diadasemanaLabel.textContent = '';
-        }
     });
 
-    function getDayOfWeek(date) {
-        const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
-        return daysOfWeek[date.getDay()];
+        function getDayOfWeek(date) {
+            const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+            return daysOfWeek[date.getDay()];
+        }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var dataField = document.getElementById('id_data');
+        
+        dataField.addEventListener('change', function() {
+            var dataFinalSeqField = document.getElementById('id_data_final_seq');
+            selectedDate = ajustaData();
+            
+            dataFinalSeqField.min = selectedDate
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var timeEntradaField = document.getElementById('id_entrada');
+
+        timeEntradaField.addEventListener('change', function() {
+            var dataFinalSeqField = document.getElementById('id_data_final_seq');
+            selectedDate = ajustaData();
+            
+            dataFinalSeqField.min = selectedDate
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var timeSaidaField = document.getElementById('id_saida');
+
+        timeSaidaField.addEventListener('change', function() {
+            var dataFinalSeqField = document.getElementById('id_data_final_seq');
+            selectedDate = ajustaData();
+            
+            dataFinalSeqField.min = selectedDate
+        });
+    });
+
+    function ajustaData() {
+        var dataField = document.getElementById('id_data');
+        var timeEntradaField = document.getElementById('id_entrada');
+        var timeSaidaField = document.getElementById('id_saida');
+
+        var selectedDate = dataField.value;
+        var selectEntrada = parseInt(timeEntradaField.value, 10);
+        var selectSaida = parseInt(timeSaidaField.value, 10);
+        var checar = selectSaida - selectEntrada;
+
+        if (checar < 0) {
+            var newDate = new Date(dataField.value);
+            newDate.setDate(newDate.getDate() + 1);
+            var selectedDate = newDate.toISOString().split('T')[0];
+        } else {
+            var selectedDate = dataField.value;
+        }
+
+        return selectedDate
     }
 
-    const radioButtons = document.querySelectorAll('input[name="opcoes"]');
-    radioButtons.forEach(radio => {
-        radio.addEventListener('change', function() {
-            const opcao = document.querySelector('input[name="opcoes"]:checked').value;
-            const diafinal = document.getElementById('diafinal');
+    document.addEventListener('DOMContentLoaded', function() {
+        const radioButtons = document.querySelectorAll('input[name="sequencia"]');
+        const diafinal = document.getElementById('id_data_final_seq');
+        const dataSelect = document.getElementById('id_data');
 
-            if (opcao) {
+        radioButtons.forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Obter o valor selecionado do radio button
+                const opcao = document.querySelector('input[name="sequencia"]:checked').value;
+                // Obter o valor da data e convertê-lo para um objeto Date
+                const dataSelecionada = new Date(dataSelect.value);
+                
+                // Calcular a nova data
+                let novaData;
+                if (opcao == '2') { // Semanal
+                    novaData = new Date(dataSelecionada);
+                    novaData.setDate(novaData.getDate() + 8);
+                } else if (opcao == '3') { // Mensal
+                    novaData = new Date(dataSelecionada);
+                    novaData.setMonth(novaData.getMonth() + 1);
+                } else { // Sem Repetição
+                    novaData = new Date(dataSelecionada);
+                    novaData.setDate(novaData.getDate() + 2);
+                }
 
-                if (opcao != 4) {
+                // Formatar a nova data no formato YYYY-MM-DD
+                const ano = novaData.getFullYear();
+                const mes = String(novaData.getMonth() + 1).padStart(2, '0'); // Meses começam de 0
+                const dia = String(novaData.getDate()).padStart(2, '0');
+                const novaDataFormatada = `${ano}-${mes}-${dia}`;
+
+                // Definir o valor mínimo de diafinal
+                diafinal.min = novaDataFormatada;
+            });
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const radioButtons = document.querySelectorAll('input[name="sequencia"]');
+        const diafinal = document.getElementById('diafinal');
+
+        radioButtons.forEach(radio => {
+            radio.addEventListener('change', function() {
+                const opcao = parseInt(document.querySelector('input[name="sequencia"]:checked').value, 10);
+
+                if (opcao > 0 && opcao < 4) {
                     diafinal.classList.remove('main-forms__sequencia_datafinal_hidden');
                     diafinal.classList.add('main-forms__sequencia_datafinal');
                 } else {
                     diafinal.classList.remove('main-forms__sequencia_datafinal');
                     diafinal.classList.add('main-forms__sequencia_datafinal_hidden');
                 }
-            }
-        })
+            });
+            });
     });
 
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('id_data_final_seq').addEventListener('change', function() {
+            const diafinal = this.value;
+            const repeticaolabel = document.getElementById('repeticaolabel');
+            const opcao = parseInt(document.querySelector('input[name="sequencia"]:checked').value, 10);
+            if (opcao) {
+                const date = new Date(diafinal);
+                const formatacao = { year: 'numeric', month: 'long', day: 'numeric' };
+                const dataformatada = date.toLocaleDateString('pt-BR', formatacao);
+                if (opcao == '1') {
+                    repeticaolabel.textContent = `Esta atividade será repetida em todo dia útil até o dia ${dataformatada}`;
+                } else if (opcao == '2') {
+                    repeticaolabel.textContent = `Esta atividade será repetida semanal até o dia ${dataformatada}`;
+                } else if (opcao == '3') {
+                    repeticaolabel.textContent = `Esta atividade será repetida mensalmente até o dia ${dataformatada}`;
+                } else {
+                    repeticaolabel.textContent = '';
+                }
+            }
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const instituicaoSelect = document.getElementById('id_instituicao');
+        const valorInput = document.getElementById('id_valor');
+        const valorPadraoInput = document.getElementById('valor_padrao_instituicao');
+
+        instituicaoSelect.addEventListener('change', function() {
+            const instituicaoId = instituicaoSelect.value;
+
+            // Simular uma requisição para obter o valor padrão da instituição (pode ser um endpoint que você cria)
+            fetch(`get_valor_padrao/${instituicaoId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.valor_padrao) {
+                        valorInput.value = data.valor_padrao;
+                    } else {
+                        valorInput.value = ''; // Limpar o valor se não houver valor padrão
+                    }
+                });
+        });
+    });
     
-    document.getElementById('diafinalcampo').addEventListener('change', function() {
-        const diafinal = this.value;
-        const repeticaolabel = document.getElementById('repeticaolabel');
-        const opcao = document.querySelector('input[name="opcoes"]:checked').value;
-        if (opcao) {
-            const date = new Date(diafinal);
-            const formatacao = { year: 'numeric', month: 'long', day: 'numeric' };
-            const dataformatada = date.toLocaleDateString('pt-BR', formatacao);
-            if (opcao == 1) {
-                repeticaolabel.textContent = `Esta atividade será repetida em todo dia útil até o dia ${dataformatada}`;
-            } else if (opcao == 2) {
-                repeticaolabel.textContent = `Esta atividade será repetida semanal até o dia ${dataformatada}`;
-            } else if (opcao == 3) {
-                repeticaolabel.textContent = `Esta atividade será repetida mensalmente até o dia ${dataformatada}`;
-            } else {
-                repeticaolabel.textContent = '';
+    document.addEventListener('DOMContentLoaded', function() {
+        var dataField = document.getElementById('id_data');
+        var entradaField = document.getElementById('id_entrada');
+        var saidaField = document.getElementById('id_saida');
+
+        function disponibilidade() {
+            var data = dataField.value;
+            var entrada = entradaField.value;
+            var saida = saidaField.value;
+
+            if (!data) {
+                return;
+            }
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', `/disponibilidade/?data=${data}`, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+            xhr.onload = function() {
+                if (xhr.status >= 200 && xhr.status < 400) {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.disponibilidade) {
+                        entradaField.innerHTML = '';
+                        saidaField.innerHTML = '';
+                        response.disponibilidade.forEach(hora => {
+                            let optionEntrada = new Option(hora[1], hora[0]);
+                            let optionSaida = new Option(hora[1], hora[0]);
+                            entradaField.add(optionEntrada);
+                            saidaField.add(optionSaida);
+                        });
+                    } else {
+                        entradaField.innerHTML = '';
+                        saidaField.innerHTML = '';
+                    }
+                }
+            };
+
+            xhr.onerror = function() {
+                console.error('Erro na solicitação AJAX.');
+            };
+
+            xhr.send();
+        }
+
+        function disponibilidade_saida() {
+            var data = dataField.value;            
+            var entrada = entradaField.value;
+            var saida = saidaField.value;
+
+            if (!entrada || !data) {
+                return;
+            }
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', `/disponibilidade_saida/?entrada=${entrada}&data=${data}`, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+            xhr.onload = function() {
+                if (xhr.status >= 200 && xhr.status < 400) {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.disponibilidade) {
+                        saidaField.innerHTML = '';
+                        response.disponibilidade.forEach(function(item) {
+                        var option = document.createElement('option');
+                        option.value = item[0];
+                        option.textContent = item[1];
+                        saidaField.appendChild(option);
+                    });
+                    } else {
+                        saidaField.innerHTML = '';
+                    }
+
+                    
+                }
+            };
+
+            xhr.onerror = function() {
+                console.error('Erro na solicitação AJAX.');
+            };
+
+            xhr.send();
+        }
+
+        dataField.addEventListener('change', disponibilidade);
+        entradaField.addEventListener('change', disponibilidade_saida);
+    });
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('id_saida').addEventListener('change', function() {
+        const saidaField = parseInt(document.querySelector('#id_saida').value, 10);
+        const entradaField = parseInt(document.querySelector('#id_entrada').value, 10);
+        const dataField = document.getElementById('id_data').value;
+        const dataSaida = adicionarDias(dataField, 2)
+        const saidaLabel = document.getElementById('id_saida_label');
+
+        if (saidaField < entradaField) {
+            saidaLabel.textContent = `A saída dessa atividade será às ${saidaField} horas do dia ${dataSaida}`;
+        } else {
+            saidaLabel.textContent = '';
+        }
+    });
+
+});
+
+    function adicionarDias(data, dias) {
+        const novaData = new Date(data); // Cria uma nova instância da data
+        novaData.setDate(novaData.getDate() + dias); // Adiciona o número de dias
+        const formatacao = { year: 'numeric', month: 'long', day: 'numeric' };
+        const dataformatada = novaData.toLocaleDateString('pt-BR', formatacao);
+        return dataformatada;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('id_form');
+
+    form.addEventListener('submit', function(event) {
+        const sequenciaField = document.querySelector('input[name="sequencia"]:checked');
+        
+        if (sequenciaField && sequenciaField.value !== '') {
+            event.preventDefault(); // Impede o envio padrão do formulário
+
+            const dataField = document.getElementById('id_data');
+            const entradaField = document.getElementById('id_entrada');
+            const saidaField = document.getElementById('id_saida');
+            const dataFinalField = document.getElementById('id_data_final_seq');
+            
+            // Constrói a URL de requisição com os parâmetros necessários
+            const url = new URL('/validar_sequencia', window.location.origin);
+            url.searchParams.append('data', dataField.value);
+            url.searchParams.append('entrada', entradaField.value);
+            url.searchParams.append('saida', saidaField.value);
+            url.searchParams.append('data_final_seq', dataFinalField.value);
+            url.searchParams.append('sequencia', sequenciaField.value);
+
+            // Faz a requisição AJAX para validar a sequência
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.confirm) {
+                    if (confirm(result.msg_confirm + ' Deseja continuar?')) {
+                        form.submit(); // Envia o formulário se o usuário confirmar
+                    } else {
+                        alert('Envio do formulário cancelado.');
+                    }
+                } else {
+                    form.submit(); // Envia o formulário diretamente se não houver conflito
+                }
+            })
+            .catch(error => {
+                console.error('Erro na validação da sequência:', error);
+                alert('Ocorreu um erro. Tente novamente mais tarde.');
+            });
+        } else {
+            // Caso não haja sequenciaField, envie o formulário diretamente
+            // Adicionando event.preventDefault() para garantir que o formulário seja submetido apenas uma vez
+            event.preventDefault();
+            form.submit();
+        }
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteButtons = document.querySelectorAll('.delete-button');
+    deleteButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const atividadeId = this.getAttribute('data-atividade-id');
+        showDeleteModal(atividadeId);
+      });
+    });
+  });
+
+function showDeleteModal(atividadeId) {
+    // Adiciona o ID da atividade ao modal para referência futura
+    const deleteModal = document.getElementById('deleteModal');
+    deleteModal.dataset.atividadeId = atividadeId;
+
+    // Exibe o modal
+    deleteModal.style.display = 'block';
+  }
+
+  // Função para fechar o modal
+  function closeDeleteModal() {
+    const deleteModal = document.getElementById('deleteModal');
+    deleteModal.style.display = 'none';
+  }
+
+  // Função para manipular a ação de deletar
+  function handleDeleteAction(action) {
+    const deleteModal = document.getElementById('deleteModal');
+    const atividadeId = deleteModal.dataset.atividadeId;
+
+    if (action === 'atividade') {
+      window.location.href = `/deletar_atividade/${atividadeId}`;
+    } else if (action === 'sequencia') {
+        window.location.href = `/deletar_sequencia/${atividadeId}`;
+    }
+
+    // Fecha o modal após a ação
+    closeDeleteModal();
+  }
+
+  // Fecha o modal se o usuário clicar fora do modal
+  window.onclick = function(event) {
+    const deleteModal = document.getElementById('deleteModal');
+    if (event.target === deleteModal) {
+      closeDeleteModal();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('form_edit_ativ');
+        const editModal = document.getElementById('editModal');
+        const extraParamField = document.getElementById('extra_param');
+        
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); // Cancela o envio se o sinalizador não estiver ativado
+            showEditModal();
+        });
+
+        function showEditModal() {
+            editModal.style.display = 'block'; // Exibe o modal
+        }
+
+        function closeEditModal() {
+            editModal.style.display = 'none'; // Fecha o modal
+        }
+
+        document.querySelectorAll('.bt-modal').forEach(button => {
+            button.addEventListener('click', function(event) {
+                const action = event.target.getAttribute('data-action');
+                if (action) {
+                    const param = handleEditAction(action);
+
+                    if (param === '0') {
+                        closeEditModal();  
+                    } else {
+                        extraParamField.value = param; // Define o valor do campo oculto
+                        form.submit(); // Submete o formulário
+                    }
+                }
+            });
+        });
+
+        function handleEditAction(action) {
+            let param = '0';
+            if (action === 'atividade') {
+                param = '1';
+            } else if (action === 'sequencia') {
+                param = '2';
+            } else if (action === 'cancelar') {
+                param = '0';
+            }
+            closeEditModal(); // Fecha o modal após a escolha
+            return param;
+        }
+
+        // Fecha o modal se o usuário clicar fora do modal
+        window.onclick = function(event) {
+            if (event.target === editModal) {
+                closeEditModal();
             }
         }
-       
     });
 </script>
 </body>
