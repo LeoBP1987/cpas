@@ -1,6 +1,7 @@
 from typing import Any
 from django import forms
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.shortcuts import redirect
 
 class LoginForms(forms.Form):
@@ -61,3 +62,24 @@ class AlterarSenhaForms(forms.Form):
                 raise forms.ValidationError('As senhas digitadas não são iguais')
             else:
                 return senha
+            
+class CustomPasswordResetForm(PasswordResetForm):
+    def __init__(self, *args, **kwargs):
+        super(CustomPasswordResetForm, self).__init__(*args, **kwargs)
+        self.fields['email'].widget.attrs.update({
+            'class': 'main-forms__campo_input',
+        })
+
+class CustomSetPasswordForm(SetPasswordForm):
+    def __init__(self, *args, **kwargs):
+        super(CustomSetPasswordForm, self).__init__(*args, **kwargs)
+        self.fields['new_password1'].widget.attrs.update({
+            'class': 'main-forms__campo_input',
+        })
+        self.fields['new_password2'].widget.attrs.update({
+            'class': 'main-forms__campo_input',
+        })
+
+        self.fields['new_password2'].help_text = self.fields['new_password1'].help_text 
+        self.fields['new_password1'].help_text = ''
+        
