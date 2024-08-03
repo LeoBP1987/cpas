@@ -42,7 +42,7 @@ class AtividadesForms(forms.ModelForm):
     extra_param = forms.CharField(max_length=100, required=False)
     class Meta:
         model = Atividades
-        exclude = ['cod',]
+        exclude = ['cod', 'id_vir']
         fields = ['instituicao', 'tipo_atividade', 'data', 'entrada', 'saida', 'valor', 'sequencia', 'data_final_seq', 'obs', 'extra_param']
         widgets = {
             'instituicao': forms.Select(attrs={'class':'main-forms__campo_input', 'id':'id_instituicao'}),

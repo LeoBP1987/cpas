@@ -74,6 +74,7 @@ class Atividades(models.Model):
     data_final_seq = models.DateField(null=True, blank=True)
     obs = models.TextField(null=True, blank=True)
     cod = models.IntegerField(null=True, blank=True)
+    id_vir = models.IntegerField(null=True, blank=True)
     
     def __str__(self):
         return f'{self.tipo_atividade} no {self.instituicao}, {self.data} das {self.entrada} às {self.saida}'

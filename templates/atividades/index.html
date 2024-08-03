@@ -11,7 +11,11 @@
                     <p class="main-lista__subtitulo_paragrafo">{{atividade.data}} – </p>
                     <p class="main-lista__subtitulo_paragrafo">{{atividade.dia_semana}}</p>
                 </div>
-                <img class="main-lista__imagem" src="{{atividade.imagem_url}}" alt="Imagem da Instituição onde será a atividade">
+                {% if atividade.imagem_url %}
+                    <img class="main-lista__imagem" src="{{atividade.imagem_url}}" alt="Imagem da Instituição onde será a atividade">
+                {% else %}
+                    <img class="main-lista__imagem" src="{% static 'assets/icones/hospital.png' %}" alt="Imagem Padrão de Hospital">
+                {% endif %}
                 <div class="main-lista__descricao">
                     <p class="main-lista__descricao_paragrafo"><strong>Inst:</strong> {{atividade.inst}}</p>
                     <p class="main-lista__descricao_paragrafo_descr"><strong>Desc:</strong> {{atividade.descricao}}</p>

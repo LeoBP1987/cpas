@@ -13,7 +13,7 @@
                 {% if instituicao.imagem %}
                     <img class="main-lista__imagem" src="{{ instituicao.imagem.url }}" alt="Imagem da Instituição">
                 {% else %}
-                <img class="main-lista__imagem" src="{% static 'assets/icones/hospital.png' %}" alt="Imagem Padrão de Hospital">
+                    <img class="main-lista__imagem" src="{% static 'assets/icones/hospital.png' %}" alt="Imagem Padrão de Hospital">
                 {% endif %}
                 <div class="main-lista__descricao">
                     <p class="main-lista__descricao_paragrafo"><strong>Endereço:</strong> {{instituicao.endereco}}</p>

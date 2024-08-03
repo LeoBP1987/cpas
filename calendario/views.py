@@ -6,6 +6,7 @@ from atividades.models import Atividades, Instituicao, TipoAtividade
 from datetime import date, timedelta, datetime
 from dateutil.relativedelta import relativedelta
 from django.contrib import messages
+import random
 
 def configuracoes(request):
 
@@ -65,7 +66,7 @@ def gerar_agendamento(atividade, data, horas, horasS):
 
     return agendado
 
-def gerar_atividade_sequencia(instituicao, tipo, data, entrada, saida, valor, sequencia, data_final, obs, cod):
+def gerar_atividade(instituicao, tipo, data, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir):
 
     instituicao = Instituicao.objects.get(id=instituicao)
     tipo = TipoAtividade.objects.get(id=tipo)
@@ -80,7 +81,8 @@ def gerar_atividade_sequencia(instituicao, tipo, data, entrada, saida, valor, se
         sequencia=sequencia,
         data_final_seq=data_final,
         obs=obs,
-        cod=cod
+        cod=cod,
+        id_vir=id_vir
     )
 
     return atividade
@@ -124,17 +126,20 @@ def checar_sequencia(sequencia, data_atividade, data_final, horas):
 
     return {'list_confirm':list_confirm, 'confirm':confirm}
 
-def agendar(atividade, instituicao, tipo, data, entrada, saida, valor, sequencia, data_final, obs, cod):
+def agendar(instituicao, tipo, data, entrada, saida, valor, sequencia, data_final, obs):
     agendado = False
 
     h_ent = int(entrada)
     h_saida = int(saida)
     data_atividade = datetime.strptime(data, '%Y-%m-%d').date()
     horasS = None
+    virada = False
+    cod = gerar_cod()
 
     if h_ent < h_saida:
         horas = range(h_ent, h_saida + 1)
     else:
+        virada = True
         horas = range(h_ent, 24)
         horasS = range(0, h_saida + 1)
 
@@ -149,27 +154,62 @@ def agendar(atividade, instituicao, tipo, data, entrada, saida, valor, sequencia
             while data_atividade < data_final:
                 dia_semana = data_atividade.weekday()
                 if dia_semana != 5 and dia_semana !=6 and data_atividade not in data_except:
-                    atividade = gerar_atividade_sequencia(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod) if data_atividade != datetime.strptime(data, '%Y-%m-%d').date() else atividade
-                    agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
+
+                    if not virada:
+                        id_vir = gerar_id_vir()
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir)
+                        agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
+                    else:
+                        id_vir = gerar_id_vir()
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, 23, valor, sequencia, data_final, obs, cod, id_vir)
+                        agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade + timedelta(days=1), 0, saida, valor, sequencia, data_final, obs, cod, id_vir)
+                        agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
                 data_atividade = data_atividade + timedelta(days=1)
 
         elif sequencia == '2':
             while data_atividade < data_final:
                 dia_semana = data_atividade.weekday()
                 if data_atividade not in data_except:
-                    atividade = gerar_atividade_sequencia(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod) if data_atividade != datetime.strptime(data, '%Y-%m-%d').date() else atividade
-                    agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
+
+                    if not virada:
+                        id_vir = gerar_id_vir()
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir)
+                        agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
+                    else:
+                        id_vir = gerar_id_vir()
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, 23, valor, sequencia, data_final, obs, cod, id_vir)
+                        agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade + timedelta(days=1), 0, saida, valor, sequencia, data_final, obs, cod, id_vir)
+                        agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
                 data_atividade = data_atividade + timedelta(weeks=1)
 
         elif sequencia == '3':
             while data_atividade < data_final:
                 dia_semana = data_atividade.weekday()
                 if data_atividade not in data_except:
-                    atividade = gerar_atividade_sequencia(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod) if data_atividade != datetime.strptime(data, '%Y-%m-%d').date() else atividade
-                    agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
+                    if not virada:
+                        id_vir = gerar_id_vir()
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir)
+                        agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
+                    else:
+                        id_vir = gerar_id_vir()
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, 23, valor, sequencia, data_final, obs, cod, id_vir)
+                        agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade + timedelta(days=1), 0, saida, valor, sequencia, data_final, obs, cod, id_vir)
+                        agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
                 data_atividade = data_atividade + relativedelta(months=1)    
     else:
-        agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)    
+        if not virada:
+            id_vir = gerar_id_vir()
+            atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir)
+            agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
+        else:
+            id_vir = gerar_id_vir()
+            atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, 23, valor, sequencia, data_final, obs, cod, id_vir)
+            agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
+            atividade = gerar_atividade(instituicao, tipo, data_atividade + timedelta(days=1), 0, saida, valor, sequencia, data_final, obs, cod, id_vir)
+            agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)    
 
     return agendado
 
@@ -262,3 +302,119 @@ def validar_sequencia(request):
     msg_confirm = msg_confirm + ' não poderão ser agendados pois já possuem atividades programadas.'
     
     return JsonResponse({'msg_confirm': msg_confirm, 'confirm': confirm, 'except':list_except})
+
+def exibir_calendario(request):
+    dia_param = datetime.today().date() - timedelta(days=1)
+    atividades = Atividades.objects.filter(data__gt=dia_param).order_by('data')
+    dict_atividade = {}
+    mes_param = 0
+    
+    if atividades:
+        for atividade in atividades:
+            dia_semana = gerar_dia_semana(atividade.data)
+            sigla_dia = dia_semana[:3]
+            num_dia = atividade.data.day
+
+            if atividade.data.month != mes_param:
+                mes = { 
+                    1: 'Janeiro',
+                    2: 'Fevereiro',
+                    3: 'Março',
+                    4: 'Abril',
+                    5: 'Maio',
+                    6: 'Junho',
+                    7: 'Julho',
+                    8: 'Agosto',
+                    9: 'Setembro',
+                    10: 'Outubro',
+                    11: 'Novembro',
+                    12: 'Dezembro'
+                }.get(atividade.data.month, '')
+            else:
+                mes = None
+
+            mes_param = atividade.data.month
+
+            if atividade.data.strftime("%Y-%m-%d") not in dict_atividade:
+                dict_atividade[atividade.data.strftime("%Y-%m-%d")] = {
+                    'sigla_dia': sigla_dia,
+                    'num_dia': num_dia,
+                    'mes': mes,
+                    'lista_dia': []
+                }
+            
+            descricao = f'{atividade.tipo_atividade} - {atividade.instituicao.nome_inst}'
+            sequencia = {
+                '1': 'Diaria',
+                '2': 'Semanal',
+                '3': 'Mensal'
+            }.get(atividade.sequencia, 'Único')
+            
+            periodo = f'{atividade.entrada:02d}:00 - {atividade.saida:02d}:00'
+            
+            dict_atividade[atividade.data.strftime("%Y-%m-%d")]['lista_dia'].append({
+                'id': atividade.id,
+                'descricao': descricao,
+                'sequencia': sequencia,
+                'periodo': periodo
+            })
+    
+    return render(request, 'calendario/calendario.html', {'agenda': dict_atividade})
+
+
+def gerar_dia_semana(data):
+
+    if data.weekday() == 0:
+        dia_semana = 'Segunda-Feira'
+    elif data.weekday() == 1:
+        dia_semana = 'Terça-Feira'
+    elif data.weekday() == 2:
+        dia_semana = 'Quarta-Feira'
+    elif data.weekday() == 3:
+        dia_semana = 'Quinta-Feira'
+    elif data.weekday() == 4:
+        dia_semana = 'Sexta-Feira'
+    elif data.weekday() == 5:
+        dia_semana = 'Sabádo'
+    elif data.weekday() == 6:
+        dia_semana = 'Domingo'
+
+    return dia_semana
+
+def gerar_cod():
+
+    atividades = Atividades.objects.all()
+    lista_codigos = []
+    gerado = False
+
+    for atividade in atividades:
+
+        if atividade.cod not in lista_codigos:
+            lista_codigos.append(atividade.cod)
+
+    while not gerado:
+        cod_int = random.randint(0, 9999)
+        if cod_int not in lista_codigos:
+            cod = f'{cod_int:02d}'
+            gerado = True
+
+    return cod
+
+def gerar_id_vir():
+
+    atividades = Atividades.objects.all()
+    lista_codigos = []
+    gerado = False
+
+    for atividade in atividades:
+
+        if atividade.id_vir not in lista_codigos:
+            lista_codigos.append(atividade.id_vir)
+
+    while not gerado:
+        id_int = random.randint(0, 9999)
+        if id_int not in lista_codigos:
+            id_vir = f'{id_int:02d}'
+            gerado = True
+
+    return id_vir

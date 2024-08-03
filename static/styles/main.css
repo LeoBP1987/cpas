@@ -353,6 +353,220 @@
     font-weight: bold;
   }
 
+  .main-calendario__opcoes {
+    position: absolute;
+    right: 12.5rem;
+    top: 16.85rem;
+    width: 50%;
+    padding: 0.25rem;
+    border: 1px solid black;
+    border-radius: 10px;
+}
+
+.main-calendario__agenda {
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+    margin-top: 1rem;
+}
+
+.main-agenda {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.main-agenda__dia {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid black;
+    height: 50%;
+    border-radius: 100%;
+    padding: 0.65rem;
+    font-weight: bold;
+    
+}
+
+.main-agenda__atividades {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.main-agenda__atividades_atividade {
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 0.5rem;
+    width: 18.5rem;
+    background-color: var(--cor-detalhes-primaria);
+    color: var(--cor-fonte-secundaria);
+    -webkit-text-stroke: 0.25px black;
+}
+
+.main-agenda__atividade_titulo {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.main-agenda__atividade_periodo {
+    font-weight: bold;
+}
+
+.main-calendario__dia, .main-calendario__semana {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    width: 25rem;
+    margin-right: 1rem;
+}
+
+.main-dia__cabecalho {
+    margin: 4rem 0 0 1rem;
+    display: grid;
+    grid-template-areas: 
+        'espaco espaco data'
+        'navegacao navegacao navegacao';
+    row-gap: 1.5rem;
+}
+
+.main-dia__navegacao {
+    display: flex;
+    justify-content: space-between;
+}
+
+.main-dia__navegacao {
+    grid-area: navegacao;
+}
+
+.main-dia__cabecalho_data {
+    grid-area: data;
+    border: 1px solid black;
+    border-radius: 6px;
+    padding: 0.25rem;
+}
+
+.main-dia__botao, .main-semana__botao {
+    border: none;
+    background-color: transparent;
+}
+
+.main-tabela__dia, .main-tabela__semana {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 2rem;
+}
+
+.main-tabela__dia__hora {
+    width: 17%;
+    text-align: right;
+    padding-right: 0.5rem;
+    padding-top: 2rem;
+}
+
+.main-tabela-dia__conteudo {
+    width: 90%;
+    text-align: center;
+    border: 1px solid black;
+    position: relative;
+}
+
+.main-tabela-dia__conteudo_atividade_1 {
+    border: 2px solid black;
+    border-radius: 10px;
+    padding-top: 18.3rem;
+    padding-bottom: 18.4rem;
+    width: 20rem;
+    background-color: var(--cor-detalhes-primaria);
+    color: var(--cor-fonte-secundaria);
+    -webkit-text-stroke: 0.25px black;
+    position: absolute;
+    top: 100%; /* Posição do div em relação ao contêiner */
+    overflow: hidden; /* Oculta o texto que não cabe */
+    text-overflow: ellipsis; /* Adiciona reticências no final */
+}
+
+.main-tabela-dia__conteudo_atividade_2 {
+    border: 2px solid black;
+    border-radius: 10px;
+    padding-top: 1.9rem;
+    padding-bottom: 1.9rem;
+    width: 20rem;
+    background-color: var(--cor-detalhes-primaria);
+    color: var(--cor-fonte-secundaria);
+    -webkit-text-stroke: 0.25px black;
+    position: absolute;
+    top: 100%; /* Posição do div em relação ao contêiner */
+    overflow: hidden; /* Oculta o texto que não cabe */
+    text-overflow: ellipsis; /* Adiciona reticências no final */
+}
+
+.main-semana__cabecalho {
+    margin: 4rem 0 0 1rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.main-tabela__semana_cabecalho {
+    text-align: center;
+    font-weight: bold;
+    position: sticky;
+    position: -webkit-sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.main-tabela-semana__conteudo_atividade_1 {
+    border: 2px solid black;
+    border-radius: 10px;
+    padding-top: 13rem;
+    padding-bottom: 13rem;
+    width: 3.1rem;
+    background-color: var(--cor-detalhes-primaria);
+    color: var(--cor-fonte-secundaria);
+    -webkit-text-stroke: 0.25px black;
+    position: absolute;
+    top: 100%; /* Posição do div em relação ao contêiner */
+    overflow: hidden; /* Oculta o texto que não cabe */
+    text-overflow: ellipsis; /* Adiciona reticências no final */
+}
+
+.main-tabela-semana__conteudo_atividade_2 {
+    border: 2px solid black;
+    border-radius: 10px;
+    padding-top: 0;
+    padding-bottom: 0;
+    width: 3.2rem;
+    background-color: var(--cor-detalhes-primaria);
+    color: var(--cor-fonte-secundaria);
+    -webkit-text-stroke: 0.25px black;
+    position: absolute;
+    top: 100%; /* Posição do div em relação ao contêiner */
+    overflow: hidden; /* Oculta o texto que não cabe */
+    text-overflow: ellipsis; /* Adiciona reticências no final */
+}
+
+.main-tabela__semana__hora {
+    text-align: right;
+    padding-right: 0.5rem;
+    padding-top: 2rem;
+    font-size: small;
+}
+
+.main-tabela-semana__conteudo {
+    width: 12.5%;
+    border: 1px solid black;
+    position: relative;
+}
+
+.display {
+    display: none;
+}
+
+.main-agenda__cabecalho_titulo {
+    font-size: 1.8rem;
+}
+
 @media screen and (min-width:1200px){
 
     .main {
@@ -360,15 +574,20 @@
         flex-direction: column;
         gap: 2rem;
         margin: 2rem 1rem 2rem 0;
+        align-items: center;
     }
 
-    .main-titulo {
+    .main-titulo, .main-titulo_calendario {
         display: block;
         font-size: 3rem;
         color: var(--cor-fonte-terciaria);
-        text-align: center;
         -webkit-text-stroke: 1px var(--cor-fonte-primaria);
         box-shadow: var(--sombra-primaria);
+    }
+
+    .main-titulo_calendario {
+        align-self: flex-start;
+        margin-left: 10rem;
     }
 
     .main-lista {
@@ -389,6 +608,94 @@
     .main-config__botoes {
         margin-top: 2rem;
         gap: 4rem; 
+    }
+
+    .main-calendario__agenda {
+        width: 40rem;
+    }
+
+    .main-calendario__dia, .main-calendario__semana {
+        width: 55rem;
+    }
+
+    .main-titulo_calendario {
+        text-align: left;
+    }
+
+    .main-calendario__opcoes {
+        width: 20%;
+        right: 5rem;
+        top: 20.25rem;
+        padding: 0.5rem;
+        margin-top: 2rem;
+    }
+
+    .main-agenda {
+        width: 100%;
+        gap: 3rem;
+        margin-top: 2rem;
+    }
+    
+    .main-agenda__atividades {
+        width: 100%;
+    }
+    
+    .main-agenda__atividades_atividade {
+        width: 100%;
+    }
+
+    .main-agenda__atividade_titulo {
+        font-size: 1.3rem;
+    }
+
+    .main-agenda__atividade_sequencia {
+        font-size: 1rem;
+    }
+    
+    .main-agenda__atividade_periodo{ 
+        font-size: 1.2rem;
+    }
+    
+    .main-dia__cabecalho, .main-semana__cabecalho {
+        margin: 1rem 0 0 1rem;
+    }
+
+    .main-tabela__semana_cabecalho {
+        position: sticky;
+        position: -webkit-sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .main-tabela__dia__hora {
+        width: 6%;
+    }
+
+    .main-tabela-dia__conteudo_atividade_1, .main-tabela-dia__conteudo_atividade_2 {
+        width: 50%;
+    }
+
+    .main-tabela-semana__conteudo_atividade_1, .main-tabela-semana__conteudo_atividade_2 {
+        width: 100%;
+    }
+
+    .main-tabela-semana__conteudo_atividade_1 {
+        padding-top: 15.6rem;
+        padding-bottom: 15.6rem;
+    }
+
+    .main-tabela-semana__conteudo_atividade_2 {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    .main-semana__cabecalho_titulo {
+        font-size: 1.5rem;
+    }
+
+    .main-agenda__cabecalho_titulo {
+        font-size: 1.75rem;
+        text-align: center;
     }
 
 }

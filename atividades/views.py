@@ -7,7 +7,7 @@ from dateutil.relativedelta import relativedelta
 from atividades.forms import TipoAtividadeForms, InstituicaoForms, AtividadesForms
 from atividades.models import TipoAtividade, Instituicao, Atividades
 from calendario.models import Calendario
-from calendario.views import agendar, checar_sequencia
+from calendario.views import agendar, checar_sequencia, gerar_dia_semana
 import json
 import random
 
@@ -36,20 +36,7 @@ def index(request):
             elif atividade.sequencia == '3':
                 descricao = f'{atividade.tipo_atividade.nome_tipo} mensalmente até o dia {data_final}'
 
-        if atividade.data.weekday() == 0:
-            dia_semana = 'Segunda-Feira'
-        elif atividade.data.weekday() == 1:
-            dia_semana = 'Terça-Feira'
-        elif atividade.data.weekday() == 2:
-            dia_semana = 'Quarta-Feira'
-        elif atividade.data.weekday() == 3:
-            dia_semana = 'Quinta-Feira'
-        elif atividade.data.weekday() == 4:
-            dia_semana = 'Sexta-Feira'
-        elif atividade.data.weekday() == 5:
-            dia_semana = 'Sabádo'
-        elif atividade.data.weekday() == 6:
-            dia_semana = 'Domingo'
+        dia_semana = gerar_dia_semana(atividade.data)
         
         if atividade.entrada < atividade.saida:
             qt_horas = atividade.saida - atividade.entrada
@@ -60,7 +47,7 @@ def index(request):
             'id': atividade.id,
             'periodo': periodo,
             'dia_semana': dia_semana,
-            'imagem_url': atividade.instituicao.imagem.url,
+            'imagem_url': atividade.instituicao.imagem.url if atividade.instituicao.imagem else None,
             'data': f'{atividade.data.day:02d}/{atividade.data.month:02d}/{atividade.data.year:04d}',
             'inst': atividade.instituicao.nome_inst,
             'descricao': descricao,
@@ -187,13 +174,11 @@ def nova_atividade(request):
             sequencia = forms['sequencia'].value()
             data_final = forms['data_final_seq'].value()
             obs = forms['obs'].value()
-            
-            atividade = forms.save(commit=False)
-            atividade.cod = f'{(random.randint(0, 9999)):02d}'
-            cod = atividade.cod
-            atividade.save()
 
-            agendamento = agendar(atividade, instituicao, tipo, data, entrada, saida, valor, sequencia, data_final, obs, cod)
+            if not data_final:
+                data_final = data
+
+            agendamento = agendar(instituicao, tipo, data, entrada, saida, valor, sequencia, data_final, obs)
 
             if agendamento:
                 messages.success(request,'Agendamento realizado com Sucesso!')
@@ -222,7 +207,21 @@ def editar_atividade(request, id_atividade):
 
             param = forms['extra_param'].value()
 
-            if param == '1':                       
+            if param == '1':
+                atividades = Atividades.objects.filter(id_vir=atividade.id_vir)
+
+                inst = forms['instituicao'].value()
+                instituicao = get_object_or_404(Instituicao, id=inst)
+                tipo = forms['tipo_atividade'].value()
+                tipo_atividade = get_object_or_404(TipoAtividade, id=tipo)
+
+                for ativividade_seq in atividades:
+                    ativividade_seq.instituicao = instituicao
+                    ativividade_seq.tipo_atividade = tipo_atividade
+                    ativividade_seq.valor = forms['valor'].value()
+                    ativividade_seq.obs = forms['obs'].value()
+                    ativividade_seq.save()
+
                 forms.save()
                 messages.success(request, 'Atividade editada com sucesso')
                 return redirect('index')
@@ -252,20 +251,25 @@ def editar_atividade(request, id_atividade):
 
 def deletar_atividade(request, id_atividade):
 
-    atividade = Atividades.objects.get(id=id_atividade)
+    atividade_param = Atividades.objects.get(id=id_atividade)
+    id_vir = atividade_param.id_vir
+    atividade = Atividades.objects.filter(id_vir=id_vir)
+    
+    if atividade:
 
-    agenda = Calendario.objects.filter(atividades=atividade)
-
-    if agenda:
-        for hora in agenda:
-            hora.ocupado = False
-            hora.save()
-        atividade.delete()
+        for item in atividade:
+            agenda = Calendario.objects.filter(atividades=item)
+            
+            for hora in agenda:
+                hora.ocupado = False
+                hora.save()
+            item.delete()
         messages.success(request, 'Atividade deletada com Sucesso')
         return redirect('index')
     else:
         messages.error(request, 'Ocorreu um erro deleção não pode ser realizada!')
         return redirect('index')
+
 
 def deletar_sequencia(request, id_atividade):
 
@@ -307,3 +311,4 @@ def get_valor_padrao(request, instituicao_id):
     except Instituicao.DoesNotExist:
 
         return JsonResponse({'valor_padrao': ''}, status=404)
+    

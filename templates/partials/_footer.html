@@ -443,6 +443,38 @@ function showDeleteModal(atividadeId) {
             }
         }
     });
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('opcoes').addEventListener('change', function() {
+        const opcao = document.getElementById('opcoes').value;
+        const divAgenda = document.getElementById('agenda');
+        const divDia = document.getElementById('agenda_dia');
+        const divSemana = document.getElementById('agenda_semana')
+
+        if (opcao == 'agenda') {            
+            divAgenda.classList.remove('display');
+            divDia.classList.remove('main-calendario__dia');
+            divSemana.classList.remove('main-calendario__semana')
+            divAgenda.classList.add('main-calendario__agenda');
+            divDia.classList.add('display');
+            divSemana.classList.add('display');
+        } else if (opcao == 'dia') {
+            divAgenda.classList.remove('main-calendario__agenda');
+            divDia.classList.remove('display');
+            divSemana.classList.remove('main-calendario__semana');
+            divAgenda.classList.add('display');
+            divDia.classList.add('main-calendario__dia');
+            divSemana.classList.add('display');
+        } else if (opcao == 'semana') {
+            divAgenda.classList.remove('main-calendario__agenda');
+            divDia.classList.remove('main-calendario__dia');
+            divSemana.classList.remove('display');
+            divAgenda.classList.add('display');
+            divDia.classList.add('display');
+            divSemana.classList.add('main-calendario__semana');
+        }
+    });
+});
 </script>
 </body>
 </html>
