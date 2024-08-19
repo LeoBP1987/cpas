@@ -1,0 +1,29 @@
+{% load static %}
+        <div class="main-dia__cabecalho">
+            {% for item, detalhes in dia.items %}
+                <input id="main-dia__dia" type="date" class="main-dia__cabecalho_data">
+                <input id="main-dia__data" type="hidden" value="{{data_param|date:'Y-m-d'}}">
+                <div class="main-dia__navegacao">
+                    <button class="main-dia__botao" id="backBtn_dia"><i class="fas fa-backward"></i></button>
+                    <h3 class="main-dia__cabecalho_titulo">{{detalhes.dia_semana}} -  {{detalhes.num_dia}} / {{detalhes.mes}}</h3>
+                    <button class="main-dia__botao" id="nextBtn_dia"><i class="fas fa-forward"></i></button>
+                </div>
+        </div>
+        <table class="main-tabela__dia">
+            <tbody>
+                {% for dia in detalhes.lista_atividade %}
+                <tr>
+                    <td class="main-tabela__dia__hora {% if dia.hora == 0 or dia.hora == 24 %}color_white{% endif %}">{{dia.hora}}</td>
+                    <td class="{% if dia.hora == 0 %}main-tabela-dia__conteudo_zero{% else %}main-tabela-dia__conteudo{% endif %}">
+                        {% if dia.id != '' %}
+                            <a class="main-tabela-dia__conteudo_atividade {{dia.tamanho}} main-lista__link" href="{% url 'atividade' dia.id %}">
+                                <p class="main-tabela-dia__conteudo_atividade_titulo">{{dia.tipo}}</p>
+                                <p class="main-tabela-dia__conteudo_atividade_periodo">{{dia.periodo}}</p>
+                            </a>
+                        {% endif %}                       
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>                           
+        </table>
+        {% endfor %}

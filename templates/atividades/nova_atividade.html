@@ -32,10 +32,14 @@
                         <label id="id_saida_label" class="main-forms__label_repeticao"></label>
                 </div>
                 <div class="main-forms__campos_campo_valor">
-                    <div class="main-forms__valor_dif">
+                    <div class="main-forms__valor_dif" id="id_div_valor">
                         <label for="{{forms.valor.id_for_label}}" class="main-forms__campo_label">{{forms.valor.label}}</label>
                         {{forms.valor}}
                         <input type="hidden" id="valor_padrao_instituicao" value="{{ forms.valor.initial }}">
+                    </div>
+                    <div class="main-forms__valor_checkbox">
+                        {{forms.nao_remunerado}}
+                        <label for="{{forms.nao_remunerado.id_for_label}}" class="main-forms__valor_label_checkbox">{{forms.nao_remunerado.label}}</label>
                     </div>
                 </div>
                 <div class="main-forms__campos_campo">
@@ -57,7 +61,7 @@
             </div>
             <div class="main-forms__botoes">
                 <button class="main-forms__botoes_botao" type="submit">CADASTRAR</button>
-                <button class="main-forms__botoes_botao" onclick=window.location.href="{% url 'index' %}">CANCELAR</button>
+                <a class="main-forms__botoes_botao_cancel" href="{% url 'index' %}">CANCELAR</a>
             </div>
         </form>
     </main>

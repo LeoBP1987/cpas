@@ -7,14 +7,14 @@
             <thead>
                 <tr>
                     <th class="main-tabela__cabecalho">Tipo</th>
-                    <th class="main-tabela__cabecalho">Horas</th>
+                    <th class="main-tabela__cabecalho">Categoria</th>
                 </tr>
             </thead>
             <tbody>
                 {% for tipo in tipos %}
                 <tr>
                     <td class="main-tabela__conteudo">{{tipo.nome_tipo}}</td>
-                    <td class="main-tabela__conteudo">{{tipo.horas}}</td>
+                    <td class="main-tabela__conteudo">{{tipo.categoria}}</td>
                     <td class="main-tabela__edit_botoes">
                         <a  class="main-tabela__link" href="{% url 'editar_tipo' tipo.id %}">
                             <p class="main-tabela__texto">Edit</p>

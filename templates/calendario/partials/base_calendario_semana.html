@@ -1,0 +1,32 @@
+{% load static %}
+    <div class="main-semana__cabecalho">
+        <input id="main-sem__data" type="hidden" value="{{data_param|date:'Y-m-d'}}">
+        <button class="main-semana__botao" id="backBtn_semana"><i class="fas fa-backward"></i></button>
+        <h3 class="main-semana__cabecalho_titulo">{{mes}}</h3>
+        <button class="main-semana__botao" id="nextBtn_semana"><i class="fas fa-forward"></i></button>
+    </div>
+    <table class="main-tabela__semana">
+        <thead>
+            {% for item, detalhes in semana.dict_semana.items %}
+                <td class="main-tabela__semana_cabecalho">{{detalhes.dia_semana}}<br>{{detalhes.num_dia}}</td>
+            {% endfor %} 
+        </thead>
+        <tbody>
+            {% for item, detalhes in semana.dict_horas.items %}
+                <tr>
+                    {% for hora in detalhes.linha %}
+                        {% if hora.tipo != '' %}
+                            <td class="{{hora.class}}">
+                                <a class="main-tabela-semana__conteudo_atividade {{hora.tamanho}} main-lista__link" href="{% url 'atividade' hora.id %}">
+                                    <p class="main-tabela-semana__conteudo_atividade_titulo">{{hora.tipo}}</p>
+                                    <p class="main-tabela-semana__conteudo_atividade_periodo">{{hora.periodo}}</p>
+                                </a> 
+                            </td>
+                        {% else %}
+                            <td class="{{hora.class}}">{{hora.hora}}</td>
+                        {% endif %}
+                    {% endfor %}                
+                </tr>
+            {% endfor %}
+        </tbody>                     
+    </table>

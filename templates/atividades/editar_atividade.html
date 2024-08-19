@@ -2,7 +2,7 @@
 {% load static %}
     {% block content %}
     <main class="main">
-        <h2 class="main-titulo">Editar Instituição</h2>
+        <h2 class="main-titulo">Editar Atividade</h2>
         <form id="form_edit_ativ" class="main-forms" action="{% url 'editar_atividade' atividade.id %}" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="main-forms__campos">
@@ -19,6 +19,10 @@
                         <label for="{{forms.valor.id_for_label}}" class="main-forms__campo_label">{{forms.valor.label}}</label>
                         {{forms.valor}}
                         <input type="hidden" id="valor_padrao_instituicao" value="{{ forms.valor.initial }}">
+                    </div>
+                    <div class="main-forms__valor_checkbox">
+                        {{forms.nao_remunerado}}
+                        <label for="{{forms.nao_remunerado.id_for_label}}" class="main-forms__valor_label_checkbox">{{forms.nao_remunerado.label}}</label>
                     </div>
                 </div>
                 <div class="main-forms__campos_campo">

@@ -93,7 +93,10 @@
                 if (opcao == '2') { // Semanal
                     novaData = new Date(dataSelecionada);
                     novaData.setDate(novaData.getDate() + 8);
-                } else if (opcao == '3') { // Mensal
+                } else if (opcao == '3') { // Quinzenal
+                    novaData = new Date(dataSelecionada);
+                    novaData.setDate(novaData.getDate() + 16);
+                } else if (opcao == '4') { // Mensal
                     novaData = new Date(dataSelecionada);
                     novaData.setMonth(novaData.getMonth() + 1);
                 } else { // Sem Repetição
@@ -121,7 +124,7 @@
             radio.addEventListener('change', function() {
                 const opcao = parseInt(document.querySelector('input[name="sequencia"]:checked').value, 10);
 
-                if (opcao > 0 && opcao < 4) {
+                if (opcao > 0 && opcao < 5) {
                     diafinal.classList.remove('main-forms__sequencia_datafinal_hidden');
                     diafinal.classList.add('main-forms__sequencia_datafinal');
                 } else {
@@ -139,6 +142,7 @@
             const opcao = parseInt(document.querySelector('input[name="sequencia"]:checked').value, 10);
             if (opcao) {
                 const date = new Date(diafinal);
+                date.setDate(date.getDate() + 1);
                 const formatacao = { year: 'numeric', month: 'long', day: 'numeric' };
                 const dataformatada = date.toLocaleDateString('pt-BR', formatacao);
                 if (opcao == '1') {
@@ -146,10 +150,13 @@
                 } else if (opcao == '2') {
                     repeticaolabel.textContent = `Esta atividade será repetida semanal até o dia ${dataformatada}`;
                 } else if (opcao == '3') {
+                    repeticaolabel.textContent = `Esta atividade será repetida quinzenalmente até o dia ${dataformatada}`;
+                } else if (opcao == '4') {
                     repeticaolabel.textContent = `Esta atividade será repetida mensalmente até o dia ${dataformatada}`;
                 } else {
                     repeticaolabel.textContent = '';
-                }
+                } 
+                
             }
         });
     });
@@ -162,18 +169,24 @@
         instituicaoSelect.addEventListener('change', function() {
             const instituicaoId = instituicaoSelect.value;
 
-            // Simular uma requisição para obter o valor padrão da instituição (pode ser um endpoint que você cria)
-            fetch(`get_valor_padrao/${instituicaoId}/`)
+            get_valor_padrao(instituicaoId, valorInput);
+
+        });
+    });
+
+    function get_valor_padrao(instituicaoId, valorInput) {
+        // Simular uma requisição para obter o valor padrão da instituição (pode ser um endpoint que você cria)
+        fetch(`get_valor_padrao/${instituicaoId}/`)
                 .then(response => response.json())
                 .then(data => {
                     if (data && data.valor_padrao) {
-                        valorInput.value = data.valor_padrao;
+                        valor_formatado = mascaraValor(data.valor_padrao)
+                        valorInput.value = valor_formatado;
                     } else {
                         valorInput.value = ''; // Limpar o valor se não houver valor padrão
                     }
                 });
-        });
-    });
+    }
     
     document.addEventListener('DOMContentLoaded', function() {
         var dataField = document.getElementById('id_data');
@@ -198,12 +211,9 @@
                     var response = JSON.parse(xhr.responseText);
                     if (response.disponibilidade) {
                         entradaField.innerHTML = '';
-                        saidaField.innerHTML = '';
                         response.disponibilidade.forEach(hora => {
                             let optionEntrada = new Option(hora[1], hora[0]);
-                            let optionSaida = new Option(hora[1], hora[0]);
                             entradaField.add(optionEntrada);
-                            saidaField.add(optionSaida);
                         });
                     } else {
                         entradaField.innerHTML = '';
@@ -475,6 +485,772 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+function setupEventListeners() {
+    const nextBtnDia = document.getElementById('nextBtn_dia');
+    const backBtndia = document.getElementById('backBtn_dia');
+    const dataDia = document.getElementById('main-dia__dia');
+    if (nextBtnDia) {
+        nextBtnDia.removeEventListener('click', handleNextBtnClick); // Remove event listener para evitar múltiplos eventos
+        nextBtnDia.addEventListener('click', handleNextBtnClick);
+        backBtndia.addEventListener('click', handleBackBtnClick);
+        dataDia.addEventListener('change', handledataDiaChange);
+    } else {
+        console.log('Botão nextBtn_dia não encontrado');
+    }
+}
+
+function handleNextBtnClick() {
+    console.log('Botão nextBtn_dia clicado');
+
+    const diaDataField = document.getElementById('main-dia__data');
+    if (!diaDataField) {
+        console.error('Elemento com id main-dia__data não encontrado');
+        return;
+    }
+
+    const url = new URL('/atualizar_calendario', window.location.origin);
+    url.searchParams.append('data', diaDataField.value);
+    url.searchParams.append('control', 1);
+
+    fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Resposta:', data);
+            if (data.html) {
+                document.getElementById('agenda_dia').innerHTML = data.html;
+                setupEventListeners(); // Configura o evento novamente após a atualização
+                document.getElementById('main-dia__dia').value = data.data_param;
+            } else {
+                console.log('Nenhum conteúdo HTML encontrado.');
+                alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
+            }
+        })
+        .catch(error => {
+            console.error('Erro na validação da sequência:', error);
+            alert('Ocorreu um erro. Tente novamente mais tarde.');
+        });
+}
+
+function setupEventListenersBack() {
+    const backBtnDia = document.getElementById('backBtn_dia');
+    const nextBtnDia = document.getElementById('nextBtn_dia');
+    const dataDia = document.getElementById('main-dia__dia');
+    if (backBtnDia) {
+        backBtnDia.removeEventListener('click', handleBackBtnClick); // Remove event listener para evitar múltiplos eventos
+        backBtnDia.addEventListener('click', handleBackBtnClick);
+        nextBtnDia.addEventListener('click', handleNextBtnClick);
+        dataDia.addEventListener('change', handledataDiaChange);
+    } else {
+        console.log('Botão nextBtn_dia não encontrado');
+    }
+}
+
+function handleBackBtnClick() {
+    console.log('Botão nextBtn_dia clicado');
+
+    const diaDataField = document.getElementById('main-dia__data');
+    if (!diaDataField) {
+        console.error('Elemento com id main-dia__data não encontrado');
+        return;
+    }
+
+    const url = new URL('/atualizar_calendario', window.location.origin);
+    url.searchParams.append('data', diaDataField.value);
+    url.searchParams.append('control', 2);
+
+    fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Resposta:', data);
+            if (data.html) {
+                document.getElementById('agenda_dia').innerHTML = data.html;
+                setupEventListenersBack(); // Configura o evento novamente após a atualização
+                document.getElementById('main-dia__dia').value = data.data_param;
+            } else {
+                console.log('Nenhum conteúdo HTML encontrado.');
+                alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
+            }
+        })
+        .catch(error => {
+            console.error('Erro na validação da sequência:', error);
+            alert('Ocorreu um erro. Tente novamente mais tarde.');
+        });
+}
+
+function setupEventListenersData() {
+    const dataDia = document.getElementById('main-dia__dia');
+    const backBtnDia = document.getElementById('backBtn_dia');
+    const nextBtnDia = document.getElementById('nextBtn_dia');
+    if (dataDia) {
+        dataDia.removeEventListener('change', handledataDiaChange); // Remove event listener para evitar múltiplos eventos
+        dataDia.addEventListener('change', handledataDiaChange);
+        backBtnDia.addEventListener('click', handleBackBtnClick);
+        nextBtnDia.addEventListener('click', handleNextBtnClick);
+    } else {
+        console.log('Botão nextBtn_dia não encontrado');
+    }
+}
+
+function handledataDiaChange() {
+    console.log('Data não encontrada');
+
+        const dataDia = document.getElementById('main-dia__dia');
+        const url = new URL('/atualizar_calendario', window.location.origin);
+        url.searchParams.append('data', dataDia.value);
+        url.searchParams.append('control', 3);
+
+        fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Resposta:', data);
+                if (data.html) {
+                    document.getElementById('agenda_dia').innerHTML = data.html;
+                    setupEventListenersData(); // Configura o evento novamente após a atualização
+                    document.getElementById('main-dia__dia').value = data.data_param;
+                } else {
+                    console.log('Nenhum conteúdo HTML encontrado.');
+                    alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro na validação da sequência:', error);
+                alert('Ocorreu um erro. Tente novamente mais tarde.');
+            });
+
+    }
+
+document.addEventListener('DOMContentLoaded', function() {
+    setupEventListenersData();
+    setupEventListeners();
+    setupEventListenersBack();
+});
+
+function setupEventListenersWeekBack() {
+    const backBtnSem = document.getElementById('backBtn_semana');
+    const nextBtnSem = document.getElementById('nextBtn_semana');
+    if (backBtnSem) {
+        backBtnSem.removeEventListener('click', handleWeekBackBtnClick); // Remove event listener para evitar múltiplos eventos
+        backBtnSem.addEventListener('click', handleWeekBackBtnClick);
+        nextBtnSem.addEventListener('click', handleWeekNextBtnClick);
+    } else {
+        console.log('Botão nextBtn_dia não encontrado');
+    }
+}
+
+function handleWeekBackBtnClick() {
+    console.log('Botão backBtn_semana clicado');
+
+    const diaDataField = document.getElementById('main-sem__data');
+    if (!diaDataField) {
+        console.error('Elemento com id main-sem__data não encontrado');
+        return;
+    }
+
+    const url = new URL('/atualizar_calendario_semana', window.location.origin);
+    url.searchParams.append('data', diaDataField.value);
+    url.searchParams.append('control', 1);
+
+    fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Resposta:', data);
+            if (data.html) {
+                document.getElementById('agenda_semana').innerHTML = data.html;
+                setupEventListenersWeekBack(); // Configura o evento novamente após a atualização
+            } else {
+                console.log('Nenhum conteúdo HTML encontrado.');
+                alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
+            }
+        })
+        .catch(error => {
+            console.error('Erro na validação da sequência:', error);
+            alert('Ocorreu um erro. Tente novamente mais tarde.');
+        });
+}
+
+function setupEventListenersWeekNext() {
+    const nextBtnSem = document.getElementById('nextBtn_semana');
+    const backBtnSem = document.getElementById('backBtn_semana');
+    if (nextBtnSem) {
+        nextBtnSem.removeEventListener('click', handleWeekNextBtnClick); // Remove event listener para evitar múltiplos eventos
+        nextBtnSem.addEventListener('click', handleWeekNextBtnClick);
+        backBtnSem.addEventListener('click', handleWeekBackBtnClick);
+    } else {
+        console.log('Botão nextBtn_dia não encontrado');
+    }
+}
+
+function handleWeekNextBtnClick() {
+    console.log('Botão backBtn_semana clicado');
+
+    const diaDataField = document.getElementById('main-sem__data');
+    if (!diaDataField) {
+        console.error('Elemento com id main-sem__data não encontrado');
+        return;
+    }
+
+    const url = new URL('/atualizar_calendario_semana', window.location.origin);
+    url.searchParams.append('data', diaDataField.value);
+    url.searchParams.append('control', 2);
+
+    fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Resposta:', data);
+            if (data.html) {
+                document.getElementById('agenda_semana').innerHTML = data.html;
+                setupEventListenersWeekNext(); // Configura o evento novamente após a atualização
+            } else {
+                console.log('Nenhum conteúdo HTML encontrado.');
+                alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
+            }
+        })
+        .catch(error => {
+            console.error('Erro na validação da sequência:', error);
+            alert('Ocorreu um erro. Tente novamente mais tarde.');
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    setupEventListenersWeekBack();
+    setupEventListenersWeekNext();
+});
+
+$(document).ready(function(){
+        $('#id_tel_inst').mask('(00) 00000-0000');
+    });
+
+function mascaraValor(valor) {
+    let valorFormatado = `R$ ${parseFloat(valor).toFixed(2)
+    .replace(/\d(?=(\d{3})+(\.|$))/g, '$&,')}`;
+
+    return valorFormatado;
+
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Seleciona o campo de entrada pelo ID
+    const campoValor = document.getElementById('id_valor_inst');
+
+    // Formata o valor inicial do campo
+    if (campoValor) {
+        let valor = campoValor.value;
+        campoValor.value = mascaraValor(valor);
+    }
+
+    // Adiciona um ouvinte de evento para aplicar a máscara quando o valor mudar
+    campoValor.addEventListener('change', function() {
+        let valor = this.value;
+        this.value = mascaraValor(valor);
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Seleciona o campo de entrada pelo ID
+    const campoValor = document.getElementById('id_valor');
+
+    // Formata o valor inicial do campo
+    if (campoValor) {
+        let valor = campoValor.value;
+        if (valor != '') {
+            campoValor.value = mascaraValor(valor);
+        } else {
+            campoValor.value = '';
+        }
+    }
+
+    // Adiciona um ouvinte de evento para aplicar a máscara quando o valor mudar
+    campoValor.addEventListener('change', function() {
+        let valor = this.value;
+        if (valor != '') {
+            this.value = mascaraValor(valor);
+        } else {
+            this.value = '';
+        }
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const checkbox = document.getElementById('id_nao_remunerado');
+    const valor = document.getElementById('id_valor');
+    const divValor = document.getElementById('id_div_valor'); 
+
+    checkbox.addEventListener('change', function() {
+        if (checkbox.checked) {
+            valor.value = '';
+            divValor.classList.add('hidden_edit');
+        } else {
+            const instituicaoId = document.getElementById('id_instituicao').value;
+            get_valor_padrao(instituicaoId, valor);
+            divValor.classList.remove('hidden_edit');
+        }
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+        const selectMes = document.getElementById('mes');
+        const mesAtual = new Date().getMonth() + 1; // getMonth() retorna um valor de 0 (Janeiro) a 11 (Dezembro), por isso somamos 1.
+        selectMes.value = mesAtual;
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+        const periodoSelect = document.getElementById('periodo');
+
+        periodoSelect.addEventListener('change', function() {
+            selecionaPeriodo();                
+        });  
+});
+
+    function selecionaPeriodo() {
+        const periodoSelect = document.getElementById('periodo');
+        const mesSelect = document.getElementById('mes');
+        const anoSelect = document.getElementById('ano');
+        const divCustom = document.getElementById('periodo_custom');
+
+        opcao = periodoSelect.value;
+
+                if (opcao == '1') {
+                    mesSelect.classList.remove('hidden_edit');
+                    anoSelect.classList.add('hidden_edit');
+                    divCustom.classList.add('hidden_edit');
+                    divCustom.classList.remove('main-financeiro__periodo_custom');
+                } else if (opcao == '2') {
+                    anoSelect.classList.remove('hidden_edit');
+                    mesSelect.classList.add('hidden_edit');
+                    divCustom.classList.add('hidden_edit');
+                    divCustom.classList.remove('main-financeiro__periodo_custom');
+                } else if (opcao == '3') {
+                    mesSelect.classList.add('hidden_edit');
+                    anoSelect.classList.add('hidden_edit');
+                    divCustom.classList.add('hidden_edit');
+                    divCustom.classList.remove('main-financeiro__periodo_custom');
+                } else if (opcao == '4') {
+                    mesSelect.classList.add('hidden_edit');
+                    anoSelect.classList.add('hidden_edit');
+                    divCustom.classList.add('hidden_edit');
+                    divCustom.classList.remove('main-financeiro__periodo_custom');
+                } else if (opcao == '5') {
+                    mesSelect.classList.add('hidden_edit');
+                    anoSelect.classList.add('hidden_edit');
+                    divCustom.classList.add('hidden_edit');
+                    divCustom.classList.remove('main-financeiro__periodo_custom');
+                } else if (opcao == '6') {
+                    mesSelect.classList.add('hidden_edit');
+                    anoSelect.classList.add('hidden_edit');
+                    divCustom.classList.remove('hidden_edit');
+                    divCustom.classList.add('main-financeiro__periodo_custom');
+                }
+    }
+
+    let meuGraficoDeBarras; // Defina a variável fora da função para torná-la acessível
+
+    function gerarGraficoFinanceiro(etiquetas, valores) {
+        const ctx = document.getElementById('grafico').getContext('2d');
+
+        if (meuGraficoDeBarras) {
+            meuGraficoDeBarras.destroy(); // Destroi o gráfico existente antes de criar um novo
+        }                
+        // Configuração dos dados e opções do gráfico
+        meuGraficoDeBarras = new Chart(ctx, {
+                            type: 'bar',  // Tipo do gráfico
+                            data: {
+                                labels: etiquetas, // Etiquetas do eixo X
+                                datasets: [{
+                                    label: '',
+                                    data: valores,  // Dados de cada barra
+                                    backgroundColor: [
+                                        'rgba(255, 99, 132, 0.2)',
+                                        'rgba(54, 162, 235, 0.2)',
+                                        'rgba(255, 206, 86, 0.2)',
+                                        'rgba(75, 192, 192, 0.2)',
+                                        'rgba(153, 102, 255, 0.2)',
+                                        'rgba(255, 159, 64, 0.2)'
+                                    ],
+                                    borderColor: [
+                                        'rgba(255, 99, 132, 1)',
+                                        'rgba(54, 162, 235, 1)',
+                                        'rgba(255, 206, 86, 1)',
+                                        'rgba(75, 192, 192, 1)',
+                                        'rgba(153, 102, 255, 1)',
+                                        'rgba(255, 159, 64, 1)'
+                                    ],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                            plugins: {
+
+                                legend: {
+                                    display: false  // Desativa a exibição da legenda
+                                },
+                                
+                                datalabels: {
+                                    color: '#000',  // Cor dos rótulos
+                                    anchor: 'end',  // Posição do rótulo em relação à barra
+                                    align: 'top',   // Alinhamento do rótulo
+                                    formatter: function(value) {
+                                        return value;  // Mostra o valor diretamente
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        },
+                        plugins: [ChartDataLabels]
+                    });
+
+        }
+
+    document.addEventListener('DOMContentLoaded', function() {
+            const periodoSelect = document.getElementById('periodo_rotina');
+            const mesSelect = document.getElementById('mes_rotina');
+            const anoSelect = document.getElementById('ano_rotina');
+            const divCustom = document.getElementById('periodo_rotina_custom');
+
+            periodoSelect.addEventListener('change', function() {
+                opcao = periodoSelect.value;
+
+                if (opcao == '1') {
+                    mesSelect.classList.remove('hidden_edit');
+                    anoSelect.classList.add('hidden_edit');
+                    divCustom.classList.add('hidden_edit');
+                    divCustom.classList.remove('main-rotina__periodo_custom');
+                } else if (opcao == '2') {
+                    anoSelect.classList.remove('hidden_edit');
+                    mesSelect.classList.add('hidden_edit');
+                    divCustom.classList.add('hidden_edit');
+                    divCustom.classList.remove('main-rotina__periodo_custom');
+                } else if (opcao == '3') {
+                    mesSelect.classList.add('hidden_edit');
+                    anoSelect.classList.add('hidden_edit');
+                    divCustom.classList.add('hidden_edit');
+                    divCustom.classList.remove('main-rotina__periodo_custom');
+                } else if (opcao == '4') {
+                    mesSelect.classList.add('hidden_edit');
+                    anoSelect.classList.add('hidden_edit');
+                    divCustom.classList.add('hidden_edit');
+                    divCustom.classList.remove('main-rotina__periodo_custom');
+                } else if (opcao == '5') {
+                    mesSelect.classList.add('hidden_edit');
+                    anoSelect.classList.add('hidden_edit');
+                    divCustom.classList.add('hidden_edit');
+                    divCustom.classList.remove('main-rotina__periodo_custom');
+                } else if (opcao == '6') {
+                    mesSelect.classList.add('hidden_edit');
+                    anoSelect.classList.add('hidden_edit');
+                    divCustom.classList.remove('hidden_edit');
+                    divCustom.classList.add('main-rotina__periodo_custom');
+                } 
+
+            });  
+        });
+
+     // Quando o DOM estiver carregado
+    document.addEventListener('DOMContentLoaded', function() {
+            // Referência ao elemento canvas
+            const ctx = document.getElementById('grafico_rotina').getContext('2d');
+
+            // Configuração dos dados e opções do gráfico
+            const meuGraficoDeBarras = new Chart(ctx, {
+                type: 'bar',  // Tipo do gráfico
+                data: {
+                    labels: ['Estudo', 'Plantão', 'Aula', 'Exercicio', 'Auto-Cuidado'], // Etiquetas do eixo X
+                    datasets: [{
+                        label: '',
+                        data: [15, 40, 20, 5, 10],  // Dados de cada barra
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                plugins: {
+
+                    legend: {
+                        display: false  // Desativa a exibição da legenda
+                    },
+                    
+                    datalabels: {
+                        color: '#000',  // Cor dos rótulos
+                        anchor: 'end',  // Posição do rótulo em relação à barra
+                        align: 'center',   // Alinhamento do rótulo
+                        formatter: function(value) {
+                            return value;  // Mostra o valor diretamente
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+            const mediaSelect = document.getElementById('media');
+
+            mediaSelect.addEventListener('change', function() {
+                selecionaMedia();              
+
+            });  
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+            const btnFilter = document.getElementById('btn_financeiro_filter');
+
+            btnFilter.addEventListener('click', function() {
+                atualizaFiltro();
+            });
+
+    });
+
+    
+function setupEventListenersAtualizaFiltro() {
+        const btnFilter = document.getElementById('btn_financeiro_filter');
+        if (btnFilter) {
+            btnFilter.removeEventListener('click', atualizaFiltro); // Remove event listener para evitar múltiplos eventos
+            btnFilter.addEventListener('click', atualizaFiltro);
+        } else {
+            console.log('Botão nextBtn_dia não encontrado');
+        }
+    }
+
+function atualizaFiltro() {
+    const periodoSelect = document.getElementById('periodo');
+    const mesSelect = document.getElementById('mes').value;
+    const anoSelect = document.getElementById('ano');
+    const anoOption = anoSelect.options[anoSelect.selectedIndex];
+    const anoText = anoOption.textContent;
+    const dataCustomInicio = document.getElementById('date_periodo_inicio').value;
+    const dataCustomFinal = document.getElementById('date_periodo_final').value;
+    
+    opcao = periodoSelect.value;
+
+    const url = new URL('/atualizar_financeiro', window.location.origin);
+    url.searchParams.append('periodoSelect', opcao);
+
+    if (opcao == '1') {
+        url.searchParams.append('mesSelect', mesSelect); 
+    } else if (opcao == '2') {
+        url.searchParams.append('anoSelect', anoText);
+    } else if (opcao == '6') {
+        url.searchParams.append('dataInicio', dataCustomInicio);
+        url.searchParams.append('dataFinal', dataCustomFinal);
+    }
+
+    fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Resposta:', data);
+            if (data.html) {
+                document.getElementById('main-financeiro__campos').innerHTML = data.html;
+                setupEventListenersMediaSelect();
+                setupEventListenersPeriodoSelect();
+                setupEventListenersAtualizaFiltro();
+
+                const etiquetas = data.etiquetas;
+                const valores = data.valores;
+                gerarGraficoFinanceiro(etiquetas, valores);
+
+                setupEventListenersAtualizaGrafico();
+            } else {
+                console.log('Nenhum conteúdo HTML encontrado.');
+                alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
+            }
+        })
+        .catch(error => {
+            console.error('Erro na validação da sequência:', error);
+            alert('Ocorreu um erro. Tente novamente mais tarde.');
+        });
+    }
+
+function atualizaGrafico() {
+    const periodoSelect = document.getElementById('periodo');
+    const mesSelect = document.getElementById('mes').value;
+    const anoSelect = document.getElementById('ano');
+    const anoOption = anoSelect.options[anoSelect.selectedIndex];
+    const anoText = anoOption.textContent;
+    const dataCustomInicio = document.getElementById('date_periodo_inicio').value;
+    const dataCustomFinal = document.getElementById('date_periodo_final').value;
+    const graficoSelect = document.getElementById('grafico_select').value;
+    
+    opcao = periodoSelect.value;
+
+    const url = new URL('atualizar_grafico/', window.location.origin);
+    url.searchParams.append('periodoSelect', opcao);
+    url.searchParams.append('graficoSelect', graficoSelect);
+
+    if (opcao == '1') {
+        url.searchParams.append('mesSelect', mesSelect); 
+    } else if (opcao == '2') {
+        url.searchParams.append('anoSelect', anoText);
+    } else if (opcao == '6') {
+        url.searchParams.append('dataInicio', dataCustomInicio);
+        url.searchParams.append('dataFinal', dataCustomFinal);
+    }
+
+    fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Resposta:', data);
+            if (data) {
+                setupEventListenersMediaSelect();
+                setupEventListenersPeriodoSelect();
+                setupEventListenersAtualizaFiltro();
+                setupEventListenersAtualizaGrafico();
+                const etiquetas = data.etiquetas;
+                const valores = data.valores;
+                gerarGraficoFinanceiro(etiquetas, valores);
+            } else {
+                console.log('Nenhum conteúdo HTML encontrado.');
+                alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
+            }
+        })
+        .catch(error => {
+            console.error('Erro na validação da sequência:', error);
+            alert('Ocorreu um erro. Tente novamente mais tarde.');
+        });
+    }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const graficoSelect = document.getElementById('grafico_select');
+
+    graficoSelect.addEventListener('change', function() {
+        atualizaGrafico();
+    });
+});
+
+function setupEventListenersAtualizaGrafico() {
+    const graficoSelect = document.getElementById('grafico_select');
+    if (graficoSelect) {
+        if (!graficoSelect.hasAttribute('data-listener-added')) {
+            graficoSelect.addEventListener('change', atualizaGrafico);
+            graficoSelect.setAttribute('data-listener-added', 'true');
+        }
+    } else {
+        console.log('Gráfico não encontrado');
+    }
+}
+
+
+function setupEventListenersMediaSelect() {
+    const mediaSelect = document.getElementById('media');
+    if (mediaSelect) {
+        mediaSelect.removeEventListener('change', selecionaMedia); // Remove event listener para evitar múltiplos eventos
+        mediaSelect.addEventListener('change', selecionaMedia);
+    } else {
+        console.log('Objeto select não encontrado');
+    }
+}
+
+function setupEventListenersPeriodoSelect() {
+    const periodoSelect = document.getElementById('periodo');
+    if (periodoSelect) {
+        periodoSelect.removeEventListener('change', selecionaPeriodo); // Remove event listener para evitar múltiplos eventos
+        periodoSelect.addEventListener('change', selecionaPeriodo);
+    } else {
+        console.log('Objeto select não encontrado');
+    }
+}
+
+function selecionaMedia() {
+        const mediaSelect = document.getElementById('media');
+        const valorAtiv = document.getElementById('media_atividade');
+        const valorHora = document.getElementById('media_hora');
+        const valorDiaTrab = document.getElementById('media_dia_trab');
+        const valormes = document.getElementById('media_mes');
+
+        opcao = mediaSelect.value;
+
+                if (opcao == '1') {
+                    valorAtiv.classList.remove('hidden_edit');
+                    valorHora.classList.add('hidden_edit');
+                    valorDiaTrab.classList.add('hidden_edit');
+                    valormes.classList.add('hidden_edit');
+                } else if (opcao == '2') {
+                    valorAtiv.classList.add('hidden_edit');
+                    valorHora.classList.remove('hidden_edit');
+                    valorDiaTrab.classList.add('hidden_edit');
+                    valormes.classList.add('hidden_edit');
+                } else if (opcao == '3') {
+                    valorAtiv.classList.add('hidden_edit');
+                    valorHora.classList.add('hidden_edit');
+                    valorDiaTrab.classList.remove('hidden_edit');
+                    valormes.classList.add('hidden_edit');
+                } else if (opcao == '4') {
+                    valorAtiv.classList.add('hidden_edit');
+                    valorHora.classList.add('hidden_edit');
+                    valorDiaTrab.classList.add('hidden_edit');
+                    valormes.classList.remove('hidden_edit');
+                }
+    }
+
+document.addEventListener('DOMContentLoaded', function() {
+    setupEventListenersMediaSelect();
+    setupEventListenersPeriodoSelect();
+    setupEventListenersAtualizaFiltro();
+    setupEventListenersAtualizaGrafico();
+    const etiquetas = JSON.parse('{{ etiquetas|escapejs }}');
+    const valores = JSON.parse('{{ valores|escapejs }}');
+    gerarGraficoFinanceiro(etiquetas, valores);
+});
+
 </script>
 </body>
 </html>

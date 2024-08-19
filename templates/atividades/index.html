@@ -6,27 +6,31 @@
         <ul class="main-lista">
             {% for atividade in atividades %}
             <li class="main-lista__item">
-                <h2 class="main-lista__titulo">{{atividade.periodo}}</h2>
-                <div class="main-lista__subtitulo">
-                    <p class="main-lista__subtitulo_paragrafo">{{atividade.data}} – </p>
-                    <p class="main-lista__subtitulo_paragrafo">{{atividade.dia_semana}}</p>
+                <div class="main-lista__item__cabecalho">
+                    <h2 class="main-lista__titulo">{{atividade.periodo}}</h2>
+                    <div class="main-lista__subtitulo">
+                        <p class="main-lista__subtitulo_paragrafo">{{atividade.data}} – </p>
+                        <p class="main-lista__subtitulo_paragrafo">{{atividade.dia_semana}}</p>
+                    </div>
                 </div>
-                {% if atividade.imagem_url %}
-                    <img class="main-lista__imagem" src="{{atividade.imagem_url}}" alt="Imagem da Instituição onde será a atividade">
-                {% else %}
-                    <img class="main-lista__imagem" src="{% static 'assets/icones/hospital.png' %}" alt="Imagem Padrão de Hospital">
-                {% endif %}
-                <div class="main-lista__descricao">
-                    <p class="main-lista__descricao_paragrafo"><strong>Inst:</strong> {{atividade.inst}}</p>
-                    <p class="main-lista__descricao_paragrafo_descr"><strong>Desc:</strong> {{atividade.descricao}}</p>
-                    {% if atividade.obs %}
-                        <p class="main-lista__descricao_paragrafo_descr"><strong>Obs:</strong> {{atividade.obs}}</p>
-                    {% endif %}    
-                    <input type="hidden" id="id_atividade" value="{{atividade.id}}">
-                </div>
-                <div class="main-lista__botoes">
-                    <a class="main-novo__tipo_link" href="{% url 'editar_atividade' atividade.id %}"><button class="main-lista__botoes_botao">EDIT</button></a>
-                    <button class="main-lista__botoes_botao delete-button" data-atividade-id="{{atividade.id}}">DEL</button>
+                <div class="main-lista__item__conteudo">
+                    <div class="main-lista__imagens">
+                        {% if atividade.imagem_url %}
+                            <a class="main-lista__link" href="{% url 'atividade' atividade.id %}">
+                                <img class="main-lista__imagem" src="{{atividade.imagem_url}}" alt="Imagem da Instituição onde será a atividade">
+                            </a>
+                        {% else %}
+                            <a class="main-lista__link" href="{% url 'atividade' atividade.id %}">
+                                <img class="main-lista__imagem" src="{% static 'assets/icones/instituicao.png' %}" alt="Imagem Padrão de Hospital">
+                            </a>
+                        {% endif %}
+                    </div>
+                    <div class="main-lista__descricao">
+                        <p class="main-lista__descricao_paragrafo"><strong>Inst: </strong>{{atividade.inst}}</p>
+                        <p class="main-lista__descricao_paragrafo_descr"><strong>Desc: </strong>{{atividade.descricao}}</p>
+                        <p class="main-lista__descricao_paragrafo_descr"><strong>Obs: </strong>{{atividade.obs}}</p>    
+                        <input type="hidden" id="id_atividade" value="{{atividade.id}}">
+                    </div>
                 </div>
             </li>
             {% endfor %}
@@ -41,6 +45,5 @@
             <button class="bt-modal" onclick="closeDeleteModal()">Cancelar</button>
         </div>
     </div>
-
 {% endblock %}
     

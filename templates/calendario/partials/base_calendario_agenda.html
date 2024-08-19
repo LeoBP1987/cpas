@@ -1,0 +1,23 @@
+{% load static %}
+<div id="agenda" class="main-calendario__agenda">
+    {% for item, detalhes in agenda.items %}
+    {% if detalhes.mes %}
+        <h3 class="main-agenda__cabecalho_titulo">{{detalhes.mes}}</h3>
+    {% endif %}
+    <div class="main-agenda">
+        <div class="main-agenda__dia">
+            <p class="main-agenda__dia_texto">{{detalhes.sigla_dia}}</p>
+            <p class="main-agenda__dia_numero">{{detalhes.num_dia}}</p>
+        </div>
+        <div class="main-agenda__atividades">
+            {% for atividade in detalhes.lista_dia %}
+            <a class="main-agenda__atividades_atividade main-lista__link" href="{% url 'atividade' atividade.id %}">
+                <p class="main-agenda__atividade_titulo">{{atividade.descricao}}</p>
+                <p class="main-agenda__atividade_sequencia">{{atividade.sequencia}}</p>
+                <p class="main-agenda__atividade_periodo">{{atividade.periodo}}</p>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>

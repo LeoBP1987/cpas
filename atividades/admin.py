@@ -2,10 +2,10 @@ from django.contrib import admin
 from atividades.models import TipoAtividade, Instituicao, Atividades
 
 class ListandoTipoAtividade(admin.ModelAdmin):
-    list_display = ('id', 'nome_tipo', 'horas')
+    list_display = ('id', 'nome_tipo', 'categoria')
     list_display_links = ('id', 'nome_tipo')
-    search_fields = ('nome_tipo', 'horas')
-    list_filter = ('horas',)
+    search_fields = ('nome_tipo', 'categoria')
+    list_filter = ('categoria',)
     list_per_page = 10
 
 class ListandoInstituicao(admin.ModelAdmin):

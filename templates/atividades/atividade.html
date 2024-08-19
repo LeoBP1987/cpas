@@ -1,0 +1,75 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% block content %}
+    <main class="main">
+        <h2 class="main-titulo">Atividade</h2>
+        {% for item, atividade in atividades.items %}
+            <div class="main-show__atividade">
+                <div class="main-show__atividade__imagens">
+                    <div class="main-show__atividade__imagem">
+                        {% if atividade.instituicao.imagem %}
+                            <img class="main-show__atividade__imagem__foto" src="{{atividade.instituicao.imagem.url}}" alt="Imagem da Instituição onde será a atividade">
+                        {% else %}
+                            <img class="main-show__atividade__imagem__icone" src="{% static 'assets/icones/instituicao.png' %}" alt="Imagem Padrão de Hospital">
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="main-show__atividade__campos">
+                    <div class="main-show__atividade__campo">
+                        <h2 class="main-show__atividade__titulo">Instituição:</h2>
+                        <p class="main-show__atividade__texto">{{atividade.instituicao.nome_inst}}</p>
+                    </div>
+                    <div class="main-show__atividade__campo">
+                        <h2 class="main-show__atividade__titulo">Tipo de Atividade:</h2>
+                        <p class="main-show__atividade__texto">{{atividade.tipo_atividade.nome_tipo}}</p>
+                    </div>
+                    <div class="main-show__atividade__campo">
+                        <h2 class="main-show__atividade__titulo">Dia:</h2>
+                        <p class="main-show__atividade__texto">{{atividade.data}}</p>
+                    </div>
+                    <div class="main-show__atividade__campo">
+                        <h2 class="main-show__atividade__titulo">Hora de Entrada:</h2>
+                        <p class="main-show__atividade__texto">{{atividade.entrada}}</p>
+                    </div>
+                    <div class="main-show__atividade__campo">
+                        <h2 class="main-show__atividade__titulo">Hora de Saída:</h2>
+                        <p class="main-show__atividade__texto">{{atividade.saida}}</p>
+                    </div>
+                    <div class="main-show__atividade__campo">
+                        <h2 class="main-show__atividade__titulo">Valor da Atividade:</h2>
+                        <p class="main-show__atividade__texto" id="sh-valor-ativ">{{atividade.valor}}</p>
+                    </div>
+                    {% if atividade.sequencia %}
+                        <div class="main-show__atividade__campo">
+                            <h2 class="main-show__atividade__titulo">Repetição:</h2>
+                            <p class="main-show__atividade__texto">{{atividade.sequencia}}</p>
+                        </div>
+                        <div class="main-show__atividade__campo">
+                            <h2 class="main-show__atividade__titulo">Data Final:</h2>
+                            <p class="main-show__atividade__texto">{{atividade.data_final_seq}}</p>
+                        </div>
+                    {% endif %}
+                    <div class="main-show__atividade__campo__obs">
+                        <h2 class="main-show__atividade__titulo">Obs:</h2>
+                        <p class="main-show__atividade__textarea">{{atividade.obs}}</p>
+                    </div>
+                </div>
+            </div>
+            {% if atividade.data >= hoje %}
+                <div class="main-show__atividade__botoes">
+                    <a class="main-novo__tipo_link" href="{% url 'editar_atividade' atividade.id %}"><button class="main-show__atividade__botoes_botao">EDITAR</button></a>
+                    <button class="main-show__atividade__botoes_botao delete-button" data-atividade-id="{{atividade.id}}">DELETAR</button>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </main>
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeDeleteModal()">&times;</span>
+            <p class="txt-modal">Escolha uma ação:</p>
+            <button class="bt-modal" onclick="handleDeleteAction('atividade')">Deletar Atividade</button>
+            <button class="bt-modal" onclick="handleDeleteAction('sequencia')">Deletar Sequência</button>
+            <button class="bt-modal" onclick="closeDeleteModal()">Cancelar</button>
+        </div>
+    </div>
+{% endblock %}

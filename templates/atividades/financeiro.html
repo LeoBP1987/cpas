@@ -1,0 +1,52 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+    {% block content %}
+        <main class="main">
+            <h2 class="main-titulo">Financeiro</h2>
+            <div class="main-financeiro" id="main-financeiro">
+                <div class="main-financeiro__periodo">
+                    <label class="main-financeiro__label">Período:</label>
+                    <select class="main-financeiro__select_periodo" name="periodo" id="periodo">
+                        <option value="1">Por mes</option>
+                        <option value="2">Por ano</option>
+                        <option value="3">Até fim do mes</option>
+                        <option value="4">Até fim do ano</option>
+                        <option value="5">Todo Período</option>
+                        <option value="6">Personalizado</option>
+                    </select>
+                    <select class="main-financeiro__select" name="mes" id="mes">
+                        <option value="1">Janeiro</option>
+                        <option value="2">Fevereiro</option>
+                        <option value="3">Março</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Maio</option>
+                        <option value="6">Junho</option>
+                        <option value="7">Julho</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Setembro</option>
+                        <option value="10">Outubro</option>
+                        <option value="11">Novembro</option>
+                        <option value="12">Dezembro</option>
+                    </select>
+                    <select class="main-financeiro__select hidden_edit" name="ano" id="ano">
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                    </select>
+                    <button class="main-financeiro__btn" id="btn_financeiro_filter"><i class="fas fa-filter"></i></button>
+                </div>
+                <div class="hidden_edit" id="periodo_custom">
+                    <div class="main-financeiro__periodo_custom_campo">
+                        <label for="date_periodo_inicio" class="main-financeiro__periodo_custom_label">De:</label>
+                        <input type="date" class="main-financeiro__input" id="date_periodo_inicio">
+                    </div>
+                    <div class="main-financeiro__periodo_custom_campo">
+                        <label for="date_periodo_final" class="main-financeiro__periodo_custom_label">Até:</label>
+                        <input type="date" class="main-financeiro__input" id="date_periodo_final">
+                    </div>
+                </div>
+                <div id="main-financeiro__campos">
+                    {% include 'atividades/partials/base_financeiro.html' %}
+                </div>                
+            </div>
+        </main>
+    {% endblock %}
