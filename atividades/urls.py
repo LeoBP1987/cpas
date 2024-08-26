@@ -1,8 +1,9 @@
 from django.urls import path
-from atividades.views import index, novo_tipo, nova_instituicao, nova_atividade, get_valor_padrao, \
+from atividades.views import index, novo_tipo, nova_instituicao, nova_atividade, get_valor_fixo, \
                             tipos, editar_tipo, deletar_tipo, instituicoes, editar_instituicao, \
                             deletar_instituicao, editar_atividade, deletar_atividade, deletar_sequencia, \
-                            atividade, instituicao, financeiro, rotina, atualizar_financeiro, atualizar_grafico
+                            atividade, instituicao, financeiro, rotina, atualizar_financeiro, atualizar_grafico, \
+                            atualizar_rotina, atualizar_grafico_rotina
 
 urlpatterns = [
     path('', index, name='index'),
@@ -18,11 +19,13 @@ urlpatterns = [
     path('editar_atividade/<int:id_atividade>', editar_atividade, name='editar_atividade'),
     path('deletar_atividade/<int:id_atividade>', deletar_atividade, name='deletar_atividade'),
     path('deletar_sequencia/<int:id_atividade>', deletar_sequencia, name='deletar_sequencia'),
-    path('nova_atividade/get_valor_padrao/<int:instituicao_id>/', get_valor_padrao, name='get_valor_padrao'),
+    path('nova_atividade/get_valor_fixo/<int:instituicao_id>/', get_valor_fixo, name='get_valor_fixo'),
     path('atividade/<int:id_atividade>', atividade, name='atividade'),
     path('instituicao/<int:id_instituicao>', instituicao, name='instituicao'),
     path('financeiro/', financeiro, name='financeiro'),
     path('rotina/', rotina, name='rotina'),
     path('atualizar_financeiro/', atualizar_financeiro, name='atualizar_financeiro'),
-    path('atualizar_grafico/', atualizar_grafico, name='atualizar_grafico')
+    path('atualizar_grafico/', atualizar_grafico, name='atualizar_grafico'),
+    path('atualizar_rotina/', atualizar_rotina, name='atualizar_rotina'),
+    path('atualizar_grafico_rotina/', atualizar_grafico_rotina, name='atualizar_grafico_rotina')
 ]

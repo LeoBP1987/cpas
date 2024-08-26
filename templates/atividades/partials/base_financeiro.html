@@ -7,15 +7,15 @@
         <div class="main-financeiro__media">
             <p class="main-financeiro__label">Média:</p>
             <select class="main-financeiro__grafico_select_media" name="media" id="media">
+                <option value="4">Por Mes</option>
                 <option value="1">Por Atividade</option>
                 <option value="2">Por Hora Trabalhada</option>
                 <option value="3">Por Dia Trabalhado</option>
-                <option value="4">Por Mes</option>
             </select>
-            <p class="main-financeiro__total_paragrafo" id="media_atividade">{{financas.media_atividade}}</p>
+            <p class="main-financeiro__total_paragrafo" id="media_mes">{{financas.media_mes}}</p>
+            <p class="main-financeiro__total_paragrafo hidden_edit" id="media_atividade">{{financas.media_atividade}}</p>
             <p class="main-financeiro__total_paragrafo hidden_edit" id="media_hora">{{financas.media_hora}}</p>
             <p class="main-financeiro__total_paragrafo hidden_edit" id="media_dia_trab">{{financas.media_dia_trab}}</p>
-            <p class="main-financeiro__total_paragrafo hidden_edit" id="media_mes">{{financas.media_mes}}</p>
         </div>
         {% endfor %}
         <div class="main-financeiro__grafico">

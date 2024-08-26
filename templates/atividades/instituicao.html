@@ -24,9 +24,15 @@
                         <p class="main-show__atividade__texto">{{instituicao.nome_curto}}</p>
                     </div>
                     <div class="main-show__atividade__campo">
-                        <h2 class="main-show__atividade__titulo">Valor Padrão:</h2>
-                        <p class="main-show__atividade__texto">{{instituicao.valor_padrao}}</p>
+                        <h2 class="main-show__atividade__titulo">Fixo Mensal:</h2>
+                        <p class="main-show__atividade__texto">{{instituicao.fixo_mensal}}</p>
                     </div>
+                    {% if instituicao.valor_fixo %}
+                    <div class="main-show__atividade__campo">
+                        <h2 class="main-show__atividade__titulo">Valor Fixo:</h2>
+                        <p class="main-show__atividade__texto">{{instituicao.valor_fixo}}</p>
+                    </div>
+                    {% endif %}
                     <div class="main-show__atividade__campo__obs">
                         <h2 class="main-show__atividade__titulo">Endereço:</h2>
                         <p class="main-show__atividade__texto">{{instituicao.endereco}}</p>

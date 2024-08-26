@@ -7,10 +7,27 @@
             {% csrf_token %}
             <div class="main-forms__campos">
                 {% for field in forms %}
-                <div class="main-forms__campos_campo">
-                    <label for="instituicao" class="main-forms__campo_label">{{field.label}}</label>
-                    {{field}}
-                </div>
+                    {% if field.label == 'Fixo Mensal' %}
+                        <div class="main-forms__campos_campo_checkbox">
+                            <label for="instituicao" class="main-forms__campo_label">{{field.label}}</label>
+                            {{field}}
+                        </div>
+                    {% elif field.label == 'Valor' %}
+                        <div class="main-forms__campos_campo hidden_edit" id="id_div_valor_inst">
+                            <label for="instituicao" class="main-forms__campo_label">{{field.label}}</label>
+                            {{field}}
+                        </div>
+                    {% else %}
+                        <div class="main-forms__campos_campo">
+                            <label for="instituicao" class="main-forms__campo_label">{{field.label}}</label>
+                            {{field}}
+                        </div>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div>
+                            {{error}}
+                        </div>
+                    {% endfor %}
                 {% endfor %}
             <div class="main-forms__botoes">
                 <button class="main-forms__botoes_botao" type="submit">EDITAR</button>

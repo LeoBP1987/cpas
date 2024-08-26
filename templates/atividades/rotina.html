@@ -3,7 +3,7 @@
 {% block content %}
     <main class="main">
         <h2 class="main-titulo">Rotina</h2>
-        <div class="main-rotina">
+        <div class="main-rotina" id="main-rotina">
             <div class="main-rotina__periodo">
                 <label class="main-rotina__label">Período:</label>
                 <select class="main-rotina__select" name="periodo_rotina" id="periodo_rotina">
@@ -44,37 +44,8 @@
                     <input type="date" class="main-rotina__input" id="date_periodo_final_rotina">
                 </div>
             </div>
-            <div class="main-rotina__total">
-                <p class="main-rotina__label">Quantidade de Atividades:</p>
-                <p class="main-rotina__total_paragrafo">6</p>
-            </div>
-            <div class="main-rotina__total">
-                <p class="main-rotina__label">Horas de Atividade:</p>
-                <p class="main-rotina__total_paragrafo">64</p>
-            </div>
-            <div class="main-rotina__total">
-                <p class="main-rotina__label">Horas Livres:</p>
-                <p class="main-rotina__total_paragrafo">30</p>
-            </div>
-            <div class="main-rotina__media">
-                <p class="main-rotina__label">Média:</p>
-                <select class="main-rotina__select_media" name="media" id="media">
-                    <option value="1">De Horas Trabalhadas Por Semana</option>
-                    <option value="2">De Horas Livres Por Semana</option>
-                    <option value="3">De Horas Trabalhadas Por Dia</option>
-                    <option value="4">De Horas Livres Por Dia</option>
-                    <option value="5">De Horas Por Atividade</option>
-                </select>
-                <p class="main-rotina__total_paragrafo">50</p>
-            </div>
-            <div class="main-rotina__grafico">
-                <p class="main-rotina__label">Total por:</p>
-                <select class="main-rotina__grafico_select" name="grafico_select_rotina" id="grafico_select_rotina">
-                    <option value="1">Remuneração</option>
-                    <option value="2">Tipo de Atividade</option>
-                    <option value="3">Categoria de Atividade</option>
-                </select>
-                <canvas class="main-rotina__grafico_grafico" id="grafico_rotina"></canvas>
+            <div id="main-rotina__campos">
+                {% include 'atividades/partials/base_rotina.html' %}
             </div>
         </div>
     </main>

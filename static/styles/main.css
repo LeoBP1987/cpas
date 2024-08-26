@@ -39,6 +39,12 @@
     gap: 1rem;
 }
 
+.main-forms__campos_campo_checkbox {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
 .main-forms__periodo_campo {
     display: flex;
     justify-content: space-between;
@@ -180,6 +186,31 @@
     font-size: 1.5rem;
     font-weight: bold;
     margin-bottom: 1rem;
+}
+
+.main-forms__sequencia_itens {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 50%;
+}
+
+.main-forms__sequencia_itens_item {
+    display: flex;
+    justify-content: space-between;
+}
+
+.main-forms__sequencia_perso_itens {
+    display: flex;
+    gap: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.main-forms__sequencia_perso_itens_item {
+    display: flex;
+    gap: 0.3rem;
 }
 
 .main-forms__sequencia_label {
@@ -916,7 +947,21 @@
 .main-forms__valor_checkbox {
     display: flex;
     align-items: center;
+    gap: 2.7rem;
+    margin-left: 0.7rem;
+}
+
+.main-forms__valor_checkbox_campo {
+    display: flex;
+    align-items: center;
     gap: 0.5rem;
+}
+
+.main-forms__valor_checkbox_campo_seq_perso {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
 }
 
 .main-rotina__select_media {
@@ -1133,7 +1178,11 @@
     }
 
     .main-forms__campos_campo_sequencia {
-        width: 90%;
+        display: flex;
+        flex-direction: column;
+        align-items: left;
+        width: 90%;   
+        margin-right: 2rem;
     }
 
     .main-config__botoes {
@@ -1264,6 +1313,14 @@
     .main-financeiro__periodo,
     .main-rotina__periodo {
         padding-top: 1rem;
+    }
+
+    .main-rotina__total,
+    .main-rotina__media,
+    .main-rotina__periodo,
+    .main-rotina__grafico {
+        margin-left: 1rem;
+        margin-right: 1rem;
     }
 
     .main-financeiro__total_paragrafo {

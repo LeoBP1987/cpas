@@ -8,6 +8,7 @@ from datetime import date, timedelta, datetime
 from dateutil.relativedelta import relativedelta
 from django.contrib import messages
 import random
+import calendar
 
 def configuracoes(request):
 
@@ -15,9 +16,9 @@ def configuracoes(request):
 
 def gerar_calendario(request):
 
-    calendario = Calendario.objects.all()
-
     ano_atual = date.today().year
+
+    calendario = Calendario.objects.filter(ano=ano_atual)
 
     if not calendario.exists():
 
@@ -26,6 +27,7 @@ def gerar_calendario(request):
         while data_registro.year == ano_atual:
             for hora in range(0, 25):
                 Calendario.objects.create(
+                    ano=ano_atual,
                     dia=data_registro,
                     range=hora,
                     ocupado=False,
@@ -67,10 +69,12 @@ def gerar_agendamento(atividade, data, horas, horasS):
 
     return agendado
 
-def gerar_atividade(instituicao, tipo, data, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado):
+def gerar_atividade(instituicao, tipo, data, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso_ativ):
 
     instituicao = Instituicao.objects.get(id=instituicao)
     tipo = TipoAtividade.objects.get(id=tipo)
+
+    cod_fixo_ativ = instituicao.cod_fixo if fixo_mensal else ''
 
     atividade = Atividades.objects.create(
         instituicao=instituicao,
@@ -84,84 +88,95 @@ def gerar_atividade(instituicao, tipo, data, entrada, saida, valor, sequencia, d
         obs=obs,
         cod=cod,
         id_vir=id_vir,
-        nao_remunerado=nao_remunerado
+        nao_remunerado=nao_remunerado,
+        fixo_mensal_ativ=fixo_mensal,
+        cod_fixo_ativ=cod_fixo_ativ,
+        seq_personalizada=seq_perso_ativ,
     )
 
     return atividade
 
-def checar_sequencia(sequencia, data_atividade, data_final, horas):
+def checar_sequencia(sequencia, seq_perso, data_atividade, data_final, horas):
     confirm = False
     list_confirm = []
 
     if sequencia == '1':
-            while data_atividade < data_final:
-                dia_semana = data_atividade.weekday()
-                if dia_semana != 5 and dia_semana !=6:
-                    for hora in horas:                        
-                        if Calendario.objects.filter(dia=data_atividade, range=hora, ocupado=True).exists():
-                            confirm = True
-                            list_confirm.append(data_atividade)
-                            break
-                data_atividade = data_atividade + timedelta(days=1)
+        while data_atividade <= data_final:
+            dia_semana = data_atividade.weekday()
+            if dia_semana != 5 and dia_semana !=6:
+                for hora in horas:                        
+                    if Calendario.objects.filter(dia=data_atividade, range=hora, ocupado=True).exists():
+                        confirm = True
+                        list_confirm.append(data_atividade)
+                        break
+            data_atividade = data_atividade + timedelta(days=1)
 
     elif sequencia == '2':
-            while data_atividade < data_final:
-                dia_semana = data_atividade.weekday()
-                if dia_semana != 5 and dia_semana !=6:
-                    for hora in horas:
-                        if Calendario.objects.filter(dia=data_atividade, range=hora, ocupado=True).exists():
-                            confirm = True
-                            list_confirm.append(data_atividade)
-                            break
-                data_atividade = data_atividade + timedelta(weeks=1)    
+        while data_atividade <= data_final:
+            for hora in horas:
+                if Calendario.objects.filter(dia=data_atividade, range=hora, ocupado=True).exists():
+                    confirm = True
+                    list_confirm.append(data_atividade)
+                    break              
+            data_atividade = data_atividade + timedelta(weeks=1)    
 
     elif sequencia == '3':
-            while data_atividade < data_final:
-                dia_semana = data_atividade.weekday()
-                if dia_semana != 5 and dia_semana !=6:
-                    for hora in horas:
-                        if Calendario.objects.filter(dia=data_atividade, range=hora, ocupado=True).exists():
-                            confirm = True
-                            list_confirm.append(data_atividade)
-                            break
-                data_atividade = data_atividade + timedelta(weeks=2)
+        while data_atividade <= data_final:
+            for hora in horas:
+                if Calendario.objects.filter(dia=data_atividade, range=hora, ocupado=True).exists():
+                    confirm = True
+                    list_confirm.append(data_atividade)
+                    break
+            data_atividade = data_atividade + timedelta(weeks=2)
 
     elif sequencia == '4':
-            while data_atividade < data_final:
-                dia_semana = data_atividade.weekday()
-                if dia_semana != 5 and dia_semana !=6:
-                    for hora in horas:
-                        if Calendario.objects.filter(dia=data_atividade, range=hora, ocupado=True).exists():
-                            confirm = True
-                            list_confirm.append(data_atividade)
-                            break
-                data_atividade = data_atividade + relativedelta(months=1)
+        while data_atividade <= data_final:
+            for hora in horas:
+                if Calendario.objects.filter(dia=data_atividade, range=hora, ocupado=True).exists():
+                    confirm = True
+                    list_confirm.append(data_atividade)
+                    break
+            data_atividade = data_atividade + relativedelta(months=1)
+
+    elif seq_perso:
+        lista_personalizada = gerar_lista_personalizada(data_atividade, data_final, seq_perso)
+
+        for data_perso in lista_personalizada:
+            data_perso = datetime.strptime(data_perso, '%Y-%m-%d').date()
+            for hora in horas:
+                if Calendario.objects.filter(dia=data_perso, range=hora, ocupado=True).exists():
+                    confirm = True
+                    list_confirm.append(data_perso)
+                    break
 
     return {'list_confirm':list_confirm, 'confirm':confirm}
 
-def agendar(instituicao, tipo, data, entrada, saida, valor, sequencia, data_final, obs, nao_remunerado):
+def agendar(instituicao, tipo, data, entrada, saida, valor, sequencia, data_final, obs, nao_remunerado, fixo_mensal, seq_perso):
     agendado = False
 
     h_ent = int(entrada)
     h_saida = int(saida)
     data_atividade = datetime.strptime(data, '%Y-%m-%d').date()
+    data_final = datetime.strptime(data_final, '%Y-%m-%d').date()
     virada = False
     cod = gerar_cod()
 
     if h_ent < h_saida:
         horas = range(h_ent, h_saida + 1)
         horasS = None
+        verifica_except = checar_sequencia(sequencia, seq_perso, data_atividade, data_final, horas)
+        data_except = verifica_except['list_confirm']
     else:
         virada = True
         horas = range(h_ent, 25)
         horasS = range(0, h_saida + 1)
+        verifica_except = checar_sequencia(sequencia, seq_perso, data_atividade, data_final, horas)
+        except_1 = verifica_except['list_confirm']
+        verifica_except = checar_sequencia(sequencia, seq_perso, data_atividade + timedelta(days=1), data_final, horasS)
+        except_2 = verifica_except['list_confirm']
+        data_except = except_1 + except_2
 
-    if sequencia:
-
-        data_final = datetime.strptime(data_final, '%Y-%m-%d').date()
-
-        verifica_except = checar_sequencia(sequencia, data_atividade, data_final, horas)
-        data_except = verifica_except['list_confirm']        
+    if sequencia:        
 
         if sequencia == '1':
             while data_atividade <= data_final:
@@ -170,79 +185,119 @@ def agendar(instituicao, tipo, data, entrada, saida, valor, sequencia, data_fina
 
                     if not virada:
                         id_vir = gerar_id_vir()
-                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado)
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso)
                         agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
                     else:
                         id_vir = gerar_id_vir()
-                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, 24, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado)
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, 24, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso)
                         agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
-                        atividade = gerar_atividade(instituicao, tipo, data_atividade + timedelta(days=1), 0, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado)
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade + timedelta(days=1), 0, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso)
                         agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
                 data_atividade = data_atividade + timedelta(days=1)
 
         elif sequencia == '2':
             while data_atividade <= data_final:
-                dia_semana = data_atividade.weekday()
                 if data_atividade not in data_except:
-
                     if not virada:
                         id_vir = gerar_id_vir()
-                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado)
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso)
                         agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
                     else:
                         id_vir = gerar_id_vir()
-                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, 24, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado)
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, 24, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso)
                         agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
-                        atividade = gerar_atividade(instituicao, tipo, data_atividade + timedelta(days=1), 0, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado)
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade + timedelta(days=1), 0, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso)
                         agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
                 data_atividade = data_atividade + timedelta(weeks=1)
 
         elif sequencia == '3':
             while data_atividade <= data_final:
-                dia_semana = data_atividade.weekday()
                 if data_atividade not in data_except:
-
                     if not virada:
                         id_vir = gerar_id_vir()
-                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado)
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso)
                         agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
                     else:
                         id_vir = gerar_id_vir()
-                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, 24, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado)
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, 24, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso)
                         agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
-                        atividade = gerar_atividade(instituicao, tipo, data_atividade + timedelta(days=1), 0, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado)
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade + timedelta(days=1), 0, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso)
                         agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
                 data_atividade = data_atividade + timedelta(weeks=2)
 
         elif sequencia == '4':
             while data_atividade <= data_final:
-                dia_semana = data_atividade.weekday()
                 if data_atividade not in data_except:
                     if not virada:
                         id_vir = gerar_id_vir()
-                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado)
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso)
                         agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
                     else:
                         id_vir = gerar_id_vir()
-                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, 24, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado)
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, 24, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso)
                         agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
-                        atividade = gerar_atividade(instituicao, tipo, data_atividade + timedelta(days=1), 0, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado)
+                        atividade = gerar_atividade(instituicao, tipo, data_atividade + timedelta(days=1), 0, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso)
                         agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
-                data_atividade = data_atividade + relativedelta(months=1)    
+                data_atividade = data_atividade + relativedelta(month=1)
+
+    elif seq_perso:
+        lista_personalizada = gerar_lista_personalizada(data_atividade, data_final, seq_perso)
+
+        for data_perso in lista_personalizada:
+            data_perso = datetime.strptime(data_perso, '%Y-%m-%d').date()
+            if data_perso not in data_except:
+                if not virada:
+                    id_vir = gerar_id_vir()
+                    atividade = gerar_atividade(instituicao, tipo, data_perso, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso)
+                    agendado = gerar_agendamento(atividade, data_perso, horas, horasS)
+                else:
+                    id_vir = gerar_id_vir()
+                    atividade = gerar_atividade(instituicao, tipo, data_perso, entrada, 24, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso)
+                    agendado = gerar_agendamento(atividade, data_perso, horas, horasS)
+                    atividade = gerar_atividade(instituicao, tipo, data_perso + timedelta(days=1), 0, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso)
+                    agendado = gerar_agendamento(atividade, data_perso, horas, horasS)
     else:
         if not virada:
             id_vir = gerar_id_vir()
-            atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado)
+            atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso)
             agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
         else:
             id_vir = gerar_id_vir()
-            atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, 24, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado)
+            atividade = gerar_atividade(instituicao, tipo, data_atividade, entrada, 24, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso)
             agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
-            atividade = gerar_atividade(instituicao, tipo, data_atividade + timedelta(days=1), 0, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado)
+            atividade = gerar_atividade(instituicao, tipo, data_atividade + timedelta(days=1), 0, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso)
             agendado = gerar_agendamento(atividade, data_atividade, horas, horasS)
 
     return agendado
 
+def gerar_lista_personalizada(data_inicio, data_final, ordinal):
+
+    list_meses = [(data_inicio.month, data_inicio.year)]
+    lista_personalizada = []
+    dia_semana = data_inicio.weekday()
+
+    # Cria um calendário para o mês e ano indicados
+    cal = calendar.Calendar()
+
+    while data_inicio <= data_final:
+        if data_inicio.month != list_meses[-1][0]:
+            list_meses.append((data_inicio.month, data_inicio.year))
+        data_inicio = data_inicio + relativedelta(months=1)
+
+    for mes in list_meses:
+        lista_dias = [dia for dia in cal.itermonthdays2(mes[1], mes[0]) if dia[0] != 0 and dia[1] == dia_semana]
+
+        for item in ordinal:
+            item_int = int(item)     
+            if len(lista_dias) > item_int:
+                dia_ordinal = lista_dias[item_int][0]
+                data = datetime(mes[1], mes[0], dia_ordinal)
+                data_format = data.strftime('%Y-%m-%d')
+                if data.date() >= datetime.today().date():
+                    lista_personalizada.append(data_format)
+
+    return lista_personalizada
+    
 @require_GET
 def disponibilidade(request):
 
@@ -301,7 +356,7 @@ def validar_sequencia(request):
 
     confirm = False
     msg_confirm = 'Os dias: '
-    list_except = [] 
+    list_except = []
 
     data = request.GET.get('data')
     data_atividade = datetime.strptime(data, '%Y-%m-%d').date()
@@ -309,6 +364,7 @@ def validar_sequencia(request):
     data_final = datetime.strptime(data_final_seq, '%Y-%m-%d').date()
 
     sequencia = request.GET.get('sequencia')
+    seq_perso = request.GET.getlist('seq_perso')
 
     entrada = request.GET.get('entrada')
     saida = request.GET.get('saida')
@@ -317,19 +373,19 @@ def validar_sequencia(request):
 
     if h_ent < h_saida:
         horas = range(h_ent, h_saida + 1)
-        checar = checar_sequencia(sequencia, data_atividade, data_final, horas)
+        checar = checar_sequencia(sequencia, seq_perso, data_atividade, data_final, horas)
         list_except = checar['list_confirm']
         confirm = checar['confirm']
     else:
         horas = range(h_ent, 25)
-        checar = checar_sequencia(sequencia, data_atividade, data_final, horas)
+        checar = checar_sequencia(sequencia, seq_perso, data_atividade, data_final, horas)
         list_except = checar['list_confirm']
         confirm = checar['confirm']
 
         horas = range(0, h_saida + 1)
         data_atividade = data_atividade + timedelta(days=1)
         data_final = data_final + timedelta(days=1)
-        checar = checar_sequencia(sequencia, data_atividade, data_final, horas)
+        checar = checar_sequencia(sequencia, seq_perso, data_atividade, data_final, horas)
         list_except = checar['list_confirm']
         confirm = checar['confirm']
 

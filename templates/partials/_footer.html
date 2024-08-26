@@ -18,8 +18,10 @@
     });
 
         function getDayOfWeek(date) {
+            const newDate = date;
+            newDate.setDate(newDate.getDate() + 1);
             const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
-            return daysOfWeek[date.getDay()];
+            return daysOfWeek[newDate.getDay()];
         }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -119,6 +121,8 @@
     document.addEventListener('DOMContentLoaded', function() {
         const radioButtons = document.querySelectorAll('input[name="sequencia"]');
         const diafinal = document.getElementById('diafinal');
+        const seqPersoDiv = document.getElementById('id_seqPersoTitulo');
+
 
         radioButtons.forEach(radio => {
             radio.addEventListener('change', function() {
@@ -127,9 +131,13 @@
                 if (opcao > 0 && opcao < 5) {
                     diafinal.classList.remove('main-forms__sequencia_datafinal_hidden');
                     diafinal.classList.add('main-forms__sequencia_datafinal');
+                    seqPersoDiv.classList.add('hidden_edit');
+                    seqPersoDiv.classList.remove('main-forms__valor_checkbox_campo_seq_perso');
                 } else {
                     diafinal.classList.remove('main-forms__sequencia_datafinal');
                     diafinal.classList.add('main-forms__sequencia_datafinal_hidden');
+                    seqPersoDiv.classList.add('main-forms__valor_checkbox_campo_seq_perso');
+                    seqPersoDiv.classList.remove('hidden_edit');
                 }
             });
             });
@@ -162,28 +170,47 @@
     });
 
     document.addEventListener('DOMContentLoaded', function() {
+        const fixoCheckbox = document.getElementById('id_fixo_mensal_ativ');
+        const nrCheckbox = document.getElementById('id_div_nao_remunerado');
         const instituicaoSelect = document.getElementById('id_instituicao');
         const valorInput = document.getElementById('id_valor');
         const valorPadraoInput = document.getElementById('valor_padrao_instituicao');
 
-        instituicaoSelect.addEventListener('change', function() {
-            const instituicaoId = instituicaoSelect.value;
+        fixoCheckbox.addEventListener('change', function() {
 
-            get_valor_padrao(instituicaoId, valorInput);
-
+            if (fixoCheckbox.checked) {
+                const instituicaoId= instituicaoSelect.value;
+                get_valor_fixo(instituicaoId, valorInput);
+                nrCheckbox.classList.add('hidden_edit');
+                nrCheckbox.classList.remove('main-forms__valor_checkbox_campo');
+            } else {
+                valorInput.value = '';
+                nrCheckbox.classList.remove('hidden_edit');
+                nrCheckbox.classList.add('main-forms__valor_checkbox_campo');
+                valorInput.readOnly = false;
+            }       
         });
     });
 
-    function get_valor_padrao(instituicaoId, valorInput) {
+    function get_valor_fixo(instituicaoId, valorInput) {
+        const fixoCheckbox = document.getElementById('id_fixo_mensal_ativ');
+        const nrCheckbox = document.getElementById('id_div_nao_remunerado');
+
         // Simular uma requisição para obter o valor padrão da instituição (pode ser um endpoint que você cria)
-        fetch(`get_valor_padrao/${instituicaoId}/`)
+        fetch(`get_valor_fixo/${instituicaoId}/`)
                 .then(response => response.json())
                 .then(data => {
-                    if (data && data.valor_padrao) {
-                        valor_formatado = mascaraValor(data.valor_padrao)
+                    if (data && data.valor_fixo) {
+                        valor_formatado = mascaraValor(data.valor_fixo)
                         valorInput.value = valor_formatado;
+                        valorInput.readOnly = true;
                     } else {
                         valorInput.value = ''; // Limpar o valor se não houver valor padrão
+                        valorInput.readOnly = false;
+                        alert('Não existe valor fixo mensal associado para essa Instituição.');
+                        fixoCheckbox.checked = false; // Desmarcar o checkbox
+                        nrCheckbox.classList.remove('hidden_edit');
+                        nrCheckbox.classList.add('main-forms__valor_checkbox_campo');
                     }
                 });
     }
@@ -302,14 +329,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     form.addEventListener('submit', function(event) {
         const sequenciaField = document.querySelector('input[name="sequencia"]:checked');
+        const seqPersonField = document.querySelector('#id_seqPersoCheck');
         
-        if (sequenciaField && sequenciaField.value !== '') {
+        if ((sequenciaField && sequenciaField.value !== '') || (seqPersonField && seqPersonField.checked)) {
             event.preventDefault(); // Impede o envio padrão do formulário
 
             const dataField = document.getElementById('id_data');
             const entradaField = document.getElementById('id_entrada');
             const saidaField = document.getElementById('id_saida');
             const dataFinalField = document.getElementById('id_data_final_seq');
+            const seqPersonValue = document.querySelectorAll('input[name="seq_perso"]:checked'); 
             
             // Constrói a URL de requisição com os parâmetros necessários
             const url = new URL('/validar_sequencia', window.location.origin);
@@ -318,6 +347,11 @@ document.addEventListener('DOMContentLoaded', function() {
             url.searchParams.append('saida', saidaField.value);
             url.searchParams.append('data_final_seq', dataFinalField.value);
             url.searchParams.append('sequencia', sequenciaField.value);
+
+            // Se seq_perso for uma lista de valores, adiciona cada um
+            seqPersonValue.forEach(checkbox => {
+                url.searchParams.append('seq_perso', checkbox.value);
+            });
 
             // Faz a requisição AJAX para validar a sequência
             fetch(url, {
@@ -344,7 +378,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } else {
             // Caso não haja sequenciaField, envie o formulário diretamente
-            // Adicionando event.preventDefault() para garantir que o formulário seja submetido apenas uma vez
             event.preventDefault();
             form.submit();
         }
@@ -755,21 +788,46 @@ function mascaraValor(valor) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Seleciona o campo de entrada pelo ID
+    const fixoMensalInst = document.getElementById('id_fixo_mensal_inst');
     const campoValor = document.getElementById('id_valor_inst');
 
-    // Formata o valor inicial do campo
-    if (campoValor) {
-        let valor = campoValor.value;
-        campoValor.value = mascaraValor(valor);
-    }
+    ajustaValorInst(fixoMensalInst);
+
+    fixoMensalInst.addEventListener('change', function(){
+        ajustaValorInst(fixoMensalInst);
+    });
 
     // Adiciona um ouvinte de evento para aplicar a máscara quando o valor mudar
     campoValor.addEventListener('change', function() {
-        let valor = this.value;
-        this.value = mascaraValor(valor);
+            if (this.value != '') {
+                let valor = this.value;
+                campoValor.value = mascaraValor(valor);
+            } else {
+                this.value = '';
+            }
     });
 });
+
+function ajustaValorInst(fixo) {
+    // Seleciona o campo de entrada pelo ID
+    const campoValor = document.getElementById('id_valor_inst');
+    const divValor = document.getElementById('id_div_valor_inst');
+
+    if (fixo.checked) {
+        divValor.classList.remove('hidden_edit');
+
+        // Formata o valor inicial do campo
+        if (campoValor.value != '') {
+            let valor = campoValor.value;
+            campoValor.value = mascaraValor(valor);
+        } else {
+            campoValor.value = '';
+        }
+    } else {
+        campoValor.value = '';
+        divValor.classList.add('hidden_edit');
+    }
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     // Seleciona o campo de entrada pelo ID
@@ -799,16 +857,21 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
     const checkbox = document.getElementById('id_nao_remunerado');
     const valor = document.getElementById('id_valor');
-    const divValor = document.getElementById('id_div_valor'); 
+    const divValor = document.getElementById('id_div_valor');
+    const fixoCheck = document.getElementById('id_fixo_mensal_ativ');
+    const divFixo = document.getElementById('id_div_fixo_mensal_ativ');
 
     checkbox.addEventListener('change', function() {
         if (checkbox.checked) {
             valor.value = '';
+            fixoCheck.checked = false;
             divValor.classList.add('hidden_edit');
+            divFixo.classList.remove('main-forms__valor_checkbox_campo');
+            divFixo.classList.add('hidden_edit');
         } else {
-            const instituicaoId = document.getElementById('id_instituicao').value;
-            get_valor_padrao(instituicaoId, valor);
             divValor.classList.remove('hidden_edit');
+            divFixo.classList.remove('hidden_edit');
+            divFixo.classList.add('main-forms__valor_checkbox_campo');
         }
     });
 });
@@ -929,108 +992,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
 
         }
-
-    document.addEventListener('DOMContentLoaded', function() {
-            const periodoSelect = document.getElementById('periodo_rotina');
-            const mesSelect = document.getElementById('mes_rotina');
-            const anoSelect = document.getElementById('ano_rotina');
-            const divCustom = document.getElementById('periodo_rotina_custom');
-
-            periodoSelect.addEventListener('change', function() {
-                opcao = periodoSelect.value;
-
-                if (opcao == '1') {
-                    mesSelect.classList.remove('hidden_edit');
-                    anoSelect.classList.add('hidden_edit');
-                    divCustom.classList.add('hidden_edit');
-                    divCustom.classList.remove('main-rotina__periodo_custom');
-                } else if (opcao == '2') {
-                    anoSelect.classList.remove('hidden_edit');
-                    mesSelect.classList.add('hidden_edit');
-                    divCustom.classList.add('hidden_edit');
-                    divCustom.classList.remove('main-rotina__periodo_custom');
-                } else if (opcao == '3') {
-                    mesSelect.classList.add('hidden_edit');
-                    anoSelect.classList.add('hidden_edit');
-                    divCustom.classList.add('hidden_edit');
-                    divCustom.classList.remove('main-rotina__periodo_custom');
-                } else if (opcao == '4') {
-                    mesSelect.classList.add('hidden_edit');
-                    anoSelect.classList.add('hidden_edit');
-                    divCustom.classList.add('hidden_edit');
-                    divCustom.classList.remove('main-rotina__periodo_custom');
-                } else if (opcao == '5') {
-                    mesSelect.classList.add('hidden_edit');
-                    anoSelect.classList.add('hidden_edit');
-                    divCustom.classList.add('hidden_edit');
-                    divCustom.classList.remove('main-rotina__periodo_custom');
-                } else if (opcao == '6') {
-                    mesSelect.classList.add('hidden_edit');
-                    anoSelect.classList.add('hidden_edit');
-                    divCustom.classList.remove('hidden_edit');
-                    divCustom.classList.add('main-rotina__periodo_custom');
-                } 
-
-            });  
-        });
-
-     // Quando o DOM estiver carregado
-    document.addEventListener('DOMContentLoaded', function() {
-            // Referência ao elemento canvas
-            const ctx = document.getElementById('grafico_rotina').getContext('2d');
-
-            // Configuração dos dados e opções do gráfico
-            const meuGraficoDeBarras = new Chart(ctx, {
-                type: 'bar',  // Tipo do gráfico
-                data: {
-                    labels: ['Estudo', 'Plantão', 'Aula', 'Exercicio', 'Auto-Cuidado'], // Etiquetas do eixo X
-                    datasets: [{
-                        label: '',
-                        data: [15, 40, 20, 5, 10],  // Dados de cada barra
-                        backgroundColor: [
-                            'rgba(255, 99, 132, 0.2)',
-                            'rgba(54, 162, 235, 0.2)',
-                            'rgba(255, 206, 86, 0.2)',
-                            'rgba(75, 192, 192, 0.2)',
-                            'rgba(153, 102, 255, 0.2)',
-                            'rgba(255, 159, 64, 0.2)'
-                        ],
-                        borderColor: [
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(75, 192, 192, 1)',
-                            'rgba(153, 102, 255, 1)',
-                            'rgba(255, 159, 64, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                plugins: {
-
-                    legend: {
-                        display: false  // Desativa a exibição da legenda
-                    },
-                    
-                    datalabels: {
-                        color: '#000',  // Cor dos rótulos
-                        anchor: 'end',  // Posição do rótulo em relação à barra
-                        align: 'center',   // Alinhamento do rótulo
-                        formatter: function(value) {
-                            return value;  // Mostra o valor diretamente
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            },
-            plugins: [ChartDataLabels]
-        });
-    });
 
     document.addEventListener('DOMContentLoaded', function() {
             const mediaSelect = document.getElementById('media');
@@ -1249,6 +1210,420 @@ document.addEventListener('DOMContentLoaded', function() {
     const etiquetas = JSON.parse('{{ etiquetas|escapejs }}');
     const valores = JSON.parse('{{ valores|escapejs }}');
     gerarGraficoFinanceiro(etiquetas, valores);
+});
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const periodoSelect = document.getElementById('periodo_rotina');
+
+    periodoSelect.addEventListener('change', function() {
+
+        selecionaPeriodoRotina();
+
+    });  
+});
+
+
+function selecionaPeriodoRotina() {
+
+    const periodoSelect = document.getElementById('periodo_rotina');
+    const mesSelect = document.getElementById('mes_rotina');
+    const anoSelect = document.getElementById('ano_rotina');
+    const divCustom = document.getElementById('periodo_rotina_custom');
+
+    opcao = periodoSelect.value;
+
+    if (opcao == '1') {
+        mesSelect.classList.remove('hidden_edit');
+        anoSelect.classList.add('hidden_edit');
+        divCustom.classList.add('hidden_edit');
+        divCustom.classList.remove('main-rotina__periodo_custom');
+    } else if (opcao == '2') {
+        anoSelect.classList.remove('hidden_edit');
+        mesSelect.classList.add('hidden_edit');
+        divCustom.classList.add('hidden_edit');
+        divCustom.classList.remove('main-rotina__periodo_custom');
+    } else if (opcao == '3') {
+        mesSelect.classList.add('hidden_edit');
+        anoSelect.classList.add('hidden_edit');
+        divCustom.classList.add('hidden_edit');
+        divCustom.classList.remove('main-rotina__periodo_custom');
+    } else if (opcao == '4') {
+        mesSelect.classList.add('hidden_edit');
+        anoSelect.classList.add('hidden_edit');
+        divCustom.classList.add('hidden_edit');
+        divCustom.classList.remove('main-rotina__periodo_custom');
+    } else if (opcao == '5') {
+        mesSelect.classList.add('hidden_edit');
+        anoSelect.classList.add('hidden_edit');
+        divCustom.classList.add('hidden_edit');
+        divCustom.classList.remove('main-rotina__periodo_custom');
+    } else if (opcao == '6') {
+        mesSelect.classList.add('hidden_edit');
+        anoSelect.classList.add('hidden_edit');
+        divCustom.classList.remove('hidden_edit');
+        divCustom.classList.add('main-rotina__periodo_custom');
+    }
+}
+
+function setupEventListenersPeridoRotina() {
+    const periodoSelect = document.getElementById('periodo_rotina');
+
+    if (periodoSelect) {
+        periodoSelect.removeEventListener('change', selecionaPeriodoRotina);
+        periodoSelect.addEventListener('change', selecionaPeriodoRotina);
+    } else {
+        console.log('Objeto select não encontrado');
+    }
+}
+            
+
+document.addEventListener('DOMContentLoaded', function() { 
+    const mediaSelect = document.getElementById('media_rotina');
+
+    mediaSelect.addEventListener('change', function() { 
+        selecionaMediaRotina();
+    });
+    
+});
+
+function selecionaMediaRotina() {
+        const mediaSelect = document.getElementById('media_rotina');
+        const horaTrabSem = document.getElementById('rot_media_trab_sem');
+        const horaAtivSem = document.getElementById('rot_media_ativ_sem');
+        const horaLivreSem = document.getElementById('rot_media_livre_sem');
+        const horaTrabDia = document.getElementById('rot_media_trab_dia');
+        const horaAtivDia = document.getElementById('rot_media_ativ_dia');
+        const horaLivreDia = document.getElementById('rot_media_livre_dia');
+        const horaAtiv = document.getElementById('rot_media_ativ');
+
+        opcao = mediaSelect.value;
+
+                if (opcao == '1') {
+                    horaTrabSem.classList.remove('hidden_edit');
+                    horaAtivSem.classList.add('hidden_edit');
+                    horaLivreSem.classList.add('hidden_edit');
+                    horaTrabDia.classList.add('hidden_edit');
+                    horaAtivDia.classList.add('hidden_edit');
+                    horaLivreDia.classList.add('hidden_edit');
+                    horaAtiv.classList.add('hidden_edit');
+                } else if (opcao == '2') {
+                    horaTrabSem.classList.add('hidden_edit');
+                    horaAtivSem.classList.remove('hidden_edit');
+                    horaLivreSem.classList.add('hidden_edit');
+                    horaTrabDia.classList.add('hidden_edit');
+                    horaAtivDia.classList.add('hidden_edit');
+                    horaLivreDia.classList.add('hidden_edit');
+                    horaAtiv.classList.add('hidden_edit');
+                } else if (opcao == '3') {
+                    horaTrabSem.classList.add('hidden_edit');
+                    horaAtivSem.classList.add('hidden_edit');
+                    horaLivreSem.classList.remove('hidden_edit');
+                    horaTrabDia.classList.add('hidden_edit');
+                    horaAtivDia.classList.add('hidden_edit');
+                    horaLivreDia.classList.add('hidden_edit');
+                    horaAtiv.classList.add('hidden_edit');
+                } else if (opcao == '4') {
+                    horaTrabSem.classList.add('hidden_edit');
+                    horaAtivSem.classList.add('hidden_edit');
+                    horaLivreSem.classList.add('hidden_edit');
+                    horaTrabDia.classList.remove('hidden_edit');
+                    horaAtivDia.classList.add('hidden_edit');
+                    horaLivreDia.classList.add('hidden_edit');
+                    horaAtiv.classList.add('hidden_edit');
+                } else if (opcao == '5') {
+                    horaTrabSem.classList.add('hidden_edit');
+                    horaAtivSem.classList.add('hidden_edit');
+                    horaLivreSem.classList.add('hidden_edit');
+                    horaTrabDia.classList.add('hidden_edit');
+                    horaAtivDia.classList.remove('hidden_edit');
+                    horaLivreDia.classList.add('hidden_edit');
+                    horaAtiv.classList.add('hidden_edit');
+                } else if (opcao == '6') {
+                    horaTrabSem.classList.add('hidden_edit');
+                    horaAtivSem.classList.add('hidden_edit');
+                    horaLivreSem.classList.add('hidden_edit');
+                    horaTrabDia.classList.add('hidden_edit');
+                    horaAtivDia.classList.add('hidden_edit');
+                    horaLivreDia.classList.remove('hidden_edit');
+                    horaAtiv.classList.add('hidden_edit');
+                } else if (opcao == '7') {
+                    horaTrabSem.classList.add('hidden_edit');
+                    horaAtivSem.classList.add('hidden_edit');
+                    horaLivreSem.classList.add('hidden_edit');
+                    horaTrabDia.classList.add('hidden_edit');
+                    horaAtivDia.classList.add('hidden_edit');
+                    horaLivreDia.classList.add('hidden_edit');
+                    horaAtiv.classList.remove('hidden_edit');
+                }
+     }
+
+function setupEventListenersMediaRotina() {
+    const mediaSelect = document.getElementById('media_rotina');
+    if (mediaSelect) {
+        mediaSelect.removeEventListener('change', selecionaMediaRotina); // Remove event listener para evitar múltiplos eventos
+        mediaSelect.addEventListener('change', selecionaMediaRotina);
+    } else {
+        console.log('Objeto select não encontrado');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+        const btnFilter = document.getElementById('btn_rotina_filter');
+
+        btnFilter.addEventListener('click', function() {
+                atualizaFiltroRotina();
+        });
+
+});
+
+function atualizaFiltroRotina() {
+    const periodoSelect = document.getElementById('periodo_rotina');
+    const mesSelect = document.getElementById('mes_rotina').value;
+    const anoSelect = document.getElementById('ano_rotina');
+    const anoOption = anoSelect.options[anoSelect.selectedIndex];
+    const anoText = anoOption.textContent;
+    const dataCustomInicio = document.getElementById('date_periodo_inicio_rotina').value;
+    const dataCustomFinal = document.getElementById('date_periodo_final_rotina').value;
+    
+    opcao = periodoSelect.value;
+
+    const url = new URL('/atualizar_rotina', window.location.origin);
+    url.searchParams.append('periodoSelect', opcao);
+
+    if (opcao == '1') {
+        url.searchParams.append('mesSelect', mesSelect); 
+    } else if (opcao == '2') {
+        url.searchParams.append('anoSelect', anoText);
+    } else if (opcao == '6') {
+        url.searchParams.append('dataInicio', dataCustomInicio);
+        url.searchParams.append('dataFinal', dataCustomFinal);
+    }
+
+    fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Resposta:', data);
+            if (data.html) {
+                document.getElementById('main-rotina__campos').innerHTML = data.html;
+                setupEventListenersMediaRotina();
+                setupEventListenersPeridoRotina();
+                setupEventListenersAtualizaFiltroRotina();
+
+                const etiquetas = data.etiquetas;
+                const valores = data.valores;
+                gerarGraficoRotina(etiquetas, valores);
+
+                setupEventListenersAtualizaGraficoRotina();
+            } else {
+                console.log('Nenhum conteúdo HTML encontrado.');
+                alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
+            }
+        })
+        .catch(error => {
+            console.error('Erro na validação da sequência:', error);
+            alert('Ocorreu um erro. Tente novamente mais tarde.');
+        });
+}
+    
+function setupEventListenersAtualizaFiltroRotina() {
+    const btnFilter = document.getElementById('btn_rotina_filter');
+    if (btnFilter) {
+        btnFilter.removeEventListener('click', atualizaFiltroRotina); // Remove event listener para evitar múltiplos eventos
+        btnFilter.addEventListener('click', atualizaFiltroRotina);
+    } else {
+        console.log('Botão não encontrado');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const selectGrafico = document.getElementById('grafico_select_rotina');
+
+    selectGrafico.addEventListener('change', function() {
+        atualizaGraficoRotina();
+    });
+
+});
+
+function atualizaGraficoRotina() {
+    const periodoSelect = document.getElementById('periodo_rotina');
+    const mesSelect = document.getElementById('mes_rotina').value;
+    const anoSelect = document.getElementById('ano_rotina');
+    const anoOption = anoSelect.options[anoSelect.selectedIndex];
+    const anoText = anoOption.textContent;
+    const dataCustomInicio = document.getElementById('date_periodo_inicio_rotina').value;
+    const dataCustomFinal = document.getElementById('date_periodo_final_rotina').value;
+    const graficoSelect = document.getElementById('grafico_select_rotina').value;
+    
+    opcao = periodoSelect.value;
+
+    const url = new URL('atualizar_grafico_rotina/', window.location.origin);
+    url.searchParams.append('periodoSelect', opcao);
+    url.searchParams.append('graficoSelect', graficoSelect);
+
+    if (opcao == '1') {
+        url.searchParams.append('mesSelect', mesSelect); 
+    } else if (opcao == '2') {
+        url.searchParams.append('anoSelect', anoText);
+    } else if (opcao == '6') {
+        url.searchParams.append('dataInicio', dataCustomInicio);
+        url.searchParams.append('dataFinal', dataCustomFinal);
+    }
+
+    fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Resposta:', data);
+            if (data) {
+                setupEventListenersMediaRotina();
+                setupEventListenersPeridoRotina();
+                setupEventListenersAtualizaFiltroRotina();
+
+                const etiquetas = data.etiquetas;
+                const valores = data.valores;
+                gerarGraficoRotina(etiquetas, valores);  
+                
+                setupEventListenersAtualizaGraficoRotina();
+            } else {
+                console.log('Nenhum conteúdo HTML encontrado.');
+                alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
+            }
+        })
+        .catch(error => {
+            console.error('Erro na validação da sequência:', error);
+            alert('Ocorreu um erro. Tente novamente mais tarde.');
+        });
+    }
+
+function setupEventListenersAtualizaGraficoRotina() {
+    const graficoSelect = document.getElementById('grafico_select_rotina');
+    if (graficoSelect) {
+        if (!graficoSelect.hasAttribute('data-listener-added')) {
+            graficoSelect.addEventListener('change', atualizaGraficoRotina);
+            graficoSelect.setAttribute('data-listener-added', 'true');
+        }
+    } else {
+        console.log('Gráfico não encontrado');
+    }
+}
+
+let meuGraficoRotina; // Defina a variável fora da função para torná-la acessível
+
+function gerarGraficoRotina(etiquetas, valores) {
+    const ctx = document.getElementById('grafico_rotina').getContext('2d');
+
+    if (meuGraficoRotina) {
+        meuGraficoRotina.destroy(); // Destroi o gráfico existente antes de criar um novo
+    }                
+    // Configuração dos dados e opções do gráfico
+    meuGraficoRotina = new Chart(ctx, {
+                        type: 'bar',  // Tipo do gráfico
+                        data: {
+                            labels: etiquetas, // Etiquetas do eixo X
+                            datasets: [{
+                                label: '',
+                                data: valores,  // Dados de cada barra
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.2)',
+                                    'rgba(54, 162, 235, 0.2)',
+                                    'rgba(255, 206, 86, 0.2)',
+                                    'rgba(75, 192, 192, 0.2)',
+                                    'rgba(153, 102, 255, 0.2)',
+                                    'rgba(255, 159, 64, 0.2)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(75, 192, 192, 1)',
+                                    'rgba(153, 102, 255, 1)',
+                                    'rgba(255, 159, 64, 1)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                        plugins: {
+
+                            legend: {
+                                display: false  // Desativa a exibição da legenda
+                            },
+                            
+                            datalabels: {
+                                color: '#000',  // Cor dos rótulos
+                                anchor: 'end',  // Posição do rótulo em relação à barra
+                                align: 'top',   // Alinhamento do rótulo
+                                formatter: function(value) {
+                                    return value;  // Mostra o valor diretamente
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    },
+                    plugins: [ChartDataLabels]
+                });
+    }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const selectMes = document.getElementById('mes_rotina');
+    const mesAtual = new Date().getMonth() + 1; // getMonth() retorna um valor de 0 (Janeiro) a 11 (Dezembro), por isso somamos 1.
+    selectMes.value = mesAtual;
+
+    const etiquetas = JSON.parse('{{ etiquetas|escapejs }}');
+    const valores = JSON.parse('{{ valores|escapejs }}');
+    gerarGraficoRotina(etiquetas, valores);
+
+    setupEventListenersAtualizaFiltroRotina();
+    setupEventListenersMediaRotina();
+    setupEventListenersPeridoRotina();
+    setupEventListenersAtualizaGraficoRotina();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const seqPersoCheck = document.getElementById('id_seqPersoCheck');
+
+    seqPersoCheck.addEventListener('change', function() {
+        const seqPersoDiv = document.getElementById('id_seqPersoDiv');
+        const seqPersoLabel = document.getElementById('id_seqPersoLabel');
+        const seqDiv = document.getElementById('id_seqDiv'); 
+        const diaFinal = document.getElementById('diafinal');
+
+        const dataAtiv = document.getElementById('id_data').value;
+        const date = new Date(dataAtiv);
+        const diadasemana = getDayOfWeek(date);
+
+        if (seqPersoCheck.checked) {
+            seqPersoDiv.classList.remove('hidden_edit');
+            seqPersoDiv.classList.add('main-forms__sequencia_perso_itens');
+            diafinal.classList.remove('main-forms__sequencia_datafinal_hidden');
+            diafinal.classList.add('main-forms__sequencia_datafinal');    
+            seqDiv.classList.add('hidden_edit');
+            seqDiv.classList.remove('main-forms__sequencia_itens');     
+            seqPersoLabel.textContent = `Selecione quais ${diadasemana}s de cada mês essa atividade deverá ser repetida`;
+        } else {
+            seqPersoDiv.classList.add('hidden_edit');
+            seqPersoDiv.classList.remove('main-forms__sequencia_perso_itens');
+            diafinal.classList.add('main-forms__sequencia_datafinal_hidden');
+            diafinal.classList.remove('main-forms__sequencia_datafinal');
+            seqDiv.classList.add('main-forms__sequencia_itens');
+            seqDiv.classList.remove('hidden_edit');        
+            seqPersoLabel.textContent = ``;
+        }
+    });
 });
 
 </script>

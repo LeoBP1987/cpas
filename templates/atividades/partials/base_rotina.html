@@ -1,0 +1,36 @@
+{%load static%}
+    {% for item, dia in rotina.items %}
+    <div class="main-rotina__total">
+        <p class="main-rotina__label">Quantidade de Atividades:</p>
+        <p class="main-rotina__total_paragrafo">{{dia.qt_atividade}}</p>
+    </div>
+    <div class="main-rotina__media">
+        <p class="main-rotina__label">Média de:</p>
+        <select class="main-rotina__select_media" name="media_rotina" id="media_rotina">
+            <option value="1">Horas de Trabalho Por Semana</option>
+            <option value="2">Horas de Atividades Por Semana</option>
+            <option value="3">Horas Livres Por Semana</option>
+            <option value="4">Horas de Trabalho Por Dia</option>
+            <option value="5">Horas de Atividades Por Dia</option>
+            <option value="6">Horas Livres Por Dia</option>
+            <option value="7">Horas Por Atividade</option>
+        </select>
+        <p class="main-rotina__total_paragrafo" id="rot_media_trab_sem">{{dia.media_hr_trab_sem}}</p>
+        <p class="main-rotina__total_paragrafo hidden_edit" id="rot_media_ativ_sem">{{dia.media_hr_ativ_sem}}</p>
+        <p class="main-rotina__total_paragrafo hidden_edit" id="rot_media_livre_sem">{{dia.media_hr_livre_sem}}</p>
+        <p class="main-rotina__total_paragrafo hidden_edit" id="rot_media_trab_dia">{{dia.media_hr_trab_dia}}</p>
+        <p class="main-rotina__total_paragrafo hidden_edit" id="rot_media_ativ_dia">{{dia.media_hr_ativ_dia}}</p>
+        <p class="main-rotina__total_paragrafo hidden_edit" id="rot_media_livre_dia">{{dia.media_hr_livre_dia}}</p>
+        <p class="main-rotina__total_paragrafo hidden_edit" id="rot_media_ativ">{{dia.media_hr_ativ}}</p>
+    </div>
+    {% endfor %}
+    <div class="main-rotina__grafico">
+        <p class="main-rotina__label">Total por:</p>
+        <select class="main-rotina__grafico_select" name="grafico_select_rotina" id="grafico_select_rotina">
+            <option value="1">Remuneração</option>
+            <option value="2">Tipo de Atividade</option>
+            <option value="3">Categoria de Atividade</option>
+            <option value="4">Ocupação</option>            
+        </select>
+        <canvas class="main-rotina__grafico_grafico" id="grafico_rotina"></canvas>
+    </div>

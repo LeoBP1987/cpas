@@ -11,7 +11,9 @@ class Instituicao(models.Model):
     nome_curto = models.CharField(max_length=25, null=True, blank=True)
     nome_inst = models.CharField(max_length=50, null=False, blank=False)
     imagem = models.ImageField(upload_to='instituicao/%Y/%m/%d', blank=True, null=True)
-    valor_padrao = models.CharField(max_length=50, blank=True, null=True)
+    fixo_mensal_inst = models.BooleanField(default=False, null=True, blank=True)
+    cod_fixo = models.CharField(max_length=10, null=True, blank=True)
+    valor_fixo = models.CharField(max_length=50, blank=True, null=True)
     endereco = models.CharField(max_length=255,)
     telefone = models.CharField(max_length=15,)
     contato = models.CharField(max_length=35,)
@@ -27,6 +29,14 @@ class Atividades(models.Model):
         ('2', 'Semanal'),
         ('3', 'Quinzenal'),
         ('4', 'Mensal'),
+    ]
+
+    SEQ_PERSO = [
+        (0, '1ª'),
+        (1, '2ª'),
+        (2, '3ª'),
+        (3, '4ª'),
+        (4, '5ª')
     ]
 
     HORAS_ENT = [
@@ -100,11 +110,14 @@ class Atividades(models.Model):
     saida = models.IntegerField()
     valor = models.CharField(max_length=50, null=True, blank=True)
     sequencia = models.CharField(max_length=1, choices=SEQUENCIA, null=True, blank=True)
+    seq_personalizada = models.CharField(max_length=10, null=True, blank=True)
     data_final_seq = models.DateField(null=True, blank=True)
     obs = models.TextField(null=True, blank=True)
     cod = models.IntegerField(null=True, blank=True)
     id_vir = models.IntegerField(null=True, blank=True)
     nao_remunerado = models.BooleanField(default=False, null=True, blank=True)
+    fixo_mensal_ativ = models.BooleanField(default=False, null=True, blank=True)
+    cod_fixo_ativ = models.CharField(max_length=10, null=True, blank=True)
     
     def __str__(self):
         return str(self.id)

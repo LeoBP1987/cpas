@@ -38,8 +38,14 @@
                         <input type="hidden" id="valor_padrao_instituicao" value="{{ forms.valor.initial }}">
                     </div>
                     <div class="main-forms__valor_checkbox">
-                        {{forms.nao_remunerado}}
-                        <label for="{{forms.nao_remunerado.id_for_label}}" class="main-forms__valor_label_checkbox">{{forms.nao_remunerado.label}}</label>
+                        <div class="main-forms__valor_checkbox_campo" id="id_div_nao_remunerado">
+                            {{forms.nao_remunerado}}
+                            <label for="{{forms.nao_remunerado.id_for_label}}" class="main-forms__valor_label_checkbox">{{forms.nao_remunerado.label}}</label>
+                        </div>
+                        <div class="main-forms__valor_checkbox_campo" id="id_div_fixo_mensal_ativ">
+                            {{forms.fixo_mensal_ativ}}
+                            <label for="{{forms.fixo_mensal_ativ.id_for_label}}" class="main-forms__valor_label_checkbox">{{forms.fixo_mensal_ativ.label}}</label>
+                        </div>
                     </div>
                 </div>
                 <div class="main-forms__campos_campo">
@@ -49,10 +55,27 @@
             </div>
             <div class="main-forms__campos_campo_sequencia">
                 <p class="main-forms__sequencia_paragrafo">Repetição:</p>
-                {% for radio in forms.sequencia %}
-                {{ radio.tag }}
-                <label for="{{ radio.id_for_label }}" class="main-forms__sequencia_label">{{ radio.choice_label }}</label>
-                {% endfor %}
+                <div class="main-forms__sequencia_itens" id="id_seqDiv">
+                    {% for radio in forms.sequencia %}
+                    <div class="main-forms__sequencia_itens_item">
+                        <label for="{{ radio.id_for_label }}" class="main-forms__sequencia_label">{{ radio.choice_label }} :</label>
+                        {{ radio.tag }}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="main-forms__valor_checkbox_campo_seq_perso" id="id_seqPersoTitulo">
+                    <input type="checkbox" id="id_seqPersoCheck">
+                    <label for="id_check_seq_perso" class="main-forms__valor_label_checkbox">Repetição Personalizada</label>
+                </div>
+                <label id="id_seqPersoLabel" class="main-forms__label_repeticao"></label>
+                <div class="hidden_edit" id="id_seqPersoDiv">
+                    {% for radio in forms.seq_perso %}
+                    <div class="main-forms__sequencia_perso_itens_item">
+                        <label for="{{radio.id_for_label}}" class="main-forms__sequencia_label">{{radio.choice_label}}</label>
+                        {{ radio.tag }}
+                    </div>
+                    {% endfor %}
+                </div>
                 <div id="diafinal" class="main-forms__sequencia_datafinal_hidden">
                     <label for="{{forms.data_final_seq.id_for_label}}" class="main-forms__campo_label">{{forms.data_final_seq.label}}</label>
                     {{forms.data_final_seq}}

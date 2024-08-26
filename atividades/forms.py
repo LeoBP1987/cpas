@@ -16,12 +16,28 @@ class TipoAtividadeForms(forms.ModelForm):
 class InstituicaoForms(forms.ModelForm):
     class Meta:
         model = Instituicao
-        fields = ['nome_curto', 'nome_inst', 'imagem', 'valor_padrao', 'endereco', 'telefone', 'contato']
+        exclude = ['cod_fixo',]
+        fields = ['nome_curto', 'nome_inst', 'imagem', 'fixo_mensal_inst', 'valor_fixo', 'endereco', 'telefone', 'contato']
+        labels = {
+            'nome_curto': 'Nome Curto',
+            'nome_inst': 'Nome da Instituição',
+            'imagem': 'Imagem',
+            'fixo_mensal_inst': 'Fixo Mensal',
+            'valor_fixo': 'Valor',
+            'endereco': 'Endereço',
+            'telefone': 'Telefone',
+            'contato': 'Contato'
+        }
         widgets = {
             'nome_curto': forms.TextInput(attrs={'class':'main-forms__campo_input'}),
             'nome_inst': forms.TextInput(attrs={'class':'main-forms__campo_input'}),
             'imagem': forms.FileInput(attrs={'class':'main-forms__campo_input'}),
-            'valor_padrao': forms.TextInput(attrs={
+            'fixo_mensal_inst': forms.CheckboxInput(attrs={
+                'class':'main-forms__valor_checkbox', 
+                'id':'id_fixo_mensal_inst',
+                'type': 'checkbox',
+                }),
+            'valor_fixo': forms.TextInput(attrs={
                 'class':'main-forms__campo_input',
                 'id': 'id_valor_inst',
                 'type': 'text',
@@ -35,8 +51,8 @@ class InstituicaoForms(forms.ModelForm):
             'contato': forms.TextInput(attrs={'class':'main-forms__campo_input'})
         }
 
-    def clean_valor_padrao(self):
-        valor = self.cleaned_data['valor_padrao']
+    def clean_valor_fixo(self):
+        valor = self.cleaned_data['valor_fixo']
         if valor is None:
             return None
 
@@ -51,12 +67,22 @@ class InstituicaoForms(forms.ModelForm):
     
 class AtividadesForms(forms.ModelForm):
     extra_param = forms.CharField(max_length=100, required=False)
+    seq_perso = forms.MultipleChoiceField(choices=Atividades.SEQ_PERSO,
+                                            widget=forms.CheckboxSelectMultiple(attrs={
+                                                'id':'id_seqPersoValue',
+                                                'name':'seq_perso'}),
+                                            required=False)
     class Meta:
         model = Atividades
-        exclude = ['cod', 'id_vir']
-        fields = ['instituicao', 'tipo_atividade', 'data', 'entrada', 'saida', 'nao_remunerado', 'valor', 'sequencia', 'data_final_seq', 'obs', 'extra_param']
+        exclude = ['cod', 'id_vir', 'cod_fixo_ativ', 'seq_personalizada']
+        fields = ['instituicao', 'tipo_atividade', 'data', 'entrada', 'saida', 'nao_remunerado', 'fixo_mensal_ativ', 'valor', 'sequencia', 'data_final_seq', 'obs', 'extra_param']
         labels = {
+            'instituicao': 'Instituição',
+            'tipo_atividade': 'Tipo de Atividade',
+            'saida': 'Saída',
             'nao_remunerado': 'Não Remunerado',
+            'fixo_mensal_ativ': 'Fixo Mensal',
+            'data_final_seq': 'Data Final',
         }
         widgets = {
             'instituicao': forms.Select(attrs={'class':'main-forms__campo_input', 'id':'id_instituicao'}),
@@ -74,8 +100,13 @@ class AtividadesForms(forms.ModelForm):
                 'id':'id_nao_remunerado',
                 'type': 'checkbox',
                 }),
+            'fixo_mensal_ativ': forms.CheckboxInput(attrs={
+                'class':'main-forms__valor_checkbox', 
+                'id':'id_fixo_mensal_ativ',
+                'type': 'checkbox',
+                }), 
             'valor': forms.TextInput(attrs={'class':'main-forms__campo_input', 'id':'id_valor'}),
-            'sequencia' : forms.RadioSelect(attrs={'class':'main-forms__sequencia_radiobox'}, choices=Atividades.SEQUENCIA),
+            'sequencia' : forms.RadioSelect(choices=Atividades.SEQUENCIA),
             'data_final_seq': forms.DateInput(attrs={
                 'class':'main-forms__campo_input', 
                 'type': 'date',
