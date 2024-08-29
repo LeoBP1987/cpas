@@ -1,8 +1,28 @@
 from typing import Any
 from django import forms
-from atividades.models import TipoAtividade, Instituicao, Atividades
+from atividades.models import TipoAtividade, Instituicao, Atividades, Categoria, Preferencias
 from calendario.models import Calendario
 from datetime import date
+
+class CategoriaForms(forms.ModelForm):
+    class Meta:
+        model = Categoria
+        fields = ['nome_categoria']
+        widgets = {
+            'nome_categoria': forms.TextInput(attrs={'class':'main-forms__campo_input'}),
+        }
+
+def listar_categorias():
+    lista_categorias = []
+
+    categorias = Categoria.objects.all()
+
+    for categoria in categorias:
+        lista_categorias.append((categoria.nome_categoria, categoria.nome_categoria))
+
+    return lista_categorias
+
+lista_categorias = listar_categorias()
 
 class TipoAtividadeForms(forms.ModelForm):
     class Meta:
@@ -10,7 +30,7 @@ class TipoAtividadeForms(forms.ModelForm):
         fields = ['nome_tipo', 'categoria']
         widgets = {
             'nome_tipo': forms.TextInput(attrs={'class':'main-forms__campo_input'}),
-            'categoria': forms.TextInput(attrs={'class':'main-forms__campo_input'})
+            'categoria': forms.Select(attrs={'class':'main-forms__campo_input'}, choices=lista_categorias),
         }
 
 class InstituicaoForms(forms.ModelForm):
@@ -113,4 +133,23 @@ class AtividadesForms(forms.ModelForm):
                 'id':'id_data_final_seq'
                 }),
             'obs': forms.Textarea(attrs={'class':'main-forms__campo_input'})
+        }
+
+tipos_graficos = [
+    ('bar', 'Barras'),
+    ('pie', 'Pizza'),
+    ('doughnut', 'Roscas')
+]
+
+class PreferenciasForms(forms.ModelForm):
+    class Meta:
+        model = Preferencias
+        fields = ['horas_sono', 'tipo_grafico']
+        labels = {
+            'horas_sono': 'Horas de sono ideais',
+            'tipo_grafico': 'Tipo de Gráfico'
+        }
+        widgets =  {
+            'horas_sono': forms.TextInput(attrs={'class':'main-forms__campo_input'}),
+            'tipo_grafico': forms.Select(attrs={'class':'main-forms__campo_input'}, choices=tipos_graficos)
         }

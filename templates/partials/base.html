@@ -26,11 +26,12 @@
         <div class="header-cabecalho">
             <img class="header-cabecalho-imagem" src="{% static 'assets/imagem/logo.png' %}" alt="Logo do CPAS">
             <div class="header-cabecalho-lateral">
-                <input type="text" id="pesquisa" class="header-cabecalho_pesquisa">
+                <form action="{% url 'buscar' %}" id="headerFormPesquisa" class="header-cabecalho-form">
+                    <input type="text" id="pesquisa" name="buscar" class="header-cabecalho_pesquisa">
+                </form>
                 <h1 class="header-cabecalho-titulo">CADASTRO DE PLANTÕES E ATIVIDADES</h1>
             </div>
-        </div>
-        
+        </div>        
         <div class="header-menu">
             <input type="checkbox" id="menu" class="header-menu__checkbox">
             <label for="menu" class="header-menu__rotulo">
@@ -67,7 +68,9 @@
             <label for="ck_pesquisa" class="header-menu__rotulo_pesquisa">
                 <img class="header-menu__imagem_pesquisa" src="{% static 'assets/icones/lupa_branco.png' %}" alt="Icone de Lupa de Pesquisa">
             </label>
-            <input type="text" id="pesquisa" class="header-menu__input_pesquisa">
+            <form action="{% url 'buscar' %}" id="headerFormPesquisa" class="header-menu__form_pesquisa_mobile">
+                <input type="text" id="pesquisa" name="buscar" class="header-menu__input_pesquisa">
+            </form>
         </div>
     </header>
     <aside class="menu-lateral">

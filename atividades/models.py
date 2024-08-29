@@ -1,8 +1,19 @@
 from django.db import models
 
+class Categoria(models.Model):
+    nome_categoria = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.nome_categoria
+
 class TipoAtividade(models.Model):
     nome_tipo = models.CharField(max_length=30, null=False, blank=False)
-    categoria = models.CharField(max_length=30)
+    categoria = models.ForeignKey(
+        to=Categoria,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='categorias'
+    )
 
     def __str__(self):
         return self.nome_tipo
@@ -121,3 +132,7 @@ class Atividades(models.Model):
     
     def __str__(self):
         return str(self.id)
+    
+class Preferencias(models.Model):
+    horas_sono = models.IntegerField()
+    tipo_grafico = models.CharField(max_length=10)

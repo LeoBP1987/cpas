@@ -58,7 +58,7 @@
             {% if atividade.data >= hoje %}
                 <div class="main-show__atividade__botoes">
                     <a class="main-novo__tipo_link" href="{% url 'editar_atividade' atividade.id %}"><button class="main-show__atividade__botoes_botao">EDITAR</button></a>
-                    <button class="main-show__atividade__botoes_botao delete-button" data-atividade-id="{{atividade.id}}">DELETAR</button>
+                    <button class="main-show__atividade__botoes_botao_delAtiv delete-button" data-atividade-id="{{atividade.id}}">DELETAR</button>
                 </div>
             {% endif %}
         {% endfor %}

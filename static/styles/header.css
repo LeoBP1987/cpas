@@ -49,6 +49,7 @@
     border: 1px solid;
     position: absolute;
     top: 100%;
+    z-index: 100;
     width: 60vw;
 }
 
@@ -177,6 +178,10 @@
         padding: 0.70rem;
         width: 70%;
         box-shadow: var(--sombra-primaria);
+    }
+
+    .header-cabecalho-form{
+        width: 70%;
     }
 
     .header-cabecalho-titulo__login {

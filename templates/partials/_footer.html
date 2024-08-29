@@ -171,14 +171,27 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         const fixoCheckbox = document.getElementById('id_fixo_mensal_ativ');
+
+        fixoCheckbox.addEventListener('change', function() {
+
+            formataCampoValor();
+            setupEventListenersFormataCampoValor();       
+        });
+    });
+
+    function formataCampoValor() {
+        const fixoCheckbox = document.getElementById('id_fixo_mensal_ativ');
         const nrCheckbox = document.getElementById('id_div_nao_remunerado');
         const instituicaoSelect = document.getElementById('id_instituicao');
         const valorInput = document.getElementById('id_valor');
         const valorPadraoInput = document.getElementById('valor_padrao_instituicao');
 
-        fixoCheckbox.addEventListener('change', function() {
+        console.log("Checkbox fixo encontrado:", fixoCheckbox);
+        console.log("Checkbox NR encontrado:", nrCheckbox);
+        console.log("Instituição selecionada:", instituicaoSelect.value);
+        console.log("Valor inicial:", valorInput.value);
 
-            if (fixoCheckbox.checked) {
+        if (fixoCheckbox.checked) {
                 const instituicaoId= instituicaoSelect.value;
                 get_valor_fixo(instituicaoId, valorInput);
                 nrCheckbox.classList.add('hidden_edit');
@@ -188,9 +201,19 @@
                 nrCheckbox.classList.remove('hidden_edit');
                 nrCheckbox.classList.add('main-forms__valor_checkbox_campo');
                 valorInput.readOnly = false;
-            }       
-        });
-    });
+            }            
+    }
+
+    function setupEventListenersFormataCampoValor() {
+    const fixoCheckbox = document.getElementById('id_fixo_mensal_ativ');
+    
+    if (fixoCheckbox) {
+        fixoCheckbox.removeEventListener('change', formataCampoValor); // Remove event listener para evitar múltiplos eventos
+        fixoCheckbox.addEventListener('change', formataCampoValor);
+    } else {
+        console.log('Checkbox não encontrado');
+    }
+    }
 
     function get_valor_fixo(instituicaoId, valorInput) {
         const fixoCheckbox = document.getElementById('id_fixo_mensal_ativ');
@@ -931,9 +954,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
     }
 
+    function formatarValor(value) {
+            // Formatar o valor como moeda com separador de milhar e vírgula decimal
+            return 'R$ ' + value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
     let meuGraficoDeBarras; // Defina a variável fora da função para torná-la acessível
 
-    function gerarGraficoFinanceiro(etiquetas, valores) {
+    function gerarGraficoFinanceiro(etiquetas, valores, tipo) {
         const ctx = document.getElementById('grafico').getContext('2d');
 
         if (meuGraficoDeBarras) {
@@ -941,7 +969,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }                
         // Configuração dos dados e opções do gráfico
         meuGraficoDeBarras = new Chart(ctx, {
-                            type: 'bar',  // Tipo do gráfico
+                            type: tipo,  // Tipo do gráfico
                             data: {
                                 labels: etiquetas, // Etiquetas do eixo X
                                 datasets: [{
@@ -978,13 +1006,18 @@ document.addEventListener('DOMContentLoaded', function() {
                                     anchor: 'end',  // Posição do rótulo em relação à barra
                                     align: 'top',   // Alinhamento do rótulo
                                     formatter: function(value) {
-                                        return value;  // Mostra o valor diretamente
-                                    }
+                                                                if (value) {
+                                                                    return formatarValor(value);  // Formata o valor para exibição
+                                                                } else {
+                                                                    return value
+                                                                }                                                                
+                                                            }
                                 }
                             },
                             scales: {
                                 y: {
-                                    beginAtZero: true
+                                    beginAtZero: true,
+                                    suggestedMax: Math.max(...valores) * 1.1 // Adiciona 10% de margem acima do valor máximo
                                 }
                             }
                         },
@@ -1060,9 +1093,10 @@ function atualizaFiltro() {
                 setupEventListenersPeriodoSelect();
                 setupEventListenersAtualizaFiltro();
 
+                const tipo = data.tipo;
                 const etiquetas = data.etiquetas;
                 const valores = data.valores;
-                gerarGraficoFinanceiro(etiquetas, valores);
+                gerarGraficoFinanceiro(etiquetas, valores, tipo);
 
                 setupEventListenersAtualizaGrafico();
             } else {
@@ -1115,9 +1149,10 @@ function atualizaGrafico() {
                 setupEventListenersPeriodoSelect();
                 setupEventListenersAtualizaFiltro();
                 setupEventListenersAtualizaGrafico();
+                const tipo = data.tipo;
                 const etiquetas = data.etiquetas;
                 const valores = data.valores;
-                gerarGraficoFinanceiro(etiquetas, valores);
+                gerarGraficoFinanceiro(etiquetas, valores, tipo);
             } else {
                 console.log('Nenhum conteúdo HTML encontrado.');
                 alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
@@ -1207,9 +1242,10 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListenersPeriodoSelect();
     setupEventListenersAtualizaFiltro();
     setupEventListenersAtualizaGrafico();
+    const tipo = JSON.parse('{{ tipo|escapejs }}');
     const etiquetas = JSON.parse('{{ etiquetas|escapejs }}');
     const valores = JSON.parse('{{ valores|escapejs }}');
-    gerarGraficoFinanceiro(etiquetas, valores);
+    gerarGraficoFinanceiro(etiquetas, valores, tipo);
 });
 
 
@@ -1415,9 +1451,10 @@ function atualizaFiltroRotina() {
                 setupEventListenersPeridoRotina();
                 setupEventListenersAtualizaFiltroRotina();
 
+                const tipo = data.tipo;
                 const etiquetas = data.etiquetas;
                 const valores = data.valores;
-                gerarGraficoRotina(etiquetas, valores);
+                gerarGraficoRotina(etiquetas, valores, tipo);
 
                 setupEventListenersAtualizaGraficoRotina();
             } else {
@@ -1489,9 +1526,10 @@ function atualizaGraficoRotina() {
                 setupEventListenersPeridoRotina();
                 setupEventListenersAtualizaFiltroRotina();
 
+                const tipo = data.tipo;
                 const etiquetas = data.etiquetas;
                 const valores = data.valores;
-                gerarGraficoRotina(etiquetas, valores);  
+                gerarGraficoRotina(etiquetas, valores, tipo);  
                 
                 setupEventListenersAtualizaGraficoRotina();
             } else {
@@ -1519,7 +1557,7 @@ function setupEventListenersAtualizaGraficoRotina() {
 
 let meuGraficoRotina; // Defina a variável fora da função para torná-la acessível
 
-function gerarGraficoRotina(etiquetas, valores) {
+function gerarGraficoRotina(etiquetas, valores, tipo) {
     const ctx = document.getElementById('grafico_rotina').getContext('2d');
 
     if (meuGraficoRotina) {
@@ -1527,7 +1565,7 @@ function gerarGraficoRotina(etiquetas, valores) {
     }                
     // Configuração dos dados e opções do gráfico
     meuGraficoRotina = new Chart(ctx, {
-                        type: 'bar',  // Tipo do gráfico
+                        type: tipo,  // Tipo do gráfico
                         data: {
                             labels: etiquetas, // Etiquetas do eixo X
                             datasets: [{
@@ -1564,13 +1602,19 @@ function gerarGraficoRotina(etiquetas, valores) {
                                 anchor: 'end',  // Posição do rótulo em relação à barra
                                 align: 'top',   // Alinhamento do rótulo
                                 formatter: function(value) {
-                                    return value;  // Mostra o valor diretamente
+                                    if (value) {
+                                        return  value + ' hrs' ;  // Mostra o valor diretamente
+                                    } else {
+                                        return value;
+                                    }
+                                    
                                 }
                             }
                         },
                         scales: {
                             y: {
-                                beginAtZero: true
+                                beginAtZero: true,
+                                suggestedMax: Math.max(...valores) * 1.1 // Adiciona 10% de margem acima do valor máximo
                             }
                         }
                     },
@@ -1583,9 +1627,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const mesAtual = new Date().getMonth() + 1; // getMonth() retorna um valor de 0 (Janeiro) a 11 (Dezembro), por isso somamos 1.
     selectMes.value = mesAtual;
 
+    const tipo = JSON.parse('{{tipo|escapejs}}')
     const etiquetas = JSON.parse('{{ etiquetas|escapejs }}');
     const valores = JSON.parse('{{ valores|escapejs }}');
-    gerarGraficoRotina(etiquetas, valores);
+    gerarGraficoRotina(etiquetas, valores, tipo);
 
     setupEventListenersAtualizaFiltroRotina();
     setupEventListenersMediaRotina();
@@ -1624,6 +1669,44 @@ document.addEventListener('DOMContentLoaded', function() {
             seqPersoLabel.textContent = ``;
         }
     });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Configura os event listeners primeiro
+    setupEventListenersFormataCampoValor();
+
+    // Depois, chama a função formataCampoValor
+    formataCampoValor();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    const formPesquisa = document.getElementById('headerFormPesquisa');
+
+    formPesquisa.addEventListener('submit', function(event) {
+        const inputPesquisa = document.getElementById('pesquisa');
+        const valor = inputPesquisa.value;
+
+        // Recupera a ação do formulário (a URL para onde o formulário será enviado)
+        const urlDestino = new URL(formPesquisa.action);
+        
+        // Salva o valor no localStorage se a URL de destino contiver 'buscar'
+        if (urlDestino.href.includes('buscar')) {
+            localStorage.setItem('valorPesquisa', valor);
+        } else {
+            // Se a URL não contiver 'buscar', remove o item do localStorage
+            localStorage.removeItem('valorPesquisa');
+        }
+    });
+
+    // Restaura o valor salvo ao carregar a página, se houver e se a URL atual contiver 'buscar'
+    if (window.location.href.includes('buscar')) {
+        const inputPesquisa = document.getElementById('pesquisa');
+        const valorSalvo = localStorage.getItem('valorPesquisa');
+        if (valorSalvo) {
+            inputPesquisa.value = valorSalvo;
+        }
+    }
 });
 
 </script>

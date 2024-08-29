@@ -18,12 +18,18 @@
     margin-top: 2rem;
 }
 
+.main-forms__campos_inst {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin: 2rem 0 0 2rem
+}
+
 .main-forms__campo_label {
     font-size: 1.5rem;
     font-weight: bold;
 }
 
-.main-forms__campo_input,
 .main-financeiro__select,
 .main-financeiro__select_periodo,
 .main-rotina__select {
@@ -32,6 +38,14 @@
     border-radius: 10px;
     box-shadow: var(--sombra-primaria);
 }
+
+.main-forms__campo_input {
+    width: 90%;
+    padding: 0.4rem;
+    border-radius: 10px;
+    box-shadow: var(--sombra-primaria);
+}
+
 
 .main-forms__campos_campo_periodo {
     display: flex;
@@ -64,7 +78,8 @@
 }
 
 .main-forms__botoes_botao,
-.main-forms__botoes_botao_cancel {
+.main-forms__botoes_botao_cancel,
+.main-forms__botoes_botao_cancel_inst {
     width: 10rem;
     padding: 0.3rem;
     border-radius: 15px;
@@ -76,10 +91,15 @@
     margin-bottom: 2rem;
 }
 
-.main-forms__botoes_botao_cancel {
+.main-forms__botoes_botao_cancel,
+.main-forms__botoes_botao_cancel_inst {
     text-decoration: none;
     text-align: center;
     border: 2px solid black;
+}
+
+.main-forms__botoes_botao_cancel_inst {
+    margin-right: 2rem;
 }
 
 .main-forms__campo_link {
@@ -303,6 +323,12 @@
     text-decoration: none;
 }
 
+.main-tabela__texto_tipo {
+    font-size: 1rem;
+    margin-left: 0.25rem;
+    margin-right: 0.25rem;
+}
+
 .main-tabela__link--delete {
     color: var(--cor-fonte-terciaria);
 }
@@ -318,17 +344,30 @@
     justify-content: center;
 }
 
-.main-novo__tipo_link {
+.main-novo__tipo_link,
+.main-novo__tipo_link_config,
+.main-novo__tipo_link_config_cat {
     width: 60%;
     align-self: center;
     justify-self: center;
+}
+
+.main-novo__tipo_link_config {
+    margin-left: 7rem;
+}
+
+.main-novo__tipo_link_config_cat {
+    margin-left: 2rem;
+    padding-right: 2.5rem;
+    padding-left: 2.5rem;
 }
 
 .main-novo__tipo_link__nova_inst {
     width: 60%;
     align-self: center;
     justify-self: center;
-    margin-left: 20rem;
+    margin-bottom: 1rem;
+    margin-left: 7rem;
 }
 
 .main-novo__tipo {
@@ -558,12 +597,13 @@
 .main-tabela-dia__conteudo_atividade {
     border: 2px solid black;
     border-radius: 10px;
-    width: 20rem;
+    width: 100%;
     background-color: var(--cor-detalhes-primaria);
     color: var(--cor-fonte-secundaria);
     -webkit-text-stroke: 0.25px black;
     position: absolute;
     top: 100%; /* Posição do div em relação ao contêiner */
+    left: 0;
     overflow: hidden; /* Oculta o texto que não cabe */
     text-overflow: ellipsis; /* Adiciona reticências no final */
     z-index: 1;
@@ -920,7 +960,8 @@
     margin-left: 1.5rem;
 }
 
-.main-show__atividade__botoes_botao{
+.main-show__atividade__botoes_botao,
+.main-show__atividade__botoes_botao_delAtiv {
     width: 10rem;
     padding: 0.3rem;
     border-radius: 15px;
@@ -930,6 +971,10 @@
     font-weight: bold;
     font-size: 1.1rem;
     margin-bottom: 3rem;
+}
+
+.main-show__atividade__botoes_botao_delAtiv {
+    margin-right: 2rem;
 }
 
 .main-lista__link {
@@ -1287,10 +1332,15 @@
         margin-top: 1.5rem;
     }
 
-    .main-show__atividade__botoes_botao{
+    .main-show__atividade__botoes_botao,
+    .main-show__atividade__botoes_botao_delAtiv {
         width: 12.5rem;
         padding: 0.4rem;
         margin-bottom: 2rem;
+    }
+
+    .main-show__atividade__botoes_botao_delAtiv {
+        margin-right: 0;
     }
 
     .main-financeiro {
@@ -1341,6 +1391,38 @@
 
     .main-financeiro__grafico {
         padding-bottom: 2rem;
+    }
+
+    .main-novo__tipo_link {
+        margin-left: 8rem;
+    }
+
+    .main-novo__tipo_link__nova_inst {
+        margin: 0 0 0 20rem;
+    }
+
+    .main-forms__campo_input {
+    width: 100%;
+    }
+
+    .main-forms__campos_inst {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+
+    .main-novo__tipo_link_config,
+    .main-novo__tipo_link_config_cat {
+        margin-left: 0;
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    .main-tabela__texto_tipo {
+        font-size: 1rem;
+        margin-left: 0;
+        margin-right: 0;
     }
 
 }

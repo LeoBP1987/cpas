@@ -1,5 +1,12 @@
 from django.contrib import admin
-from atividades.models import TipoAtividade, Instituicao, Atividades
+from atividades.models import TipoAtividade, Instituicao, Atividades,Categoria, Preferencias
+
+class ListandoCategoria(admin.ModelAdmin):
+    list_display = ('id', 'nome_categoria')
+    list_display_links = ('id', 'nome_categoria')
+    search_fields = ('nome_categoria',)
+    list_filter = ('nome_categoria',)
+    list_per_page = 10
 
 class ListandoTipoAtividade(admin.ModelAdmin):
     list_display = ('id', 'nome_tipo', 'categoria')
@@ -22,6 +29,15 @@ class ListandoAtividades(admin.ModelAdmin):
     list_filter = ('data', 'fixo_mensal_ativ', 'valor')
     list_per_page = 10
 
+class ListandoPreferencias(admin.ModelAdmin):
+    list_display = ('id', 'horas_sono', 'tipo_grafico')
+    list_display_links = ('id',)
+    search_fields = ('horas_sono', 'tipo_grafico')
+    list_filter = ('horas_sono', 'tipo_grafico')
+    list_per_page = 10
+
 admin.site.register(TipoAtividade, ListandoTipoAtividade)
 admin.site.register(Instituicao, ListandoInstituicao)
 admin.site.register(Atividades, ListandoAtividades)
+admin.site.register(Categoria, ListandoCategoria)
+admin.site.register(Preferencias, ListandoPreferencias)

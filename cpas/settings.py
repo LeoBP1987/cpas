@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'atividades.apps.AtividadesConfig',
     'calendario.apps.CalendarioConfig',
     'usuarios.apps.UsuariosConfig',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [

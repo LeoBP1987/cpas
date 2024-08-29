@@ -5,7 +5,7 @@
         <h2 class="main-titulo">Editar Instituição</h2>
         <form class="main-forms" action="{% url 'editar_instituicao' inst.id %}" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            <div class="main-forms__campos">
+            <div class="main-forms__campos_inst">
                 {% for field in forms %}
                     {% if field.label == 'Fixo Mensal' %}
                         <div class="main-forms__campos_campo_checkbox">
@@ -31,7 +31,7 @@
                 {% endfor %}
             <div class="main-forms__botoes">
                 <button class="main-forms__botoes_botao" type="submit">EDITAR</button>
-                <a class="main-forms__botoes_botao_cancel" href="{% url 'instituicoes' %}">CANCELAR</a>
+                <a class="main-forms__botoes_botao_cancel_inst" href="{% url 'instituicoes' %}">CANCELAR</a>
             </div>
         </form>
         

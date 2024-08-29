@@ -17,17 +17,17 @@
                     <td class="main-tabela__conteudo">{{tipo.categoria}}</td>
                     <td class="main-tabela__edit_botoes">
                         <a  class="main-tabela__link" href="{% url 'editar_tipo' tipo.id %}">
-                            <p class="main-tabela__texto">Edit</p>
+                            <p class="main-tabela__texto_tipo">Edit</p>
                         </a>
                     </td>
                     <td class="main-tabela__edit_botoes">
                         <a  class="main-tabela__link main-tabela__link--delete" href="{% url 'deletar_tipo' tipo.id %}">
-                            <p class="main-tabela__texto">Del</p>
+                            <p class="main-tabela__texto_tipo">Del</p>
                         </a>
                     </td>
                 </tr>
                 {% endfor %}                        
         </table>
-        <a class="main-novo__tipo_link" href="{% url 'novo_tipo' %}"><button class="main-novo__tipo">Novo Tipo</button></a>
+        <a class="main-novo__tipo_link_config" href="{% url 'novo_tipo' %}"><button class="main-novo__tipo">Novo Tipo</button></a>
     </main>
     {% endblock %}

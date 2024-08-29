@@ -2,8 +2,8 @@
 {% load static %}
     {% block content %}
     <main class="main">
-        <h2 class="main-titulo">Editar Tipo</h2>
-        <form class="main-forms" action="{% url 'editar_tipo' tipo.id %}" method="POST" enctype="multipart/form-data">
+        <h2 class="main-titulo">Editar Categoria</h2>
+        <form class="main-forms" action="{% url 'editar_categoria' categoria.id %}" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="main-forms__campos">
                 {% for field in forms %}
@@ -14,7 +14,7 @@
                 {% endfor %}
             <div class="main-forms__botoes">
                 <button class="main-forms__botoes_botao" type="submit">EDITAR</button>
-                <a class="main-forms__botoes_botao_cancel" href="{% url 'tipos' %}">CANCELAR</a>
+                <a class="main-forms__botoes_botao_cancel" href="{% url 'categorias' %}">CANCELAR</a>
             </div>
         </form>
     </main>

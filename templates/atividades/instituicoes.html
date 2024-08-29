@@ -3,7 +3,7 @@
     {% block content %}
     <main class="main">
         <h2 class="main-titulo">Instituições</h2>
-       <ul class="main-lista">
+        <ul class="main-lista">
         {% for instituicao in instituicoes %}
             <li class="main-lista__item">
                 <div class="main-lista__item__cabecalho">
@@ -38,6 +38,7 @@
                 </div>
             </li>
         {% endfor %}
+        </ul>
         <div class="main-botao__novos">
             <a class="main-novo__tipo_link__nova_inst" href="{% url 'nova_instituicao' %}"><button class="main-novo__tipo">Nova Instituição</button></a>
         </div>

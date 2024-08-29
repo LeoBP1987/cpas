@@ -4,7 +4,9 @@
     <main class="main">
         <h2 class="main-titulo">Configurações</h2>
         <div class="main-config__botoes">
+            <a href="{% url 'preferencias' %}" class="main-config__botoes_botao">PREFERÊNCIAS</a>
             <a href="{% url 'alterar_senha' %}" class="main-config__botoes_botao">ALTERAR SENHA</a>
+            <a href="{% url 'categorias' %}" class="main-config__botoes_botao">CATEGORIAS</a>
             <a href="{% url 'tipos' %}" class="main-config__botoes_botao">TIPOS DE ATIVIDADE</a>
             <a href="{% url 'gerar_calendario' %}" class="main-config__botoes_botao">GERAR CALENDÁRIO PARA NOVO ANO CORRENTE</a>
             <a href="#" class="main-config__botoes_botao">COPIA DE ESTRUTURA ENTRE ANOS CORRENTES</a>

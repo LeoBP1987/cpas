@@ -49,6 +49,7 @@
     border: 1px solid;
     position: absolute;
     top: 100%;
+    z-index: 100;
     width: 60vw;
 }
 
@@ -110,8 +111,11 @@
     margin: 0 1rem 0 0;
 }
 
-.header-menu__input_pesquisa {
+.header-menu__form_pesquisa_mobile {
     display: none;
+}
+
+.header-menu__input_pesquisa {
     background: url('/static/assets/icones/lupa_preto.png') no-repeat right center;
     background-size: 20px;
     background-color: white;
@@ -128,7 +132,7 @@
     display: none;
 }
 
-.header-menu__checkbox_pesquisa:checked~.header-menu__input_pesquisa{
+.header-menu__checkbox_pesquisa:checked~.header-menu__form_pesquisa_mobile{
     display: block;
 }
 
@@ -175,8 +179,12 @@
         border: 1.5px solid;
         border-radius: 15px;
         padding: 0.70rem;
-        width: 70%;
+        width: 100%;
         box-shadow: var(--sombra-primaria);
+    }
+
+    .header-cabecalho-form{
+        width: 70%;
     }
 
     .header-cabecalho-titulo__login {

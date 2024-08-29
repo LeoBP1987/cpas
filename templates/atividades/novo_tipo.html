@@ -14,7 +14,7 @@
                 {% endfor %}
             <div class="main-forms__botoes">
                 <button class="main-forms__botoes_botao" type="submit">CADASTRAR</button>
-                <button class="main-forms__botoes_botao" type="submit" onclick=window.location.href="{% url 'tipos' %}">CANCELAR</button>
+                <a class="main-forms__botoes_botao_cancel" href="{% url 'tipos' %}">CANCELAR</a>
             </div>
         </form>
     </main>

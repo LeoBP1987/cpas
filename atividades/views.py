@@ -2,11 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_GET
+from django.db.models import Q
 from django.contrib import messages, auth
 from datetime import date, timedelta, datetime
 from dateutil.relativedelta import relativedelta
-from atividades.forms import TipoAtividadeForms, InstituicaoForms, AtividadesForms
-from atividades.models import TipoAtividade, Instituicao, Atividades
+from atividades.forms import TipoAtividadeForms, InstituicaoForms, AtividadesForms, CategoriaForms, PreferenciasForms
+from atividades.models import TipoAtividade, Instituicao, Atividades, Categoria, Preferencias
 from calendario.models import Calendario
 from calendario.views import agendar, checar_sequencia, gerar_dia_semana, gerar_mes
 import json
@@ -18,12 +19,19 @@ def index(request):
 
     if not request.user.is_authenticated:
         return redirect('login')
-    
-    dict_atividade = {}
 
     dia_atual = datetime.today().date() - timedelta(days=1)
 
     atividades = Atividades.objects.filter(data__gt=dia_atual).order_by('data')
+
+    list_atividades = gerar_lista_atividade(atividades)
+
+
+    return render(request, 'atividades/index.html', {'atividades': list_atividades})
+
+def gerar_lista_atividade(atividades):
+
+    dict_atividade = {}
 
     for atividade in atividades:
         descricao = atividade.tipo_atividade.nome_tipo
@@ -69,7 +77,20 @@ def index(request):
     
     list_atividades = list(dict_atividade.values())
 
-    return render(request, 'atividades/index.html', {'atividades': list_atividades})
+    return list_atividades
+
+def buscar(request):
+
+    atividades = Atividades.objects.all().order_by('data')
+
+    if 'buscar' in request.GET:
+        nome_a_buscar = request.GET['buscar']
+        if nome_a_buscar:
+            atividades = Atividades.objects.filter(Q(instituicao__nome_inst__icontains=nome_a_buscar) | Q(tipo_atividade__nome_tipo__icontains=nome_a_buscar) | Q(instituicao__nome_curto__icontains=nome_a_buscar))
+
+    list_atividades = gerar_lista_atividade(atividades)
+
+    return render(request, 'atividades/buscar.html', {'atividades':list_atividades})
 
 def descrever_seq_perso(seq_perso, dia_semana):
     # Dicionário para mapear índices às descrições ordinais
@@ -189,7 +210,6 @@ def deletar_instituicao(request, id_inst):
 
     messages.success(request, 'Deleção realizada com sucesso!')
     return redirect('instituicoes')
-
 
 def nova_instituicao(request):
     
@@ -335,6 +355,7 @@ def nova_atividade(request):
 def editar_atividade(request, id_atividade):
 
     data_atual = datetime.today().date()
+    data_control = data_atual - timedelta(days=1)
     atividade = get_object_or_404(Atividades, id=id_atividade)
     forms = AtividadesForms(instance=atividade)
 
@@ -368,7 +389,7 @@ def editar_atividade(request, id_atividade):
                 messages.success(request, 'Atividade editada com sucesso')
                 return redirect('index')
             elif param == '2':
-                atividades = Atividades.objects.filter(cod=atividade.cod, data__lt=data_atual)
+                atividades = Atividades.objects.filter(cod=atividade.cod, data__gt=data_control)
 
                 inst = forms['instituicao'].value()
                 instituicao = get_object_or_404(Instituicao, id=inst)
@@ -389,7 +410,6 @@ def editar_atividade(request, id_atividade):
             messages.error(request, f'{forms.errors}')
 
     return render(request, 'atividades/editar_atividade.html', {'forms':forms, 'atividade':atividade})
-
 
 def deletar_atividade(request, id_atividade):
 
@@ -412,12 +432,12 @@ def deletar_atividade(request, id_atividade):
         messages.error(request, 'Ocorreu um erro deleção não pode ser realizada!')
         return redirect('index')
 
-
 def deletar_sequencia(request, id_atividade):
 
     data_atual = datetime.today().date()
+    data_control = data_atual - timedelta(days=1)
 
-    atividade = Atividades.objects.filter(id=id_atividade, data__lt=data_atual)
+    atividade = Atividades.objects.filter(id=id_atividade, data__gt=data_control)
     cod = atividade.cod
     
     atividades = Atividades.objects.filter(cod=cod)
@@ -438,6 +458,57 @@ def deletar_sequencia(request, id_atividade):
         messages.error(request, 'Ocorreu um erro deleção não pode ser realizada!')
         return redirect('index')
 
+def categorias(request):
+
+    categorias = Categoria.objects.all()
+
+    return render(request, 'atividades/categorias.html', {'categorias':categorias})
+
+def nova_categoria(request):
+
+    forms = CategoriaForms()
+
+    if request.method == 'POST':
+
+        forms = CategoriaForms(request.POST)
+
+        if forms.is_valid():
+            forms.save()
+            messages.success(request,'Nova Categoria Cadastrada com Sucesso!')
+            return redirect('categorias')
+        else:
+            messages.error(request,'Erro ao realizar o cadastro. Favor, verifique as informações e tente novamente.')
+            return redirect('categorias')
+
+    return render(request, 'atividades/nova_categoria.html', {'forms':forms})
+
+def editar_categoria(request, categoria_id):
+
+    categoria = Categoria.objects.get(id=categoria_id)
+    
+    forms = CategoriaForms(instance=categoria)
+
+    if request.method == 'POST':
+
+        forms = CategoriaForms(request.POST, instance=categoria)
+
+        if forms.is_valid():
+            forms.save()
+            messages.success(request,'Alterações realizadas com sucesso!')
+            return redirect('categorias')
+        else:
+            messages.error(request, 'Não foi possível realizar a edição. Favor revise os dados ou entre em contato com o administrador do sistema.')
+
+    return render(request, 'atividades/editar_categoria.html', {'forms':forms, 'categoria':categoria})
+
+def deletar_categoria(request, categoria_id):
+
+    categoria = Categoria.objects.get(id=categoria_id)
+
+    categoria.delete()
+
+    messages.success(request, 'Deleção realizada com sucesso!')
+    return redirect('categorias')
 
 def tipos(request):
 
@@ -458,29 +529,30 @@ def get_valor_fixo(request, instituicao_id):
     
 def filtrar_financeiro(atividades):
 
-    data_inicio = atividades.order_by('data').first()
-    data_inicio = data_inicio.data
-    data_final = atividades.order_by('data').last()
-    data_final = data_final.data
-
-    qt_meses = (data_final.month + 1) - data_inicio.month
-
     dict_financ = {}
-    total = 0
-    total_fixo = 0
-    total_variavel = 0
-    qt_atividade = 0
-    qt_hora = 0
-    list_dia_trab = []
-    list_mes = []
-    list_id_vir = []
-    list_fixo = []
-
-    dict_inst = gerar_grafico_instituicao(atividades, qt_meses)
-    lista_etiqueta = list(dict_inst.keys())
-    lista_valores = list(dict_inst.values())
 
     if atividades:
+
+        data_inicio = atividades.order_by('data').first()
+        data_inicio = data_inicio.data
+        data_final = atividades.order_by('data').last()
+        data_final = data_final.data
+
+        qt_meses = (data_final.month + 1) - data_inicio.month
+
+        total = 0
+        total_fixo = 0
+        total_variavel = 0
+        qt_atividade = 0
+        qt_hora = 0
+        list_dia_trab = []
+        list_mes = []
+        list_id_vir = []
+        list_fixo = []
+
+        dict_inst = gerar_grafico_instituicao(atividades, qt_meses)
+        lista_etiqueta = list(dict_inst.keys())
+        lista_valores = list(dict_inst.values())
 
         for atividade in atividades:
 
@@ -523,6 +595,7 @@ def filtrar_financeiro(atividades):
             'media_dia_trab': f'R$ {"{:,.2f}".format(total / len(list_dia_trab) if list_dia_trab else 0).replace(",", "X").replace(".", ",").replace("X", ".")}',
             'media_mes': f'R$ {"{:,.2f}".format(total / len(list_mes) if list_mes else 0).replace(",", "X").replace(".", ",").replace("X", ".")}'
         }
+
     else:
         dict_financ['financeiro'] = {
             'total': 'R$ 0,00',
@@ -532,8 +605,10 @@ def filtrar_financeiro(atividades):
             'media_mes': 'R$ 0,00'
         }
 
-    return {'dict_financ': dict_financ, 'etiquetas': lista_etiqueta, 'valores': lista_valores}
+        lista_etiqueta = ''
+        lista_valores = ''
 
+    return {'dict_financ': dict_financ, 'etiquetas': lista_etiqueta, 'valores': lista_valores}
 
 def filtrar_mes(mes):
 
@@ -598,7 +673,6 @@ def gerar_grafico_instituicao(atividades, qt_meses):
     list_cod_fixo = []
     list_id_vir = []
     
-    
     for atividade in atividades:
         nome_inst = atividade.instituicao.nome_inst
 
@@ -662,30 +736,34 @@ def gerar_grafico_mes(atividades) :
     for atividade in atividades:
         mes = atividade.data.month
         control = f'{atividade.cod_fixo_ativ} - {mes}'
+        nome_mes = gerar_mes(atividade.data)
 
         if atividade.id_vir not in list_id_vir:
             list_id_vir.append(atividade.id_vir)
 
             # Inicializa o total se a instituição ainda não estiver no dicionário
-            if mes not in dict_mes:
-                dict_mes[mes] = 0
+            if nome_mes not in dict_mes:
+                dict_mes[nome_mes] = 0
 
             if atividade.fixo_mensal_ativ:
                 if control not in list_Control:
-                    dict_mes[mes] += float(atividade.valor)
+                    dict_mes[nome_mes] += float(atividade.valor)
                     list_Control.append(control)
             else:
                 # Adiciona o valor da atividade ao total da instituição
                 try:
-                    dict_mes[mes] += float(atividade.valor)
+                    dict_mes[nome_mes] += float(atividade.valor)
                 except ValueError:
-                    dict_mes[mes] += 0  # Se ocorrer um erro de conversão, adicione 0
+                    dict_mes[nome_mes] += 0  # Se ocorrer um erro de conversão, adicione 0
         
     return dict_mes
     
 def financeiro(request):
 
-    mes = datetime.today().month        
+    mes = datetime.today().month
+
+    preferencias = Preferencias.objects.get(id=1)
+    tipo_grafico = preferencias.tipo_grafico        
 
     dict_financ = filtrar_mes(mes)
 
@@ -693,8 +771,7 @@ def financeiro(request):
     valores = dict_financ['valores']
     dict_financ = dict_financ['dict_financ']
 
-    return render(request, 'atividades/financeiro.html', {'financeiro': dict_financ, 'etiquetas': json.dumps(etiquetas), 'valores': json.dumps(valores)})
-
+    return render(request, 'atividades/financeiro.html', {'financeiro': dict_financ, 'etiquetas': json.dumps(etiquetas), 'valores': json.dumps(valores), 'tipo': json.dumps(tipo_grafico)})
 
 @require_GET
 def atualizar_financeiro(request):
@@ -704,15 +781,20 @@ def atualizar_financeiro(request):
             if periodoSelect == '1':
                 mesSelect = request.GET.get('mesSelect')
                 dict_financ = filtrar_mes(int(mesSelect))
+
             elif periodoSelect == '2':
                 anoSelect = request.GET.get('anoSelect')
                 dict_financ = filtrar_ano(int(anoSelect))
+
             elif periodoSelect == '3':
                 dict_financ = filtrar_ate_fim_mes()
+
             elif periodoSelect == '4':
                 dict_financ = filtrar_ate_fim_ano()
+
             elif periodoSelect == '5':
                 dict_financ = filtrar_todo_periodo()
+
             elif periodoSelect == '6':
                 dataInicio = request.GET.get('dataInicio')
                 dataFinal = request.GET.get('dataFinal')
@@ -731,15 +813,17 @@ def atualizar_financeiro(request):
             etiquetas = dict_financ['etiquetas']
             valores = dict_financ['valores']
             dict_financ = dict_financ['dict_financ']
+            preferencias = Preferencias.objects.get(id=1)
+            tipo = preferencias.tipo_grafico
         else:       
             return JsonResponse({'error': 'Nenhum dado encontrado'}, status=404)
 
         try:
-            html_content = render_to_string('atividades/partials/base_financeiro.html', {'financeiro': dict_financ, 'etiquetas': etiquetas, 'valores': valores})
+            html_content = render_to_string('atividades/partials/base_financeiro.html', {'financeiro': dict_financ, 'etiquetas': etiquetas, 'valores': valores, 'tipo': tipo})
         except Exception as e:
             return JsonResponse({'error': f'Erro ao renderizar o template: {str(e)}'}, status=500)
 
-        return JsonResponse({'html': html_content, 'etiquetas': etiquetas, 'valores': valores})
+        return JsonResponse({'html': html_content, 'etiquetas': etiquetas, 'valores': valores, 'tipo': tipo})
     else:
         return JsonResponse({'error': 'Requisição inválida'}, status=400)
     
@@ -789,30 +873,37 @@ def atualizar_grafico(request):
         except ValueError:
             return JsonResponse({'error': 'Data inválida'}, status=400)
         
-        data_inicio = atividades.order_by('data').first()
-        data_inicio = data_inicio.data
-        data_final = atividades.order_by('data').last()
-        data_final = data_final.data
+        if atividades:
+            data_inicio = atividades.order_by('data').first()
+            data_inicio = data_inicio.data
+            data_final = atividades.order_by('data').last()
+            data_final = data_final.data
 
-        qt_meses = (data_final.month + 1) - data_inicio.month
-        
-        try:
-            if graficoSelect == '1':
-                dict_financ = gerar_grafico_instituicao(atividades, qt_meses)
-            elif graficoSelect == '2':
-                dict_financ = gerar_grafico_tipo(atividades, qt_meses)
-            elif graficoSelect == '3':
-                dict_financ = gerar_grafico_mes(atividades)
-        except ValueError:
-            return JsonResponse({'error': 'Grafico Select Inválido'}, status=400)
+            qt_meses = (data_final.month + 1) - data_inicio.month
+
+            try:
+                if graficoSelect == '1':
+                    dict_financ = gerar_grafico_instituicao(atividades, qt_meses)
+                elif graficoSelect == '2':
+                    dict_financ = gerar_grafico_tipo(atividades, qt_meses)
+                elif graficoSelect == '3':
+                    dict_financ = gerar_grafico_mes(atividades)
+            except ValueError:
+                return JsonResponse({'error': 'Grafico Select Inválido'}, status=400)
+        else:
+            dict_financ = {
+                '':''
+            }
         
         if dict_financ:
             etiquetas = list(dict_financ.keys())
             valores = list(dict_financ.values())
+            preferencias = Preferencias.objects.get(id=1)
+            tipo = preferencias.tipo_grafico
         else:       
             return JsonResponse({'error': 'Nenhum dado encontrado'}, status=404)
 
-        return JsonResponse({'etiquetas': etiquetas, 'valores': valores})
+        return JsonResponse({'etiquetas': etiquetas, 'valores': valores, 'tipo': tipo})
     else:
         return JsonResponse({'error': 'Requisição inválida'}, status=400)
     
@@ -821,7 +912,12 @@ def filtrar_rotina(atividades, quant_dias):
     dict_rotina = {}
 
     quant_horas_totais = quant_dias*24
+    quant_semanas = quant_dias // 7 if (quant_dias // 7) > 0 else 1
     
+    preferencias = get_preferencias()
+    horas_sono = preferencias['horas_sono']
+    quant_horas_sono = horas_sono * quant_dias
+
     qt_atividade = 0
     horas = 0
     qt_hora = 0
@@ -852,7 +948,7 @@ def filtrar_rotina(atividades, quant_dias):
             else:
                 qt_hora = qt_hora + horas
 
-            qt_hora_livre = quant_horas_totais - qt_hora
+            qt_hora_livre = quant_horas_totais - (qt_hora + quant_horas_sono)
 
             qt_atividade = len(list_id_vir)
 
@@ -860,9 +956,9 @@ def filtrar_rotina(atividades, quant_dias):
             'horas_atividade': qt_hora,
             'horas_livres': qt_hora_livre,
             'qt_atividade': qt_atividade,
-            'media_hr_trab_sem': f'{round(qt_hora_remu / 4)} horas',
-            'media_hr_ativ_sem': f'{round(qt_hora / 4)} horas',
-            'media_hr_livre_sem': f'{round(qt_hora_livre / 4)} horas',
+            'media_hr_trab_sem': f'{round(qt_hora_remu / quant_semanas)} horas',
+            'media_hr_ativ_sem': f'{round(qt_hora / quant_semanas)} horas',
+            'media_hr_livre_sem': f'{round(qt_hora_livre / quant_semanas)} horas',
             'media_hr_trab_dia': f'{round(qt_hora_remu / quant_dias)} horas',
             'media_hr_ativ_dia': f'{round(qt_hora / quant_dias)} horas',
             'media_hr_livre_dia': f'{round(qt_hora_livre / quant_dias)} horas',
@@ -871,14 +967,14 @@ def filtrar_rotina(atividades, quant_dias):
     else:
         dict_rotina['rotina'] = {
             'horas_atividade': qt_hora,
-            'horas_livres': qt_hora_livre,
+            'horas_livres': qt_hora_livre - quant_horas_sono,
             'qt_atividade': qt_atividade,
             'media_hr_trab_sem': f'0 horas',
             'media_hr_ativ_sem': f'0 horas',
-            'media_hr_livre_sem': f'{round(qt_hora_livre / 4)} horas',
+            'media_hr_livre_sem': f'{round((qt_hora_livre - quant_horas_sono) / quant_semanas)} horas',
             'media_hr_trab_dia': f'0 horas',
             'media_hr_ativ_dia': f'0 horas',
-            'media_hr_livre_dia': f'{round(qt_hora_livre / quant_dias)} horas',
+            'media_hr_livre_dia': f'{round((qt_hora_livre - quant_horas_sono) / quant_dias)} horas',
             'media_hr_ativ': f'0 horas'
         }
 
@@ -974,19 +1070,20 @@ def gerar_grafico_remuneracao_rotina(atividades) :
     horas_remu = 0
     horas_nr = 0
 
-    for atividade in atividades:
-        if atividade.entrada < atividade.saida:
-            horas = atividade.saida - atividade.entrada
-        else:
-            horas = ((24 - atividade.entrada) + atividade.saida)
+    if atividades:
+        for atividade in atividades:
+            if atividade.entrada < atividade.saida:
+                horas = atividade.saida - atividade.entrada
+            else:
+                horas = ((24 - atividade.entrada) + atividade.saida)
 
-        if atividade.nao_remunerado == False:
-            horas_remu += horas
-        else:
-            horas_nr += horas
-        
-    dict_remu['Remuneradas'] = horas_remu
-    dict_remu['Não Remuneradas'] = horas_nr
+            if atividade.nao_remunerado == False:
+                horas_remu += horas
+            else:
+                horas_nr += horas
+            
+        dict_remu['Remuneradas'] = horas_remu
+        dict_remu['Não Remuneradas'] = horas_nr
 
     return dict_remu
 
@@ -995,24 +1092,26 @@ def gerar_grafico_tipo_rotina(atividades):
     dict_tipo = {}
     horas = 0
 
-    for atividade in atividades:
+    if atividades:
 
-        if atividade.entrada < atividade.saida:
-            horas = atividade.saida - atividade.entrada
-        else:
-            horas = ((24 - atividade.entrada) + atividade.saida)
+        for atividade in atividades:
 
-        nome_tipo = atividade.tipo_atividade.nome_tipo
+            if atividade.entrada < atividade.saida:
+                horas = atividade.saida - atividade.entrada
+            else:
+                horas = ((24 - atividade.entrada) + atividade.saida)
 
-        # Inicializa o total se a instituição ainda não estiver no dicionário
-        if nome_tipo not in dict_tipo:
-            dict_tipo[nome_tipo] = 0
-        
-        # Adiciona o valor da atividade ao total da instituição
-        try:
-            dict_tipo[nome_tipo] += horas
-        except ValueError:
-            dict_tipo[nome_tipo] += 0  # Se ocorrer um erro de conversão, adicione 0
+            nome_tipo = atividade.tipo_atividade.nome_tipo
+
+            # Inicializa o total se a instituição ainda não estiver no dicionário
+            if nome_tipo not in dict_tipo:
+                dict_tipo[nome_tipo] = 0
+            
+            # Adiciona o valor da atividade ao total da instituição
+            try:
+                dict_tipo[nome_tipo] += horas
+            except ValueError:
+                dict_tipo[nome_tipo] += 0  # Se ocorrer um erro de conversão, adicione 0
 
     return dict_tipo
 
@@ -1021,46 +1120,49 @@ def gerar_grafico_categoria_rotina(atividades):
     dict_categoria = {}
     horas = 0
 
-    for atividade in atividades:
+    if atividades:
 
-        if atividade.entrada < atividade.saida:
-            horas = atividade.saida - atividade.entrada
-        else:
-            horas = ((24 - atividade.entrada) + atividade.saida)
+        for atividade in atividades:
 
-        nome_categoria = atividade.tipo_atividade.categoria
+            if atividade.entrada < atividade.saida:
+                horas = atividade.saida - atividade.entrada
+            else:
+                horas = ((24 - atividade.entrada) + atividade.saida)
 
-        # Inicializa o total se a instituição ainda não estiver no dicionário
-        if nome_categoria not in dict_categoria:
-            dict_categoria[nome_categoria] = 0
-        
-        # Adiciona o valor da atividade ao total da instituição
-        try:
-            dict_categoria[nome_categoria] += horas
-        except ValueError:
-            dict_categoria[nome_categoria] += 0  # Se ocorrer um erro de conversão, adicione 0
+            nome_categoria = atividade.tipo_atividade.categoria.nome_categoria
+
+            # Inicializa o total se a instituição ainda não estiver no dicionário
+            if nome_categoria not in dict_categoria:
+                dict_categoria[nome_categoria] = 0
+            
+            # Adiciona o valor da atividade ao total da instituição
+            try:
+                dict_categoria[nome_categoria] += horas
+            except ValueError:
+                dict_categoria[nome_categoria] += 0  # Se ocorrer um erro de conversão, adicione 0
 
     return dict_categoria
 
-def gerar_grafico_ocupacao_rotina(atividades, quant_horas_totais):
+def gerar_grafico_ocupacao_rotina(atividades, quant_horas_totais, qt_horas_sono):
 
     dict_ocupacao = {}
 
     dict_ocupacao['Horas Ocupadas'] = 0
-    dict_ocupacao['Horas Livres'] = quant_horas_totais
+    dict_ocupacao['Horas Livres'] = quant_horas_totais - qt_horas_sono
 
-    for atividade in atividades:
+    if atividades:
 
-        if atividade.entrada < atividade.saida:
-            horas = atividade.saida - atividade.entrada
-        else:
-            horas = ((24 - atividade.entrada) + atividade.saida)
+        for atividade in atividades:
 
-        dict_ocupacao['Horas Ocupadas'] += horas
-        dict_ocupacao['Horas Livres'] -= horas
+            if atividade.entrada < atividade.saida:
+                horas = atividade.saida - atividade.entrada
+            else:
+                horas = ((24 - atividade.entrada) + atividade.saida)
+
+            dict_ocupacao['Horas Ocupadas'] += horas
+            dict_ocupacao['Horas Livres'] -= horas
 
     return dict_ocupacao
-
 
 def rotina(request):
 
@@ -1068,11 +1170,14 @@ def rotina(request):
 
     dict_rotina = filtrar_mes_rotina(mes)
 
+    preferencias = get_preferencias()
+    tipo = preferencias['tipo_grafico']
+
     etiquetas = dict_rotina['etiquetas']
     valores = dict_rotina['valores']
     dict_rotina = dict_rotina['dict_rotina']
 
-    return render(request, 'atividades/rotina.html', {'rotina': dict_rotina, 'etiquetas': json.dumps(etiquetas), 'valores': json.dumps(valores)})
+    return render(request, 'atividades/rotina.html', {'rotina': dict_rotina, 'etiquetas': json.dumps(etiquetas), 'valores': json.dumps(valores), 'tipo': json.dumps(tipo)})
 
 @require_GET
 def atualizar_rotina(request):
@@ -1109,15 +1214,16 @@ def atualizar_rotina(request):
             etiquetas = dict_rotina['etiquetas']
             valores = dict_rotina['valores']
             dict_rotina = dict_rotina['dict_rotina']
+            preferencias = get_preferencias()
         else:       
             return JsonResponse({'error': 'Nenhum dado encontrado'}, status=404)
 
         try:
-            html_content = render_to_string('atividades/partials/base_rotina.html', {'rotina': dict_rotina, 'etiquetas': etiquetas, 'valores': valores})
+            html_content = render_to_string('atividades/partials/base_rotina.html', {'rotina': dict_rotina, 'etiquetas': etiquetas, 'valores': valores, 'tipo':preferencias['tipo_grafico']})
         except Exception as e:
             return JsonResponse({'error': f'Erro ao renderizar o template: {str(e)}'}, status=500)
 
-        return JsonResponse({'html': html_content, 'etiquetas': etiquetas, 'valores': valores})
+        return JsonResponse({'html': html_content, 'etiquetas': etiquetas, 'valores': valores, 'tipo':preferencias['tipo_grafico']})
     else:
         return JsonResponse({'error': 'Requisição inválida'}, status=400)
     
@@ -1126,21 +1232,25 @@ def atualizar_grafico_rotina(request):
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         periodoSelect = request.GET.get('periodoSelect')
         graficoSelect = request.GET.get('graficoSelect')
+        preferencias = get_preferencias()
         try:
             if periodoSelect == '1':
                 mesSelect = request.GET.get('mesSelect')
                 atividades = Atividades.objects.filter(data__month=int(mesSelect))
                 quant_dias = calendar.monthrange(datetime.today().year, int(mesSelect))[1]
                 quant_horas = quant_dias * 24
+                qt_horas_sono = quant_dias * preferencias['horas_sono']
 
             elif periodoSelect == '2':
                 anoSelect = request.GET.get('anoSelect')
-                atividades = Atividades.objects.filter(data__year=int(anoSelect))
+                ano = int(anoSelect)
+                atividades = Atividades.objects.filter(data__year=ano)
                 data_inicio = datetime(ano, 1, 1).date()
                 data_final = datetime(ano, 12, 31).date()
                 diferenca = data_final - data_inicio
                 quant_dias = diferenca.days
                 quant_horas = quant_dias * 24
+                qt_horas_sono = quant_dias * preferencias['horas_sono']
 
             elif periodoSelect == '3':
                 data_inicio = datetime.today().date()
@@ -1151,6 +1261,7 @@ def atualizar_grafico_rotina(request):
                 atividades = Atividades.objects.filter(data__range=(data_inicio, data_final))
                 quant_dias = ultimo_dia - data_inicio.today().day
                 quant_horas = quant_dias * 24
+                qt_horas_sono = quant_dias * preferencias['horas_sono']
 
             elif periodoSelect == '4':
                 data_inicio = datetime.today().date()
@@ -1159,18 +1270,19 @@ def atualizar_grafico_rotina(request):
                 atividades = Atividades.objects.filter(data__range=(data_inicio, data_final))
                 diferenca = data_final - data_inicio
                 quant_dias = diferenca.days
-                quant_horas = quant_dias * 24 
+                quant_horas = quant_dias * 24
+                qt_horas_sono = quant_dias * preferencias['horas_sono'] 
 
             elif periodoSelect == '5':
                 atividades = Atividades.objects.all()
 
                 data_inicio = Atividades.objects.all().order_by('data').first()
-                data_final = Atividades.objects.all().order_by('-data').last()
+                data_final = Atividades.objects.all().order_by('data').last()
 
-                diferenca = data_final - data_inicio
+                diferenca = data_final.data - data_inicio.data
                 quant_dias = diferenca.days
                 quant_horas = quant_dias * 24
-
+                qt_horas_sono = quant_dias * preferencias['horas_sono']
 
             elif periodoSelect == '6':
                 dataInicio = request.GET.get('dataInicio')
@@ -1190,29 +1302,85 @@ def atualizar_grafico_rotina(request):
                 diferenca = data_final - data_inicio
                 quant_dias = diferenca.days
                 quant_horas = quant_dias * 24
+                qt_horas_sono = quant_dias * preferencias['horas_sono']
 
         except ValueError:
             return JsonResponse({'error': 'Data inválida'}, status=400)
         
-        try:
-            if graficoSelect == '1':
-                dict_rotina = gerar_grafico_remuneracao_rotina(atividades)
-            elif graficoSelect == '2':
-                dict_rotina = gerar_grafico_tipo_rotina(atividades)
-            elif graficoSelect == '3':
-                dict_rotina = gerar_grafico_categoria_rotina(atividades)
-            elif graficoSelect == '4':
-                dict_rotina = gerar_grafico_ocupacao_rotina(atividades, quant_horas)
-        except ValueError:
-            return JsonResponse({'error': 'Grafico Select Inválido'}, status=400)
+        if atividades:
+        
+            try:
+                if graficoSelect == '1':
+                    dict_rotina = gerar_grafico_remuneracao_rotina(atividades)
+                elif graficoSelect == '2':
+                    dict_rotina = gerar_grafico_tipo_rotina(atividades)
+                elif graficoSelect == '3':
+                    dict_rotina = gerar_grafico_categoria_rotina(atividades)
+                elif graficoSelect == '4':
+                    dict_rotina = gerar_grafico_ocupacao_rotina(atividades, quant_horas, qt_horas_sono)
+            except ValueError:
+                return JsonResponse({'error': 'Grafico Select Inválido'}, status=400)
+        else:
+            dict_rotina = {
+                '':'',
+            }
         
         if dict_rotina:
             etiquetas = list(dict_rotina.keys())
             valores = list(dict_rotina.values())
+            preferencias = get_preferencias()
         else:       
             return JsonResponse({'error': 'Nenhum dado encontrado'}, status=404)
 
-        return JsonResponse({'etiquetas': etiquetas, 'valores': valores})
+        return JsonResponse({'etiquetas': etiquetas, 'valores': valores, 'tipo':preferencias['tipo_grafico']})
     else:
         return JsonResponse({'error': 'Requisição inválida'}, status=400)
     
+def preferencias(request):
+
+    preferencias = Preferencias.objects.get(id=1)
+
+    dict_preferencia = {}
+
+    tipo_grafico = {
+        'bar': 'Barras',
+        'pie': 'Pizza',
+        'doughnut': 'Roscas'
+    }.get(preferencias.tipo_grafico, None)
+
+    dict_preferencia = {
+        'horas_sono':f'{preferencias.horas_sono} horas',
+        'tipo_grafico': tipo_grafico
+    }
+
+    return render(request, 'atividades/preferencias.html', {'preferencias':dict_preferencia})
+
+def editar_preferencias(request):
+
+    preferencia = Preferencias.objects.get(id=1)
+    forms = PreferenciasForms(instance=preferencia)
+
+    if request.method == 'POST':
+
+        forms = PreferenciasForms(request.POST, instance=preferencia)
+
+        if forms.is_valid():
+            forms.save()
+            messages.success(request, 'Edição realizada com sucesso')
+            return redirect('preferencias')
+        else:
+            messages.error(request, 'Não foi possível realizar a edição. Favor revise os dados ou entre em contato com o administrador do sistema.')
+
+    return render(request, 'atividades/editar_preferencias.html', {'forms':forms})
+
+def get_preferencias():
+
+    preferencias = Preferencias.objects.get(id=1)
+
+    dict_preferencia = {
+        'horas_sono': preferencias.horas_sono,
+        'tipo_grafico': preferencias.tipo_grafico 
+    }
+
+    return dict_preferencia
+
