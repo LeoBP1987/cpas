@@ -1,5 +1,4 @@
 {% load static %}
-<div id="agenda" class="main-calendario__agenda">
     {% for item, detalhes in agenda.items %}
     {% if detalhes.mes %}
         <h3 class="main-agenda__cabecalho_titulo">{{detalhes.mes}}</h3>
@@ -20,4 +19,3 @@
         </div>
     </div>
     {% endfor %}
-</div>

@@ -1,5 +1,5 @@
 from django.urls import path
-from atividades.views import index, novo_tipo, nova_instituicao, nova_atividade, get_valor_fixo, \
+from atividades.views import atividades, novo_tipo, nova_instituicao, nova_atividade, get_valor_fixo, \
                             tipos, editar_tipo, deletar_tipo, instituicoes, editar_instituicao, \
                             deletar_instituicao, editar_atividade, deletar_atividade, deletar_sequencia, \
                             atividade, instituicao, financeiro, rotina, atualizar_financeiro, atualizar_grafico, \
@@ -7,7 +7,7 @@ from atividades.views import index, novo_tipo, nova_instituicao, nova_atividade,
                             deletar_categoria, preferencias, editar_preferencias, buscar
 
 urlpatterns = [
-    path('', index, name='index'),
+    path('atividades/', atividades, name='atividades'),
     path('tipos/', tipos, name='tipos'),
     path('novo_tipo/', novo_tipo, name='novo_tipo'),
     path('editar_tipo/<int:tipo_id>', editar_tipo, name='editar_tipo'),

@@ -39,10 +39,13 @@
             </label>
             <ul class="header-lista">
                 <li class="header-lista__item">
-                    <a class="header-lista__item_link" href="{% url 'index' %}">Atividades</a>
+                    <a class="header-lista__item_link" href="{% url 'index' %}">Calendário</a>
                 </li>
                 <li class="header-lista__item">
                     <a class="header-lista__item_link" href="{% url 'nova_atividade' %}">Add Atividades</a>
+                </li>
+                <li class="header-lista__item">
+                    <a class="header-lista__item_link" href="{% url 'atividades' %}">Atividades</a>
                 </li>
                 <li class="header-lista__item">
                     <a class="header-lista__item_link" href="{% url 'instituicoes' %}">Instituições</a>
@@ -52,9 +55,6 @@
                 </li>
                 <li class="header-lista__item">
                     <a class="header-lista__item_link" href="{% url 'rotina' %}">Rotina</a>
-                </li>
-                <li class="header-lista__item">
-                    <a class="header-lista__item_link" href="{% url 'calendario' %}">Calendário</a>
                 </li>
                 <li class="header-lista__item">
                     <a class="header-lista__item_link" href="{% url 'configuracoes' %}">Configurações</a>
@@ -76,14 +76,20 @@
     <aside class="menu-lateral">
         <div class="menu-lateral__item">
             <a class="item__link" href="{% url 'index' %}">
-                <img class="item__imagem" src="{% static 'assets/icones/atividade.png' %}" alt="Icone Atividades">
-                <h2 class="item__tituto">Atividades</h2>
+                <img class="item__imagem" src="{% static 'assets/icones/calendario.png' %}" alt="Icone Calendario">
+                <h2 class="item__tituto">Calendário</h2>
             </a>
         </div>
         <div class="menu-lateral__item">
             <a class="item__link" href="{% url 'nova_atividade' %}">
                 <img class="item__imagem" src="{% static 'assets/icones/add.png' %}" alt="Icone Add Atividades">
                 <h2 class="item__tituto">Add Atividades</h2>
+            </a>
+        </div>
+        <div class="menu-lateral__item">
+            <a class="item__link" href="{% url 'atividades' %}">
+                <img class="item__imagem" src="{% static 'assets/icones/atividade.png' %}" alt="Icone Atividades">
+                <h2 class="item__tituto">Atividades</h2>
             </a>
         </div>
         <div class="menu-lateral__item">
@@ -102,12 +108,6 @@
             <a class="item__link" href="{% url 'rotina' %}">
                 <img class="item__imagem" src="{% static 'assets/icones/rotina.png' %}" alt="Icone Rotina">
                 <h2 class="item__tituto">Rotina</h2>
-            </a>
-        </div>
-        <div class="menu-lateral__item">
-            <a class="item__link" href="{% url 'calendario' %}">
-                <img class="item__imagem" src="{% static 'assets/icones/calendario.png' %}" alt="Icone Calendario">
-                <h2 class="item__tituto">Calendário</h2>
             </a>
         </div>
         <div class="menu-lateral__item">

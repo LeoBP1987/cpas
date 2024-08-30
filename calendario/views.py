@@ -10,6 +10,21 @@ from django.contrib import messages
 import random
 import calendar
 
+def index(request):
+
+    if not request.user.is_authenticated:
+        return redirect('login')
+    
+    data_param = datetime.today().date()
+    mes = gerar_mes(data_param)
+
+    dict_agenda = montar_calendario_agenda()
+    dict_dia = montar_calendario_dia(data_param)
+    dict_semana = montar_calendario_semana(data_param)
+
+
+    return render(request, 'calendario/index.html', {'agenda':dict_agenda, 'dia': dict_dia, 'semana': dict_semana, 'data_param': data_param, 'mes': mes})
+
 def configuracoes(request):
 
     return render(request, 'calendario/configuracoes.html')
@@ -574,19 +589,6 @@ def montar_calendario_semana(data):
 
 
     return {'dict_semana': dict_semana, 'dict_horas': dict_horas}
-
-
-def exibir_calendario(request):
-    
-    data_param = datetime.today().date()
-    mes = gerar_mes(data_param)
-
-    dict_agenda = montar_calendario_agenda()
-    dict_dia = montar_calendario_dia(data_param)
-    dict_semana = montar_calendario_semana(data_param)
-
-
-    return render(request, 'calendario/calendario.html', {'agenda':dict_agenda, 'dia': dict_dia, 'semana': dict_semana, 'data_param': data_param, 'mes': mes})
 
 @require_GET
 def atualizar_calendario(request):

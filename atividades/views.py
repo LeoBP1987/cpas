@@ -15,10 +15,7 @@ import random
 import calendar
 
 
-def index(request):
-
-    if not request.user.is_authenticated:
-        return redirect('login')
+def atividades(request):
 
     dia_atual = datetime.today().date() - timedelta(days=1)
 
@@ -27,7 +24,7 @@ def index(request):
     list_atividades = gerar_lista_atividade(atividades)
 
 
-    return render(request, 'atividades/index.html', {'atividades': list_atividades})
+    return render(request, 'atividades/atividades.html', {'atividades': list_atividades})
 
 def gerar_lista_atividade(atividades):
 

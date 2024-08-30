@@ -4,16 +4,18 @@
 <main class="main">
     <h2 class="main-titulo_calendario">CALENDÁRIO</h2>
     <select class="main-calendario__opcoes" id="opcoes" name="opcoes">
-            <option value="agenda">Agenda</option>
-            <option value="dia">Dia</option>
             <option value="semana">Semana</option>
+            <option value="dia">Dia</option>
+            <option value="agenda">Agenda</option>
     </select>
-    {% include 'calendario/partials/base_calendario_agenda.html' %}
+    <div id="agenda_semana" class="main-calendario__semana">
+        {% include 'calendario/partials/base_calendario_semana.html' %}
+    </div>
     <div id="agenda_dia" class="display">    
         {% include 'calendario/partials/base_calendario_dia.html' %}
     </div>
-    <div id="agenda_semana" class="display">
-        {% include 'calendario/partials/base_calendario_semana.html' %}
+    <div id="agenda" class="display">
+        {% include 'calendario/partials/base_calendario_agenda.html' %}
     </div>
 </main>
 {% endblock %}
