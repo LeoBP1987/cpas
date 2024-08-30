@@ -7,9 +7,15 @@
             {% csrf_token %}
             <div class="main-forms__campos">
                 {% for field in forms %}
-                <div class="main-forms__campos_campo">
-                    <label for="instituicao" class="main-forms__campo_label">{{field.label}}</label>
-                    {{field}}
+                <div class="main-forms__campos_campo_pref">
+                    {% if field.label == 'Horário de envio das tarefas diárias' %}
+                        <label for="instituicao" class="main-forms__campo_label">{{field.label}}</label>
+                        {{field}}
+                        <label id="idTaskLabel" class="main-forms__label_task hidden_edit">A mudança será valida a partir do próximo dia.</label>
+                    {% else %}
+                        <label for="instituicao" class="main-forms__campo_label">{{field.label}}</label>
+                        {{field}}
+                    {% endif %}                    
                 </div>
                 {% endfor %}
             <div class="main-forms__botoes">

@@ -257,6 +257,13 @@
     font-weight: bold;
 }
 
+.main-forms__label_task {
+    color: var(--cor-fonte-terciaria);
+    font-weight: bold;
+    font-size: 1rem;
+    width: 90%;
+}
+
 .main-lista__botoes {
     grid-area: botoes;
 }
@@ -987,6 +994,11 @@
 
 .tabela-zero {
     border: none;
+}
+
+.main-forms__campos_campo_pref {
+    display: flex;
+    flex-direction: column;
 }
 
 .main-forms__valor_checkbox {

@@ -1707,6 +1707,18 @@ document.addEventListener('DOMContentLoaded', function() {
             inputPesquisa.value = valorSalvo;
         }
     }
+
+});
+
+document.addEventListener('DOMContentLoaded', function() { 
+    const horaEnvio = document.getElementById('idHoraEnvio');
+    const horaEnvioLabel = document.getElementById('idTaskLabel');
+
+    horaEnvioLabel.classList.add('hidden_edit');
+
+    horaEnvio.addEventListener('change', function() {
+        horaEnvioLabel.classList.remove('hidden_edit');
+    });
 });
 
 </script>

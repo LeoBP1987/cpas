@@ -81,7 +81,9 @@ def gerar_lista_atividade(atividades):
 
 def buscar(request):
 
-    atividades = Atividades.objects.all().order_by('data')
+    data_hoje = datetime.today().date()
+
+    atividades = Atividades.objects.filter(data__gt=data_hoje).order_by('data')
 
     if 'buscar' in request.GET:
         nome_a_buscar = request.GET['buscar']
@@ -222,7 +224,7 @@ def nova_instituicao(request):
             instituicao.cod_fixo = gerar_cod_fixo()
             instituicao.save()
             messages.success(request,'Nova Instituição Cadastrada com Sucesso!')
-            return redirect('index')
+            return redirect('instituicoes')
         else:
             messages.error(request,'Erro ao realizar o cadastro. Favor, verifique as informações e tente novamente.')
     else:
@@ -1350,7 +1352,8 @@ def preferencias(request):
 
     dict_preferencia = {
         'horas_sono':f'{preferencias.horas_sono} horas',
-        'tipo_grafico': tipo_grafico
+        'tipo_grafico': tipo_grafico,
+        'hora_envio_tarefas': preferencias.hora_envio_tarefas
     }
 
     return render(request, 'atividades/preferencias.html', {'preferencias':dict_preferencia})

@@ -30,10 +30,10 @@ class ListandoAtividades(admin.ModelAdmin):
     list_per_page = 10
 
 class ListandoPreferencias(admin.ModelAdmin):
-    list_display = ('id', 'horas_sono', 'tipo_grafico')
+    list_display = ('id', 'horas_sono', 'tipo_grafico', 'hora_envio_tarefas')
     list_display_links = ('id',)
-    search_fields = ('horas_sono', 'tipo_grafico')
-    list_filter = ('horas_sono', 'tipo_grafico')
+    search_fields = ('horas_sono', 'tipo_grafico', 'hora_envio_tarefas')
+    list_filter = ('horas_sono', 'tipo_grafico', 'hora_envio_tarefas')
     list_per_page = 10
 
 admin.site.register(TipoAtividade, ListandoTipoAtividade)

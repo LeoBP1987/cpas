@@ -144,12 +144,17 @@ tipos_graficos = [
 class PreferenciasForms(forms.ModelForm):
     class Meta:
         model = Preferencias
-        fields = ['horas_sono', 'tipo_grafico']
+        fields = ['horas_sono', 'tipo_grafico', 'hora_envio_tarefas']
         labels = {
             'horas_sono': 'Horas de sono ideais',
-            'tipo_grafico': 'Tipo de Gráfico'
+            'tipo_grafico': 'Tipo de Gráfico',
+            'hora_envio_tarefas': 'Horário de envio das tarefas diárias'
         }
         widgets =  {
             'horas_sono': forms.TextInput(attrs={'class':'main-forms__campo_input'}),
-            'tipo_grafico': forms.Select(attrs={'class':'main-forms__campo_input'}, choices=tipos_graficos)
+            'tipo_grafico': forms.Select(attrs={'class':'main-forms__campo_input'}, choices=tipos_graficos),
+            'hora_envio_tarefas': forms.TimeInput(attrs={'class':'main-forms__campo_input', 
+                                                         'type':'time', 
+                                                         'id': 'idHoraEnvio',
+                                                        }),
         }

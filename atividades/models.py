@@ -136,3 +136,4 @@ class Atividades(models.Model):
 class Preferencias(models.Model):
     horas_sono = models.IntegerField()
     tipo_grafico = models.CharField(max_length=10)
+    hora_envio_tarefas = models.TimeField(blank=True, null=True)
