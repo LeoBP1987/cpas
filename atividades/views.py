@@ -3,19 +3,19 @@ from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_GET
 from django.db.models import Q
-from django.contrib import messages, auth
+from django.contrib import messages
 from datetime import date, timedelta, datetime
-from dateutil.relativedelta import relativedelta
 from atividades.forms import TipoAtividadeForms, InstituicaoForms, AtividadesForms, CategoriaForms, PreferenciasForms
 from atividades.models import TipoAtividade, Instituicao, Atividades, Categoria, Preferencias
 from calendario.models import Calendario
-from calendario.views import agendar, checar_sequencia, gerar_dia_semana, gerar_mes
+from calendario.views import agendar, gerar_dia_semana, gerar_mes
 import json
 import random
 import calendar
 
-
 def atividades(request):
+
+    # Seleciona atividades do dia atual em diante e em ordem de criação, para que possam ser tratadas na função gerar_lista_atividade
 
     dia_atual = datetime.today().date() - timedelta(days=1)
 
@@ -28,6 +28,8 @@ def atividades(request):
 
 def gerar_lista_atividade(atividades):
 
+    # Trata as atividades recebidas para a montagem dos cards
+
     dict_atividade = {}
 
     for atividade in atividades:
@@ -39,6 +41,7 @@ def gerar_lista_atividade(atividades):
         
         if atividade.sequencia :
             data_final = f'{atividade.data_final_seq.day:02d}/{atividade.data_final_seq.month:02d}/{atividade.data_final_seq.year:04d}'
+
             if atividade.sequencia == '1':
                 descricao = f'{atividade.tipo_atividade.nome_tipo} diariamente até o dia {data_final}'
             elif atividade.sequencia == '2':
@@ -47,6 +50,7 @@ def gerar_lista_atividade(atividades):
                 descricao = f'{atividade.tipo_atividade.nome_tipo} quinzenalmente até o dia {data_final}'
             elif atividade.sequencia == '4':
                 descricao = f'{atividade.tipo_atividade.nome_tipo} mensalmente até o dia {data_final}'
+
         elif atividade.seq_personalizada :
             dia_semana = atividade.data.weekday()
             descr_seq_perso = descrever_seq_perso(atividade.seq_personalizada, dia_semana)
@@ -56,6 +60,7 @@ def gerar_lista_atividade(atividades):
 
         dia_semana = gerar_dia_semana(atividade.data)
 
+        # Limitando o número de caracteres do campo observação para que não expanda a div e quebra o layout da página
         if len(atividade.obs) > 69:
             obs = f'{atividade.obs[:69]}...'
         else:
@@ -78,6 +83,8 @@ def gerar_lista_atividade(atividades):
 
 def buscar(request):
 
+    # Filtra as atividades atuais, por ordem de data, e que tenham nos campos de nome da instituição ou no tipo de atividade os termos procurados no campo de busca pelo usuario. Depois enviar para tratamento em gerar_lista_atividade
+
     data_hoje = datetime.today().date()
 
     atividades = Atividades.objects.filter(data__gt=data_hoje).order_by('data')
@@ -92,7 +99,9 @@ def buscar(request):
     return render(request, 'atividades/buscar.html', {'atividades':list_atividades})
 
 def descrever_seq_perso(seq_perso, dia_semana):
-    # Dicionário para mapear índices às descrições ordinais
+
+    # Trata a descrição que será exibida no card das atividades que façam parte de uma sequência personalizada
+
     ordinais = {
         '0': '1ª',
         '1': '2ª',
@@ -113,11 +122,9 @@ def descrever_seq_perso(seq_perso, dia_semana):
 
     dia = dias_semana.get(dia_semana, None)
     
-    # Lista para armazenar as descrições ordinais
     descricao_lista = []
     
     for item in seq_perso:
-        # Obtém o ordinal correspondente ou 'None' se o índice for inválido
         ordinal = ordinais.get(item, None)
         if ordinal:
             descricao_lista.append(ordinal)
@@ -130,7 +137,17 @@ def descrever_seq_perso(seq_perso, dia_semana):
     
     return descricao_seq_perso
 
+def tipos(request):
+
+    # Exibe tipos de atividades
+
+    tipos = TipoAtividade.objects.all()
+
+    return render(request, 'atividades/tipos.html', {'tipos':tipos})
+
 def novo_tipo(request):
+
+    # Formulário de cadastro de novos tipos de atividade
 
     forms = TipoAtividadeForms()
 
@@ -139,7 +156,6 @@ def novo_tipo(request):
         forms = TipoAtividadeForms(request.POST)
 
         if forms.is_valid():
-            novo_tipo = forms
             forms.save()
             messages.success(request,'Novo Tipo de Atividade Cadastrado com Sucesso!')
             return redirect('tipos')
@@ -150,6 +166,8 @@ def novo_tipo(request):
     return render(request, 'atividades/novo_tipo.html', {'forms':forms})
 
 def editar_tipo(request, tipo_id):
+
+    # Abre o formulário do tipo de atividade referente ao tipo_id para realização e edição 
 
     tipo = TipoAtividade.objects.get(id=tipo_id)
     
@@ -170,6 +188,8 @@ def editar_tipo(request, tipo_id):
 
 def deletar_tipo(request, tipo_id):
 
+    # Deleta o tipo de atividade
+
     tipo = TipoAtividade.objects.get(id=tipo_id)
 
     tipo.delete()
@@ -178,12 +198,16 @@ def deletar_tipo(request, tipo_id):
     return redirect('tipos')
 
 def instituicoes(request):
+
+    # Elenca todas as instituições para serem exibidas nos cards do template instituições
     
     instituicoes = Instituicao.objects.all()
 
     return render(request, 'atividades/instituicoes.html', {'instituicoes':instituicoes})
 
 def editar_instituicao(request, id_inst):
+
+    # Abre o formulário da instituição referente ao id_inst para realização e edição
 
     inst = Instituicao.objects.get(id=id_inst)
     forms = InstituicaoForms(instance=inst)
@@ -203,6 +227,8 @@ def editar_instituicao(request, id_inst):
 
 def deletar_instituicao(request, id_inst):
 
+    # Deleta Instituição
+
     inst = Instituicao.objects.get(id=id_inst)
 
     inst.delete() 
@@ -211,6 +237,8 @@ def deletar_instituicao(request, id_inst):
     return redirect('instituicoes')
 
 def nova_instituicao(request):
+
+    # Formulário de cadastro de novas instituições
     
     if request.method == 'POST':
 
@@ -231,6 +259,8 @@ def nova_instituicao(request):
 
 def gerar_cod_fixo():
 
+    # gerar um código único, que jamais se repete, para ser usado como cod_fixo da instituição
+
     instituicoes = Instituicao.objects.all()
     lista_codigos = []
     gerado = False
@@ -248,13 +278,18 @@ def gerar_cod_fixo():
 
 def instituicao(request, id_instituicao):
 
+    # Exibe o objeto Instituição em seus detalhes com formatação específica
+
     instituicao = Instituicao.objects.get(id=id_instituicao)
 
     dict_inst = {}
 
+    # Formata mascara para campo Valor
     valor = instituicao.valor_fixo
     valor = f'R$ {valor}'
     
+    # Monta dicionário com formatação específica para exibição no template instituicao
+
     dict_inst['instituicao.id'] = {
         'id': instituicao.id,
         'nome_curto': instituicao.nome_curto if instituicao.nome_curto else '',
@@ -271,6 +306,8 @@ def instituicao(request, id_instituicao):
     return render(request, 'atividades/instituicao.html', {'instituicoes':dict_inst})
 
 def atividade(request, id_atividade):
+
+    # Exibe o objeto Atividade em seus detalhes com formatação específica
 
     hoje = datetime.today().date()
 
@@ -295,6 +332,8 @@ def atividade(request, id_atividade):
     else:
         valor = f'R$ {atividade.valor}'
 
+    # Monta dicionário com formatação específica para exibição no template atividade
+
     dict_atividade['atividade.id'] = {
         'id': atividade.id,
         'instituicao': atividade.instituicao,
@@ -311,6 +350,8 @@ def atividade(request, id_atividade):
     return render(request, 'atividades/atividade.html', {'atividades':dict_atividade, 'hoje':hoje})
 
 def nova_atividade(request):
+
+    # Formulario para criação de nova atividade
 
     if request.method == 'POST':
 
@@ -332,18 +373,20 @@ def nova_atividade(request):
             fixo_mensal = forms['fixo_mensal_ativ'].value()
             seq_perso = forms['seq_perso'].value()
 
+            # Preenche campo data_final_seq quando ele não é utilizado para não quebrar código posteriormente
             if not data_final:
                 data_final = data
 
+            # Chama função agendar, do app Calendario, que cria e agenda as atividade conforme sua sequencia
             agendamento = agendar(instituicao, tipo, data, entrada, saida, valor, sequencia, data_final, obs, nao_remunerado, fixo_mensal, seq_perso)
 
             if agendamento:
                 messages.success(request,'Agendamento realizado com Sucesso!')
                 return redirect('index')
             else:
-                messages.error(request,'A atividade foi criada mas ocorreu um problema na hora do agendamento. Favor, entrar em contato com o administrador do sistema.')
+                messages.error(request,'Erro ao criar atividade')
         else:
-            mensagem = f'{forms.errors}'
+            mensagem = f'O formulário de nova atividade apresenta as seguintes inconsistencias: {forms.errors}'
             messages.error(request,mensagem)
     else:
         forms = AtividadesForms()
@@ -353,7 +396,10 @@ def nova_atividade(request):
 
 def editar_atividade(request, id_atividade):
 
+    # Abre o formulário da atividade referente ao id_atividade enviado para edição
+
     data_atual = datetime.today().date()
+    # Selecione data minima para filtragem no caso de edições em sequencias, garantindo a não edição de atividades que ja ocorreram
     data_control = data_atual - timedelta(days=1)
     atividade = get_object_or_404(Atividades, id=id_atividade)
     forms = AtividadesForms(instance=atividade)
@@ -364,12 +410,15 @@ def editar_atividade(request, id_atividade):
 
         if forms.is_valid():
 
+            # Obtem parametro enviado para usuario para saber se o mesmo deseja editar a atividade solo ou toda a sua sequencia
             param = forms['extra_param'].value()
             valor = forms['valor'].value()
             valor = str(valor).replace('R$ ', '').replace(',', '').strip()
             nao_remunerado = forms['nao_remunerado'].value()
 
+            # Edita apenas a atividade acessada pelo formulário 
             if param == '1':
+                # Garante a edição de de ambas as atividades no caso de atividades que passem da meia noite (ver glossário para entender id_vir)
                 atividades = Atividades.objects.filter(id_vir=atividade.id_vir)
 
                 inst = forms['instituicao'].value()
@@ -387,6 +436,8 @@ def editar_atividade(request, id_atividade):
 
                 messages.success(request, 'Atividade editada com sucesso')
                 return redirect('index')
+            
+            # Edita todas as atividades criadas na mesma sequencia, filtradas através do campo cod (ver glossário para entender cod)
             elif param == '2':
                 atividades = Atividades.objects.filter(cod=atividade.cod, data__gt=data_control)
 
@@ -412,6 +463,9 @@ def editar_atividade(request, id_atividade):
 
 def deletar_atividade(request, id_atividade):
 
+    # Deleta a atividade referente ao id_atividade enviado
+
+    # Obtem id_vir para garantir o tratamento unificado de atividades que atravessem à meia noite
     atividade_param = Atividades.objects.get(id=id_atividade)
     id_vir = atividade_param.id_vir
     atividade = Atividades.objects.filter(id_vir=id_vir)
@@ -433,12 +487,13 @@ def deletar_atividade(request, id_atividade):
 
 def deletar_sequencia(request, id_atividade):
 
+    # Deleta todas as atividades da mesma sequencia da atividade referente ao id_atividade enviado pelo usuario
+
+    # Filtra por data atual para garantir que atividades já ocorridas não sejam deletadas
     data_atual = datetime.today().date()
     data_control = data_atual - timedelta(days=1)
-
     atividade = Atividades.objects.filter(id=id_atividade, data__gt=data_control)
-    cod = atividade.cod
-    
+    cod = atividade.cod    
     atividades = Atividades.objects.filter(cod=cod)
 
     if atividades:
@@ -459,11 +514,15 @@ def deletar_sequencia(request, id_atividade):
 
 def categorias(request):
 
+    # Seleciona e exibe categorias
+
     categorias = Categoria.objects.all()
 
     return render(request, 'atividades/categorias.html', {'categorias':categorias})
 
 def nova_categoria(request):
+
+    # Formulario para criação de nova categoria
 
     forms = CategoriaForms()
 
@@ -482,6 +541,8 @@ def nova_categoria(request):
     return render(request, 'atividades/nova_categoria.html', {'forms':forms})
 
 def editar_categoria(request, categoria_id):
+
+    # Formulario de categoria referente à categoria_id enviada para a edição
 
     categoria = Categoria.objects.get(id=categoria_id)
     
@@ -502,6 +563,8 @@ def editar_categoria(request, categoria_id):
 
 def deletar_categoria(request, categoria_id):
 
+    # Deleção de categoria referente à categoria_id enviada
+
     categoria = Categoria.objects.get(id=categoria_id)
 
     categoria.delete()
@@ -509,13 +572,10 @@ def deletar_categoria(request, categoria_id):
     messages.success(request, 'Deleção realizada com sucesso!')
     return redirect('categorias')
 
-def tipos(request):
-
-    tipos = TipoAtividade.objects.all()
-
-    return render(request, 'atividades/tipos.html', {'tipos':tipos})
-
 def get_valor_fixo(request, instituicao_id):
+
+    # Consegue valor fixo mensal da instituição, caso haja, quando exibição no campo valor, quando CheckBox fixo_mensal é ativado pelo usuario
+
     try:
 
         instituicao = Instituicao.objects.get(id=instituicao_id)
@@ -528,17 +588,20 @@ def get_valor_fixo(request, instituicao_id):
     
 def filtrar_financeiro(atividades):
 
+    # Cria dicionario com campos devidamente formatados e filtrados para a apresentação no dashboard financeiro
+
     dict_financ = {}
 
     if atividades:
 
+        # Obtem quantidade de meses dentre as atividades presentes na query "atividades" para gerar as médias
         data_inicio = atividades.order_by('data').first()
         data_inicio = data_inicio.data
         data_final = atividades.order_by('data').last()
         data_final = data_final.data
-
         qt_meses = (data_final.month + 1) - data_inicio.month
 
+        # Sessão de declaração das variaveis uteis
         total = 0
         total_fixo = 0
         total_variavel = 0
@@ -549,16 +612,18 @@ def filtrar_financeiro(atividades):
         list_id_vir = []
         list_fixo = []
 
+        # Obtem dados a partir da função de gerar_grafico_instituicao e separa em listas de etiquetas e valores para geração de gráfico
         dict_inst = gerar_grafico_instituicao(atividades, qt_meses)
         lista_etiqueta = list(dict_inst.keys())
         lista_valores = list(dict_inst.values())
 
         for atividade in atividades:
 
+            # Garante de não haverá mais de uma incidencia por mês nas atividades atribuidas à pagamentos fixos mensais
             if atividade.fixo_mensal_ativ:
                 if atividade.id_vir not in list_id_vir:
-                    list_id_vir.append(atividade.id_vir)
-                
+                    list_id_vir.append(atividade.id_vir)       
+
                 if atividade.cod_fixo_ativ not in list_fixo:
                     total_fixo += float(atividade.valor)
                     list_fixo.append(atividade.cod_fixo_ativ)
@@ -567,7 +632,7 @@ def filtrar_financeiro(atividades):
                     total_variavel += float(atividade.valor)
                     list_id_vir.append(atividade.id_vir)
 
-            # Calculando a quantidade de horas
+            # Calculando a quantidade de horas verificando se há virada de dia
             if atividade.entrada < atividade.saida:
                 qt_hora += (atividade.saida - atividade.entrada)
             else:
@@ -583,10 +648,13 @@ def filtrar_financeiro(atividades):
         
         qt_atividade = len(list_id_vir)
 
+        # Gerar o total de fixos mensais multiplicado pela quantidade de meses do período transcorrido na query sequencia
         total_fixo = total_fixo * qt_meses
+
+        # Gerar o total fatura no período entre fixos e variaveis
         total = total_fixo + total_variavel
 
-        # Preparando os dados para o dicionário de finanças
+        # Gera o dicionario com os valores já formatados
         dict_financ['financeiro'] = {
             'total': f'R$ {"{:,.2f}".format(total).replace(",", "X").replace(".", ",").replace("X", ".")}',
             'media_atividade': f'R$ {"{:,.2f}".format(total / qt_atividade if qt_atividade else 0).replace(",", "X").replace(".", ",").replace("X", ".")}',
@@ -604,12 +672,15 @@ def filtrar_financeiro(atividades):
             'media_mes': 'R$ 0,00'
         }
 
+        # Garante a existencia das variaveis caso o retorno da função de geração de gráfico seja nulo
         lista_etiqueta = ''
         lista_valores = ''
 
     return {'dict_financ': dict_financ, 'etiquetas': lista_etiqueta, 'valores': lista_valores}
 
 def filtrar_mes(mes):
+
+    # Filtra a query atividades de acordo com o mes enviado para posterior envido à função filtrar_financeiro
 
     atividades = Atividades.objects.filter(data__month=mes, nao_remunerado=False)
 
@@ -619,6 +690,8 @@ def filtrar_mes(mes):
 
 def filtrar_ano(ano):
 
+    # Filtrar a query atividades de acordo com o ano enviado para posterior envido à função filtrar_financeiro
+
     atividades = Atividades.objects.filter(data__year=ano, nao_remunerado=False)
 
     dict_financ = filtrar_financeiro(atividades)
@@ -626,6 +699,8 @@ def filtrar_ano(ano):
     return dict_financ
 
 def filtrar_ate_fim_mes():
+
+    # Filtrar a query atividades no periodo entre a data atual e o ultimo dia do mês corrente para posterior envido à função filtrar_financeiro
 
     data_inicio = datetime.today().date()
     ano = data_inicio.year
@@ -641,6 +716,8 @@ def filtrar_ate_fim_mes():
 
 def filtrar_ate_fim_ano():
 
+    # Filtrar a query atividades no periodo entre a data atual e o ultimo dia do ano corrente para posterior envido à função filtrar_financeiro
+
     data_inicio = datetime.today().date()
     ano = data_inicio.year
     data_final = datetime(ano, 12, 31).date()    
@@ -653,6 +730,8 @@ def filtrar_ate_fim_ano():
 
 def filtrar_todo_periodo():
 
+    # Gera query atividades a partir de todas as atividades cadastradas no BD para posterior envido à função filtrar_financeiro
+
     atividades = Atividades.objects.filter(nao_remunerado=False)
 
     dict_financ = filtrar_financeiro(atividades)
@@ -661,6 +740,8 @@ def filtrar_todo_periodo():
 
 def filtrar_personalizado(dataInicio, dataFinal):
 
+    # Filtrar a query atividades entre os periodo enviados pelo usuario para posterior envido à função filtrar_financeiro
+
     atividades = Atividades.objects.filter(data__range=(dataInicio, dataFinal), nao_remunerado=False)
 
     dict_financ = filtrar_financeiro(atividades)
@@ -668,6 +749,9 @@ def filtrar_personalizado(dataInicio, dataFinal):
     return dict_financ
 
 def gerar_grafico_instituicao(atividades, qt_meses):
+
+    # Gera dicionario a partir do agrupamento por instituição dos valores da query atividades
+
     dict_inst = {}
     list_cod_fixo = []
     list_id_vir = []
@@ -675,6 +759,7 @@ def gerar_grafico_instituicao(atividades, qt_meses):
     for atividade in atividades:
         nome_inst = atividade.instituicao.nome_inst
 
+        # Garante o tratamento unificado das unidades de mesmo id_vir
         if atividade.id_vir not in list_id_vir:
             list_id_vir.append(atividade.id_vir)
 
@@ -697,6 +782,8 @@ def gerar_grafico_instituicao(atividades, qt_meses):
     return dict_inst
 
 def gerar_grafico_tipo(atividades, qt_meses) :
+
+    # Gera dicionario a partir do agrupamento por tipo de atividades dos valores da query atividades
 
     dict_tipo = {}
     list_cod_fixo = []
@@ -727,6 +814,8 @@ def gerar_grafico_tipo(atividades, qt_meses) :
     return dict_tipo
 
 def gerar_grafico_mes(atividades) :
+
+    # Gera dicionario a partir do agrupamento por mês dos valores da query atividades
 
     dict_mes = {}
     list_id_vir = []
@@ -759,6 +848,8 @@ def gerar_grafico_mes(atividades) :
     
 def financeiro(request):
 
+    # Faz a primeira chamada do dashboard Financeiro devolvendo os valores totais, médias e para a geração do gráfico
+
     mes = datetime.today().month
 
     preferencias = Preferencias.objects.get(id=1)
@@ -772,9 +863,15 @@ def financeiro(request):
 
     return render(request, 'atividades/financeiro.html', {'financeiro': dict_financ, 'etiquetas': json.dumps(etiquetas), 'valores': json.dumps(valores), 'tipo': json.dumps(tipo_grafico)})
 
+# View para atualizar dados do dashboard Financeiro a partir de requisição AJAX enviadas com as com as preferencias do usuario. 
+# Inicia com um decorador garantindo que a view só aceite requisições do tipo GET
 @require_GET
 def atualizar_financeiro(request):
+
+    # Verifica se trata de um requisição do tipo AJAX, verificando o cabeçalho 'X-Requested-With'
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+
+        #Obtem periodo selecionado pelo usuario e filtrar os valores em suas devidas funções baseado nessa seleção
         periodoSelect = request.GET.get('periodoSelect')
         try:
             if periodoSelect == '1':
@@ -808,29 +905,43 @@ def atualizar_financeiro(request):
         except ValueError:
             return JsonResponse({'error': 'Data inválida'}, status=400)
         
+        # Caso haja retorno de dict_financ, trata os valores para retorno da função 
         if dict_financ:
+            # Obtem etiquetas e valores para uso na geração de gráfico
             etiquetas = dict_financ['etiquetas']
             valores = dict_financ['valores']
+            # Obtem valores totais e médias para o dashboard
             dict_financ = dict_financ['dict_financ']
+            #recupera preferencia do usuario de tipo de gráfico a ser usuado
             preferencias = Preferencias.objects.get(id=1)
             tipo = preferencias.tipo_grafico
         else:       
-            return JsonResponse({'error': 'Nenhum dado encontrado'}, status=404)
+            return JsonResponse({'error': 'Não foi possível gerar dict_financeiro a partir do período selecionado'}, status=404)
 
         try:
+            #Renderiza um template parcial (base_financeiro.html) usando os dados financeiros filtrados. Esse HTML será injetado no frontend.
             html_content = render_to_string('atividades/partials/base_financeiro.html', {'financeiro': dict_financ, 'etiquetas': etiquetas, 'valores': valores, 'tipo': tipo})
         except Exception as e:
             return JsonResponse({'error': f'Erro ao renderizar o template: {str(e)}'}, status=500)
 
+        # Retorna uma resposta JSON contendo o HTML renderizado, as etiquetas, valores e o tipo de gráfico para que o frontend possa atualizar a interface.
         return JsonResponse({'html': html_content, 'etiquetas': etiquetas, 'valores': valores, 'tipo': tipo})
     else:
         return JsonResponse({'error': 'Requisição inválida'}, status=400)
     
+# View para atualizar gráfico Financeiro a partir de requisição AJAX enviada com as preferencias do usuario. 
+# Inicia com um decorador garantindo que a view só aceite requisições do tipo GET    
 @require_GET
 def atualizar_grafico(request):
+
+    # Verifica se trata de um requisição do tipo AJAX, verificando o cabeçalho 'X-Requested-With'
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+
+        # Obtém periodo e tipo de gráfico selecionado pelo usuario
         periodoSelect = request.GET.get('periodoSelect')
         graficoSelect = request.GET.get('graficoSelect')
+
+        # Filtra a query atividades a partir do período selecionado, para geração do gráfico
         try:
             if periodoSelect == '1':
                 mesSelect = request.GET.get('mesSelect')
@@ -872,14 +983,15 @@ def atualizar_grafico(request):
         except ValueError:
             return JsonResponse({'error': 'Data inválida'}, status=400)
         
+        # Obtém quantidade de meses a partir da query atividades caso seja necessária para geração do gráfico
         if atividades:
             data_inicio = atividades.order_by('data').first()
             data_inicio = data_inicio.data
             data_final = atividades.order_by('data').last()
             data_final = data_final.data
-
             qt_meses = (data_final.month + 1) - data_inicio.month
 
+            # Gerá o grafico a partir da query atividades obtida e do tipo de gráfico selecionado
             try:
                 if graficoSelect == '1':
                     dict_financ = gerar_grafico_instituicao(atividades, qt_meses)
@@ -888,59 +1000,71 @@ def atualizar_grafico(request):
                 elif graficoSelect == '3':
                     dict_financ = gerar_grafico_mes(atividades)
             except ValueError:
-                return JsonResponse({'error': 'Grafico Select Inválido'}, status=400)
+                return JsonResponse({'error': 'Erro ao gerar o gráfico'}, status=400)
         else:
+            # Declara a dict_financ com valores vazios caso a query atividades retorne vazia por não haver dados para o período selecionado
             dict_financ = {
                 '':''
             }
         
+        # Trata os valores para retorno da função
         if dict_financ:
+            #obtém etiquetas e valores para a geração do gráfico
             etiquetas = list(dict_financ.keys())
             valores = list(dict_financ.values())
+            #recupera preferencias do usuario para qual tipo de gráfico deve ser usado
             preferencias = Preferencias.objects.get(id=1)
             tipo = preferencias.tipo_grafico
         else:       
             return JsonResponse({'error': 'Nenhum dado encontrado'}, status=404)
 
+        # retorna os valores que devem ser usados na geração do gráfico no JavaScript
         return JsonResponse({'etiquetas': etiquetas, 'valores': valores, 'tipo': tipo})
     else:
         return JsonResponse({'error': 'Requisição inválida'}, status=400)
     
 def filtrar_rotina(atividades, quant_dias):
 
+    # Cria dicionario com campos devidamente formatados e filtrados para a apresentação no dashboard Rotina
+
     dict_rotina = {}
 
+    # Obtém quantidade de horas e semanas para a geração de média de horas
     quant_horas_totais = quant_dias*24
     quant_semanas = quant_dias // 7 if (quant_dias // 7) > 0 else 1
     
+    # Recupera preferencias do usuario para quantia de sonos ideais para definição de horas de sono que serão usadas para geração das horas livres
     preferencias = get_preferencias()
     horas_sono = preferencias['horas_sono']
     quant_horas_sono = horas_sono * quant_dias
 
+    # Definição de variaveis
     qt_atividade = 0
     horas = 0
     qt_hora = 0
     qt_hora_remu = 0
     qt_hora_livre = quant_horas_totais
-
     list_id_vir = []
 
+    # Obtem dados a partir da função de gerar_grafico_remuneracao_rotina e separa em listas de etiquetas e valores para geração de gráfico  
     dict_remu = gerar_grafico_remuneracao_rotina(atividades)
     lista_etiqueta = list(dict_remu.keys())
     lista_valores = list(dict_remu.values())
 
     if atividades :
-
         for atividade in atividades:
 
+            # Garante um só tratamento em quantidade de atividades para atividades com o mesmo id_vir
             if atividade.id_vir not in list_id_vir:    
                 list_id_vir.append(atividade.id_vir)
 
+            # Garante correta contagem de horas para atividades que viram a meia noite
             if atividade.entrada < atividade.saida:
                 horas = (atividade.saida - atividade.entrada)
             else:
                 horas = ((24 - atividade.entrada) + atividade.saida)
 
+            # Calcula horas remuneradas e não remuneradas a partir do campo nao_remunerado
             if atividade.nao_remunerado == False:
                 qt_hora = qt_hora + horas
                 qt_hora_remu = qt_hora_remu + horas
@@ -948,9 +1072,9 @@ def filtrar_rotina(atividades, quant_dias):
                 qt_hora = qt_hora + horas
 
             qt_hora_livre = quant_horas_totais - (qt_hora + quant_horas_sono)
-
             qt_atividade = len(list_id_vir)
 
+        # Gera o dicionario com os valores já formatados
         dict_rotina['rotina'] = {
             'horas_atividade': qt_hora,
             'horas_livres': qt_hora_livre,
@@ -981,6 +1105,8 @@ def filtrar_rotina(atividades, quant_dias):
 
 def filtrar_mes_rotina(mes):
 
+    # Filtra a query atividades e obtém quantidade de dias de acordo com o mes enviado para posterior envido à função filtrar_rotina
+
     atividades = Atividades.objects.filter(data__month=mes)
 
     quant_dias = calendar.monthrange(datetime.today().year, mes)[1]
@@ -990,6 +1116,8 @@ def filtrar_mes_rotina(mes):
     return dict_rotina
 
 def filtrar_ano_rotina(ano):
+
+    # Filtra a query atividades e obtém quantidade de dias de acordo com o ano enviado para posterior envido à função filtrar_rotina
 
     atividades = Atividades.objects.filter(data__year=ano)
 
@@ -1004,6 +1132,8 @@ def filtrar_ano_rotina(ano):
     return dict_rotina
 
 def filtrar_ate_fim_mes_rotina():
+
+    # Filtra a query atividades e obtém quantidade de dias para o periodo entre a data atual e o ultimo dia do fim do mês corrente para posterior envido à função filtrar_rotina
 
     data_inicio = datetime.today().date()
     ano = data_inicio.year
@@ -1021,6 +1151,8 @@ def filtrar_ate_fim_mes_rotina():
 
 def filtrar_ate_fim_ano_rotina():
 
+    # Filtra a query atividades e obtém quantidade de dias para o periodo entre a data atual e o ultimo dia do fim do ano corrente para posterior envido à função filtrar_rotina
+
     data_inicio = datetime.today().date()
     ano = data_inicio.year
     data_final = datetime(ano, 12, 31).date()
@@ -1035,6 +1167,8 @@ def filtrar_ate_fim_ano_rotina():
     return dict_rotina
 
 def filtrar_todo_periodo_rotina():
+
+    # Filtra a query atividades e obtém quantidade de dias de acordo com todas as atividades cadastradas no BD para posterior envido à função filtrar_rotina
 
     atividades = Atividades.objects.all()
 
@@ -1051,6 +1185,8 @@ def filtrar_todo_periodo_rotina():
 
 def filtrar_personalizado_rotina(dataInicio, dataFinal):
 
+    # Filtra a query atividades e obtém quantidade de dias para o periodo entre as datas enviadas pelo usuario para posterior envido à função filtrar_rotina
+
     atividades = Atividades.objects.filter(data__range=(dataInicio, dataFinal))
 
     data_inicio = datetime.strptime(dataInicio, '%Y-%m-%d').date()
@@ -1064,6 +1200,8 @@ def filtrar_personalizado_rotina(dataInicio, dataFinal):
     return dict_rotina
 
 def gerar_grafico_remuneracao_rotina(atividades) :
+
+    # Agrupa os dados da query atividades, entre remunerados e não remunerados para posterior geração de gráfico de rotina
 
     dict_remu = {}
     horas_remu = 0
@@ -1087,6 +1225,8 @@ def gerar_grafico_remuneracao_rotina(atividades) :
     return dict_remu
 
 def gerar_grafico_tipo_rotina(atividades):
+
+    # Agrupa os dados da query atividades por tipo de atividade para posterior geração de gráfico de rotina
 
     dict_tipo = {}
     horas = 0
@@ -1116,6 +1256,8 @@ def gerar_grafico_tipo_rotina(atividades):
 
 def gerar_grafico_categoria_rotina(atividades):
 
+    # Agrupa os dados da query atividades por categoria de atividade para posterior geração de gráfico de rotina
+
     dict_categoria = {}
     horas = 0
 
@@ -1144,6 +1286,8 @@ def gerar_grafico_categoria_rotina(atividades):
 
 def gerar_grafico_ocupacao_rotina(atividades, quant_horas_totais, qt_horas_sono):
 
+    # Agrupa os dados da query atividades, entre horas ocupadas e horas livres para posterior geração de gráfico de rotina
+
     dict_ocupacao = {}
 
     dict_ocupacao['Horas Ocupadas'] = 0
@@ -1165,6 +1309,8 @@ def gerar_grafico_ocupacao_rotina(atividades, quant_horas_totais, qt_horas_sono)
 
 def rotina(request):
 
+    # Realiza a primeira chamada para o dashboard rotina
+
     mes = datetime.today().month        
 
     dict_rotina = filtrar_mes_rotina(mes)
@@ -1178,9 +1324,15 @@ def rotina(request):
 
     return render(request, 'atividades/rotina.html', {'rotina': dict_rotina, 'etiquetas': json.dumps(etiquetas), 'valores': json.dumps(valores), 'tipo': json.dumps(tipo)})
 
+# View para atualizar dados do dashboard Rotina a partir de requisição AJAX enviadas com as com as preferencias do usuario. 
+# Inicia com um decorador garantindo que a view só aceite requisições do tipo GET
 @require_GET
 def atualizar_rotina(request):
+
+    # Verifica se trata de um requisição do tipo AJAX, verificando o cabeçalho 'X-Requested-With'
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+
+        #Obtem periodo selecionado pelo usuario e filtrar os valores em suas devidas funções baseado nessa seleção
         periodoSelect = request.GET.get('periodoSelect')
         try:
             if periodoSelect == '1':
@@ -1209,29 +1361,43 @@ def atualizar_rotina(request):
         except ValueError:
             return JsonResponse({'error': 'Data inválida'}, status=400)
         
+        # Caso haja retorno de dict_financ, trata os valores para retorno da função
         if dict_rotina:
+            # Obtem etiquetas e valores para uso na geração de gráfico
             etiquetas = dict_rotina['etiquetas']
             valores = dict_rotina['valores']
+            # Obtem valores totais e médias para o dashboard
             dict_rotina = dict_rotina['dict_rotina']
+            #recupera preferencia do usuario
             preferencias = get_preferencias()
         else:       
             return JsonResponse({'error': 'Nenhum dado encontrado'}, status=404)
 
         try:
+            #Renderiza um template parcial (base_rotina.html) usando os dados filtrados. Esse HTML será injetado no frontend.
             html_content = render_to_string('atividades/partials/base_rotina.html', {'rotina': dict_rotina, 'etiquetas': etiquetas, 'valores': valores, 'tipo':preferencias['tipo_grafico']})
         except Exception as e:
             return JsonResponse({'error': f'Erro ao renderizar o template: {str(e)}'}, status=500)
 
+        # Retorna uma resposta JSON contendo o HTML renderizado, as etiquetas, valores e o tipo de gráfico para que o frontend possa atualizar a interface.
         return JsonResponse({'html': html_content, 'etiquetas': etiquetas, 'valores': valores, 'tipo':preferencias['tipo_grafico']})
     else:
         return JsonResponse({'error': 'Requisição inválida'}, status=400)
     
+# View para atualizar gráfico Rotina a partir de requisição AJAX enviada com as preferencias do usuario. 
+# Inicia com um decorador garantindo que a view só aceite requisições do tipo GET   
 @require_GET
 def atualizar_grafico_rotina(request):
+
+    # Verifica se trata de um requisição do tipo AJAX, verificando o cabeçalho 'X-Requested-With'
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+
+        # Obtém periodo e tipo de gráfico selecionados e recupera as preferencias do usuario
         periodoSelect = request.GET.get('periodoSelect')
         graficoSelect = request.GET.get('graficoSelect')
         preferencias = get_preferencias()
+
+        # Filtra a query atividades, obtém número de dias, horas e horas de sono a partir do período selecionado e das preferencias do usuario
         try:
             if periodoSelect == '1':
                 mesSelect = request.GET.get('mesSelect')
@@ -1306,8 +1472,8 @@ def atualizar_grafico_rotina(request):
         except ValueError:
             return JsonResponse({'error': 'Data inválida'}, status=400)
         
-        if atividades:
-        
+        # Obtém dados para geração de gráfico usando a query atividades e a partir do tipo de gráfico selecionado
+        if atividades:        
             try:
                 if graficoSelect == '1':
                     dict_rotina = gerar_grafico_remuneracao_rotina(atividades)
@@ -1320,22 +1486,26 @@ def atualizar_grafico_rotina(request):
             except ValueError:
                 return JsonResponse({'error': 'Grafico Select Inválido'}, status=400)
         else:
+            # Declara dict_rotina com dados em branco caso atividades retorne vazia
             dict_rotina = {
                 '':'',
             }
         
         if dict_rotina:
+            # Separa as etiquetas e valores em duas respectivas variaveis
             etiquetas = list(dict_rotina.keys())
             valores = list(dict_rotina.values())
-            preferencias = get_preferencias()
         else:       
             return JsonResponse({'error': 'Nenhum dado encontrado'}, status=404)
 
+        # Retorna os dados para a geração de gráfico no JavaScript
         return JsonResponse({'etiquetas': etiquetas, 'valores': valores, 'tipo':preferencias['tipo_grafico']})
     else:
         return JsonResponse({'error': 'Requisição inválida'}, status=400)
     
 def preferencias(request):
+
+    # Exibe registro único das preferências do usuario
 
     preferencias = Preferencias.objects.get(id=1)
 
@@ -1356,6 +1526,8 @@ def preferencias(request):
     return render(request, 'atividades/preferencias.html', {'preferencias':dict_preferencia})
 
 def editar_preferencias(request):
+
+    # Retorna formulário de registro único das preferências do usuario para possível edição
 
     preferencia = Preferencias.objects.get(id=1)
     forms = PreferenciasForms(instance=preferencia)
