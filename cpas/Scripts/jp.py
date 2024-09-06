@@ -1,4 +1,4 @@
-#!C:\Users\Escola Mais\Desktop\Projetos\Full\cpas\cpas\Scripts\python.exe
+#!C:\Users\leona\cpas\cpas\Scripts\python.exe
 
 import sys
 import json

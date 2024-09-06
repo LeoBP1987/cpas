@@ -12,6 +12,8 @@ import calendar
 
 def index(request):
 
+    # Envia as informações para montar os calendários por index, por dia, semana ou uma agenda apenas com as atividades
+
     if not request.user.is_authenticated:
         return redirect('login')
     
