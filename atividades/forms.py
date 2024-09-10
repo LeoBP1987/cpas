@@ -141,18 +141,31 @@ tipos_graficos = [
     ('doughnut', 'Roscas')
 ]
 
+SEMANA = [
+        (0, 'Segunda-Feira'),
+        (1, 'Domingo'),
+        (2, 'Sábado'),
+        (3, 'Sexta-Feira'),
+        (4, 'Quinta-Feira'),
+        (5, 'Quarta-Feira'),
+        (6, 'Terça-Feira')
+    ]
+
 class PreferenciasForms(forms.ModelForm):
     class Meta:
         model = Preferencias
-        fields = ['horas_sono', 'tipo_grafico', 'hora_envio_tarefas']
+        fields = ['horas_sono', 'tipo_grafico', 'inicio_semana', 'hora_envio_tarefas']
         labels = {
             'horas_sono': 'Horas de sono ideais',
             'tipo_grafico': 'Tipo de Gráfico',
+            'inicio_semana': 'Semana deve iniciar em:',
             'hora_envio_tarefas': 'Horário de envio das tarefas diárias'
         }
+        
         widgets =  {
             'horas_sono': forms.TextInput(attrs={'class':'main-forms__campo_input'}),
             'tipo_grafico': forms.Select(attrs={'class':'main-forms__campo_input'}, choices=tipos_graficos),
+            'inicio_semana': forms.Select(attrs={'class':'main-forms__campo_input'}, choices=SEMANA),
             'hora_envio_tarefas': forms.TimeInput(attrs={'class':'main-forms__campo_input', 
                                                          'type':'time', 
                                                          'id': 'idHoraEnvio',

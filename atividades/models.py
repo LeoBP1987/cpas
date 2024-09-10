@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import time
 
 class Categoria(models.Model):
     nome_categoria = models.CharField(max_length=30)
@@ -134,6 +135,8 @@ class Atividades(models.Model):
         return str(self.id)
     
 class Preferencias(models.Model):
-    horas_sono = models.IntegerField()
-    tipo_grafico = models.CharField(max_length=10)
-    hora_envio_tarefas = models.TimeField(blank=True, null=True)
+
+    horas_sono = models.IntegerField(default=8)
+    tipo_grafico = models.CharField(max_length=10, default='bar')
+    hora_envio_tarefas = models.TimeField(blank=True, null=True, default=time(7, 0))
+    inicio_semana = models.CharField(max_length=15, default=1)

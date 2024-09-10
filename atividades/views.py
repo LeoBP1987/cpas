@@ -467,7 +467,9 @@ def deletar_atividade(request, id_atividade):
 
     # Obtem id_vir para garantir o tratamento unificado de atividades que atravessem à meia noite
     atividade_param = Atividades.objects.get(id=id_atividade)
+
     id_vir = atividade_param.id_vir
+    
     atividade = Atividades.objects.filter(id_vir=id_vir)
     
     if atividade:
@@ -492,8 +494,11 @@ def deletar_sequencia(request, id_atividade):
     # Filtra por data atual para garantir que atividades já ocorridas não sejam deletadas
     data_atual = datetime.today().date()
     data_control = data_atual - timedelta(days=1)
-    atividade = Atividades.objects.filter(id=id_atividade, data__gt=data_control)
+
+    atividade = Atividades.objects.filter(id=id_atividade, data__gt=data_control).first()
+    
     cod = atividade.cod    
+
     atividades = Atividades.objects.filter(cod=cod)
 
     if atividades:
@@ -1517,9 +1522,20 @@ def preferencias(request):
         'doughnut': 'Roscas'
     }.get(preferencias.tipo_grafico, None)
 
+    inicio_semana = {
+        '0': 'Segunda-Feira',
+        '1': 'Domingo',
+        '2': 'Sábado',
+        '3': 'Sexta-Feira',
+        '4': 'Quinta-Feira',
+        '5': 'Quarta-Feira',
+        '6': 'Terça-Feira'
+    }.get(preferencias.inicio_semana, None)
+
     dict_preferencia = {
         'horas_sono':f'{preferencias.horas_sono} horas',
         'tipo_grafico': tipo_grafico,
+        'inicio_semana': inicio_semana,
         'hora_envio_tarefas': preferencias.hora_envio_tarefas
     }
 

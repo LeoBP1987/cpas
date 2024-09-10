@@ -16,7 +16,7 @@ class UsuariosConfig(AppConfig):
         preferencias = Preferencias.objects.get(id=1)
         hora = str(preferencias.hora_envio_tarefas.hour)
         minutos = str(preferencias.hora_envio_tarefas.minute)
-
+        
         scheduler = BackgroundScheduler()
         scheduler.add_job(
             enviar_email_task.s(),
