@@ -15,7 +15,23 @@ import calendar
 
 def atividades(request):
 
-    # Seleciona atividades do dia atual em diante e em ordem de criação, para que possam ser tratadas na função gerar_lista_atividade
+    """
+    Exibe a lista de atividades atuais e futuras.
+
+    Esta view filtra as atividades atuais e futuras e as ordena por data. 
+    A lista resultante é processada pela função `gerar_lista_atividade` e, em seguida, renderizada no 
+    template `atividades/atividades.html`.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+
+    Retorno:
+    --------
+    HttpResponse
+        Retorna uma resposta HTTP que renderiza o template 'atividades/atividades.html' com a lista de atividades filtradas e processadas.
+    """
 
     dia_atual = datetime.today().date() - timedelta(days=1)
 
@@ -28,7 +44,21 @@ def atividades(request):
 
 def gerar_lista_atividade(atividades):
 
-    # Trata as atividades recebidas para a montagem dos cards
+    """
+    Processa as atividades e retorna uma lista de dicionários formatados para exibição em cards no template.
+
+    Esta view processa as atividades recebidas como parâmetro e retorna uma lista de dicionarios com os dados dessas atividades já formatados para a montagem dos cards exibidos template.
+
+    Parâmetros:
+    -----------
+    atividades : QuerySet
+        Query com instâncias do modelo 'Atividades' que foram previamente filtradas.
+
+    Retorno:
+    --------
+    list
+        Uma lista de dicionarios, cada um contendo os dados da atividade formatados para a montagem dos cards no template.
+    """
 
     dict_atividade = {}
 
@@ -60,7 +90,7 @@ def gerar_lista_atividade(atividades):
 
         dia_semana = gerar_dia_semana(atividade.data)
 
-        # Limitando o número de caracteres do campo observação para que não expanda a div e quebra o layout da página
+        # Limita o número de caracteres do campo observação para que não expanda a div e quebra o layout da página
         if len(atividade.obs) > 69:
             obs = f'{atividade.obs[:69]}...'
         else:
@@ -83,7 +113,19 @@ def gerar_lista_atividade(atividades):
 
 def buscar(request):
 
-    # Filtra as atividades atuais, por ordem de data, e que tenham nos campos de nome da instituição ou no tipo de atividade os termos procurados no campo de busca pelo usuario. Depois enviar para tratamento em gerar_lista_atividade
+    """
+    Filtra as atividades atuais e futuras, por ordem de data, e que tenham nos campos 'instituicao' e/ou 'tipo_atividade' os termos procurados pelo usuario no campo de busca.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+
+    Retorno:
+    --------
+    HttpResponse
+        Retorna uma resposta HTTP que renderiza o template 'atividades/atividades.html' com a lista de atividades filtradas e processadas.
+    """
 
     data_hoje = datetime.today().date()
 
@@ -100,7 +142,21 @@ def buscar(request):
 
 def descrever_seq_perso(seq_perso, dia_semana):
 
-    # Trata a descrição que será exibida no card das atividades que façam parte de uma sequência personalizada
+    """
+    Trata a descrição que será exibida no card das atividades que façam parte de uma sequência personalizada.
+
+    Parâmetros:
+    -----------
+    seq_perso : list
+        Lista contendo as ocorrências desejadas do dia da semana dentro de cada mês. Exemplo: [1, 3] para selecionar a 1ª e a 3ª ocorrência do dia da semana de `dia_semana` em cada mês. Isso caso o usuário opte por uma sequencia personalizada
+    dia_semana : int
+        Número relativo ao dia da semana retornada pela função 'weekday()' da data da atividade que o card representará.
+
+    Retorno:
+    --------
+    str
+        Texto contendo a descrição personalizada que será exibida no card.
+    """
 
     ordinais = {
         '0': '1ª',
@@ -130,6 +186,7 @@ def descrever_seq_perso(seq_perso, dia_semana):
             descricao_lista.append(ordinal)
     
     # Formatação final da string
+
     if len(descricao_lista) > 1:
         descricao_seq_perso = ', '.join(descricao_lista[:-1]) + f' e {descricao_lista[-1]} {dia}'
     else:
@@ -139,7 +196,19 @@ def descrever_seq_perso(seq_perso, dia_semana):
 
 def tipos(request):
 
-    # Exibe tipos de atividades
+    """
+    View para exibir todos os tipos de atividades cadastrados.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+
+    Retorno:
+    --------
+    HttpResponse
+        Retorna uma resposta HTTP que renderiza o template 'atividades/tipos.html' com a QuerySet 'tipos' contendo as informações dos tipos de atividades presentes no modelo TipoAtividade.
+    """
 
     tipos = TipoAtividade.objects.all()
 
@@ -147,7 +216,24 @@ def tipos(request):
 
 def novo_tipo(request):
 
-    # Formulário de cadastro de novos tipos de atividade
+    """
+    Formulário de cadastro de novos tipos de atividade.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+
+    Retorno:
+    --------
+    HttpResponse
+        Se o método for GET: Retorna uma resposta HTTP que renderiza o template 'atividades/novo_tipo.html' com o formulário TipoAtividadeForms.
+        Se o método for POST: Salva o formulário enviado com as informações inseridas pelo usuário e o redirecionando para a path 'tipos' e exibindo uma mensagem informando o sucesso no cadastro do novo tipo de atividade. 
+
+    Tratamento de erros:
+    --------
+    - Caso o formulário enviado pelo usuário seja inválido, o formulário não será salvo e o usuário sera encaminhado para a path 'tipos' e visualizará uma mensagem informando o erro no cadastro, pedindo revisão nos dados.
+    """
 
     forms = TipoAtividadeForms()
 
@@ -167,7 +253,26 @@ def novo_tipo(request):
 
 def editar_tipo(request, tipo_id):
 
-    # Abre o formulário do tipo de atividade referente ao tipo_id para realização e edição 
+    """
+    Formulário para editar tipo de atividade relativa ao parâmetro 'tipo_id'.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+    tipo_id: int
+        ID da instância que deverá ser editada no modelo TipoAtividade.
+
+    Retorno:
+    --------
+    HttpResponse
+        Se o método for GET: Retorna uma resposta HTTP que renderiza o template 'atividades/editar_tipo.html' com o formulário TipoAtividadeForms instânciado pelo parâmetro 'tipo_id' e com a variável tipo contendo a instância do modelo TipoAtividade relativa ao parâmetro 'tipo_id'.
+        Se o método for POST: Salva o formulário enviado com as informações inseridas pelo usuário, atualizando em caso de qualquer alteração, e o redirecionando para a path 'tipos', exibindo uma mensagem informando o sucesso na edição do tipo de atividade. 
+
+    Tratamento de erros:
+    --------
+    - Caso o formulário enviado pelo usuário seja inválido, o formulário não será salvo e o usuário sera encaminhado para a path 'tipos' e visualizará uma mensagem informando o erro no cadastro, pedindo revisão nos dados.
+    """
 
     tipo = TipoAtividade.objects.get(id=tipo_id)
     
@@ -188,7 +293,21 @@ def editar_tipo(request, tipo_id):
 
 def deletar_tipo(request, tipo_id):
 
-    # Deleta o tipo de atividade
+    """
+    View que deleta a instância do modelo TipoAtividade relativa ao parâmetro 'tipo_id'.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+    tipo_id: int
+        ID da instância que deverá ser deletado no modelo TipoAtividade.
+
+    Retorno:
+    --------
+    redirect
+        Redireciona o usuário para a path 'tipos' exibindo uma mensagem de sucesso na deleção da instância.
+    """
 
     tipo = TipoAtividade.objects.get(id=tipo_id)
 
@@ -199,15 +318,87 @@ def deletar_tipo(request, tipo_id):
 
 def instituicoes(request):
 
-    # Elenca todas as instituições para serem exibidas nos cards do template instituições
+    """
+    View para exibir todas as instituições cadastradas.
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+
+    Retorno:
+    --------
+    HttpResponse
+        Retorna uma resposta HTTP que renderiza o template 'atividades/instituicoes.html' com a QuerySet 'instituicoes' contendo as informações das 'instituicoes' presentes no modelo Instituicao.
+    """
     
     instituicoes = Instituicao.objects.all()
 
     return render(request, 'atividades/instituicoes.html', {'instituicoes':instituicoes})
 
+def nova_instituicao(request):
+
+    """
+    Formulário de cadastro de novas instituições.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+
+    Retorno:
+    --------
+    HttpResponse
+        Se o método for GET: Retorna uma resposta HTTP que renderiza o template 'atividades/nova_instituicao.html' com o formulário InstituicaoForms.
+        Se o método for POST: Salva o formulário enviado com as informações inseridas pelo usuário e o redireciona para a path 'instituicoes', exibindo uma mensagem informando sucesso no cadastro da nova instituição.
+
+    Notas:
+    --------
+    - Antes de salvar o formulário, a view realiza um commit=False para em seguida inserir o campo 'cod_fixo' gerado pela Função 'gerar_cod_fixo' e usado como referência por atividades que integrem valores fixos pagos por essa instituição.
+
+    Tratamento de erros:
+    --------
+    - Caso o formulário enviado pelo usuário seja inválido, o formulário não será salvo e o usuário encaminhado para a path 'instituicoes', visualizando uma mensagem que informa erro no cadastro, pedindo revisão nos dados.
+    """
+    
+    if request.method == 'POST':
+
+        forms = InstituicaoForms(request.POST, request.FILES)
+
+        if forms.is_valid():
+            instituicao = forms.save(commit=False)
+            instituicao.cod_fixo = gerar_cod_fixo()
+            instituicao.save()
+            messages.success(request,'Nova Instituição Cadastrada com Sucesso!')
+            return redirect('instituicoes')
+        else:
+            messages.error(request,'Erro ao realizar o cadastro. Favor, verifique as informações e tente novamente.')
+    else:
+        forms = InstituicaoForms()
+
+    return render(request, 'atividades/nova_instituicao.html', {'forms':forms})
+
 def editar_instituicao(request, id_inst):
 
-    # Abre o formulário da instituição referente ao id_inst para realização e edição
+    """
+    Formulário para editar a instituição relativa ao parâmetro 'id_inst'.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+    id_inst: int
+        ID da instância que deverá ser editada no modelo Instituicao.
+
+    Retorno:
+    --------
+    HttpResponse
+        Se o método for GET: Retorna uma resposta HTTP que renderiza o template 'atividades/editar_instituicao.html' com o formulário InstituicaoForms instânciado pelo parâmetro 'id_inst' e com a variável 'inst' contendo a instância do modelo Instituicao relativa ao parâmetro 'inst_id'.
+        Se o método for POST: Salva o formulário enviado com as informações inseridas pelo usuário, atualizando em caso de alterações, e redirecionando para a path 'instituicoes', exibindo uma mensagem informando o sucesso na edição da instituicão. 
+
+    Tratamento de erros:
+    --------
+    - Caso o formulário enviado pelo usuário seja inválido, o formulário não será salvo e o usuário encaminhado para a path 'instituicoes' visualizando uma mensagem que informa erro no cadastro, pedindo revisão nos dados.
+    """
 
     inst = Instituicao.objects.get(id=id_inst)
     forms = InstituicaoForms(instance=inst)
@@ -227,7 +418,21 @@ def editar_instituicao(request, id_inst):
 
 def deletar_instituicao(request, id_inst):
 
-    # Deleta Instituição
+    """
+    View que deleta a instância do modelo Instituicao relativa ao parâmetro 'id_inst'.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+    id_inst: int
+        ID da instância que deverá ser deletada no modelo Instituicao.
+
+    Retorno:
+    --------
+    redirect
+        Redireciona o usuário para a path 'instituicoes' exibindo uma mensagem de sucesso na deleção da instância.
+    """
 
     inst = Instituicao.objects.get(id=id_inst)
 
@@ -236,30 +441,18 @@ def deletar_instituicao(request, id_inst):
     messages.success(request, 'Deleção realizada com sucesso!')
     return redirect('instituicoes')
 
-def nova_instituicao(request):
-
-    # Formulário de cadastro de novas instituições
-    
-    if request.method == 'POST':
-
-        forms = InstituicaoForms(request.POST, request.FILES)
-
-        if forms.is_valid():
-            instituicao = forms.save(commit=False)
-            instituicao.cod_fixo = gerar_cod_fixo()
-            instituicao.save()
-            messages.success(request,'Nova Instituição Cadastrada com Sucesso!')
-            return redirect('instituicoes')
-        else:
-            messages.error(request,'Erro ao realizar o cadastro. Favor, verifique as informações e tente novamente.')
-    else:
-        forms = InstituicaoForms()
-
-    return render(request, 'atividades/nova_instituicao.html', {'forms':forms})
-
 def gerar_cod_fixo():
 
-    # gerar um código único, que jamais se repete, para ser usado como cod_fixo da instituição
+    """
+    View que gera um código único que será passado para o campo 'cod_fixo' da instituição. 
+    
+    Esse campo será usado de referência por atividades que componham pagamento fixo realizado pela instituição detentora desse código.
+
+    Retorna:
+    --------
+    str
+        Código único de 2 à 4 digitos
+    """
 
     instituicoes = Instituicao.objects.all()
     lista_codigos = []
@@ -278,7 +471,21 @@ def gerar_cod_fixo():
 
 def instituicao(request, id_instituicao):
 
-    # Exibe o objeto Instituição em seus detalhes com formatação específica
+    """
+    View com a instância do modelo Instituicao relativa ao parâmetro id_instituicao.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+    id_instituicao : int
+        ID da instância que deverá ser editada no modelo Instituicao.
+
+    Retorno:
+    --------
+    HttpResponse
+        Retorna uma resposta HTTP que renderiza o template 'atividades/instituicao.html' com o dicionário 'dict_inst' que contém as informações da instituição instânciada.
+    """
 
     instituicao = Instituicao.objects.get(id=id_instituicao)
 
@@ -289,7 +496,6 @@ def instituicao(request, id_instituicao):
     valor = f'R$ {valor}'
     
     # Monta dicionário com formatação específica para exibição no template instituicao
-
     dict_inst['instituicao.id'] = {
         'id': instituicao.id,
         'nome_curto': instituicao.nome_curto if instituicao.nome_curto else '',
@@ -307,7 +513,27 @@ def instituicao(request, id_instituicao):
 
 def atividade(request, id_atividade):
 
-    # Exibe o objeto Atividade em seus detalhes com formatação específica
+    """
+    View com a instância do modelo Atividades relativa ao parâmetro id_atividade.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+    id_atividade : int
+        ID da instância que deverá ser editada no modelo Atividades.
+
+    Retorno:
+    --------
+    HttpResponse
+        Retorna uma resposta HTTP que renderiza o template 'atividades/atividade.html' com o dicionário 'dict_atividade' que contém as informações da atividade instanciada e a variável 'hoje' que contém o dia atual.
+
+    Notas:
+    --------
+    - A função renderiza o dia atual junto ao template, para que seja usado de parâmetro para decidir se deverá exibir os botões de edição ou não, pois os botões de edição só são exibidos para atividades atuais ou futuras, não permitindo edições em atividades que já ocorrerão.
+
+    """
+
 
     hoje = datetime.today().date()
 
@@ -351,7 +577,30 @@ def atividade(request, id_atividade):
 
 def nova_atividade(request):
 
-    # Formulario para criação de nova atividade
+    """
+    Formulário de cadastro de novas atividades.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+
+    Retorno:
+    --------
+    HttpResponse
+        Se o método for GET: Retorna uma resposta HTTP que renderiza o template 'atividades/nova_atividade.html' com o formulário AtividadesForms.
+        Se o método for POST: Armazena as informações submetidas pelo formulário em suas devidas váriveis e as envia como parâmetro para a Função 'agendar' do app calendário.
+
+    Notas:
+    --------
+    - Caso o campo 'data_final_seq' do formulário esteja vazio pelo fato do usuário não ter selecionado nenhuma sequência, a função preenche o mesmo com a data atual para evitar erros futuros na manipulação desse campo.
+    - A função já coloca a devida mascará no campo valor.
+
+    Tratamento de erros:
+    --------
+    - Caso o formulário enviado pelo usuário seja inválido, o formulário não será salvo e exibirá uma mensagem informando quais são as inconsistências do formulário para que o usuário possa ajustar.
+    - Caso o retorno da Função 'agendar' seja False, ou seja, a criação da unidade e seu devidamente agendamento não tenha ocorrido, é exibida a mensagem "Erro ao criar atividade".
+    """
 
     if request.method == 'POST':
 
@@ -365,7 +614,7 @@ def nova_atividade(request):
             entrada = forms['entrada'].value()
             saida = forms['saida'].value()
             valor = forms['valor'].value()
-            valor = str(valor).replace('R$ ', '').replace(',', '').strip()
+            valor = str(valor).replace('R$ ', '').replace(',', '').strip() # coloca mascará no campo valor
             sequencia = forms['sequencia'].value()
             data_final = forms['data_final_seq'].value()
             obs = forms['obs'].value()
@@ -373,11 +622,9 @@ def nova_atividade(request):
             fixo_mensal = forms['fixo_mensal_ativ'].value()
             seq_perso = forms['seq_perso'].value()
 
-            # Preenche campo data_final_seq quando ele não é utilizado para não quebrar código posteriormente
             if not data_final:
                 data_final = data
 
-            # Chama função agendar, do app Calendario, que cria e agenda as atividade conforme sua sequencia
             agendamento = agendar(instituicao, tipo, data, entrada, saida, valor, sequencia, data_final, obs, nao_remunerado, fixo_mensal, seq_perso)
 
             if agendamento:
@@ -386,7 +633,7 @@ def nova_atividade(request):
             else:
                 messages.error(request,'Erro ao criar atividade')
         else:
-            mensagem = f'O formulário de nova atividade apresenta as seguintes inconsistencias: {forms.errors}'
+            mensagem = f'O formulário de nova atividade apresenta as seguintes inconsistências: {forms.errors}'
             messages.error(request,mensagem)
     else:
         forms = AtividadesForms()
@@ -396,13 +643,53 @@ def nova_atividade(request):
 
 def editar_atividade(request, id_atividade):
 
-    # Abre o formulário da atividade referente ao id_atividade enviado para edição
+    """
+    Formulário para editar a atividade relativa ao parâmetro 'id_atividade'.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+    id_atividade: int
+        ID da instância que deverá ser editada no modelo Atividades.
+
+    Retorno:
+    --------
+    HttpResponse
+        Se o método for GET: Retorna uma resposta HTTP que renderiza o template 'atividades/editar_atividade.html' com o formulário AtividadesForms instanciado pelo parâmetro 'id_atividade' e com a variável 'atividade' contendo a instância do modelo Atividades relativa ao parâmetro 'id_atividade'.
+        Se o método for POST: Checa o parâmetro 'extra_param' para verificar se o usuário deseja realizar a alterar na atividade solo ou em toda sua sequência. Em seguida salva o as alterações enviadas pelo formulário se acordo com a opção desejada. 
+
+    Funcionamento:
+    --------
+    - Cria a variável 'data_atual' para garantir que nenhum edição seja feita em atividades que já ocorrerão.
+    - Coloca instância do modelo Atividades, relativa ao parâmetro 'id_atividade', na variável 'atividade'.
+    - Checa se o método do request é 'POST'.
+    - Caso sim:
+        - Obtém formulário enviado pelo método post na variável forms.
+        - Checa se o formulário é válido.
+        - Caso não, retorna uma mensagem com as inconsistência do formulário para que o usuário posso ajustar.
+        - Caso sim, coloca os valores enviados pelo forms em suas devidas variaveis e em seguida checa o valor da variável 'param' que recebeu o valor do campo 'extra_param'.
+        - Se o valor de 'param' for 1: Significa que o usuário deseja alterar apenas a atividade solo e então realiza a alteração baseado no 'id_vir' da atividade. Depois redireciona para a path 'index' com mensagem de sucesso.
+        - Se o valor de 'param' for 2: Significa que o usuário deseja alterar toda a sequência na qual a atividade esteja incluída, então realiza a alteração baseado no 'cod' da atividade. Depois redireciona para a path 'index' com mensagem de sucesso.
+    - Caso não:
+        - Obtém o formulário de AtividadesForms instanciado pelo parâmetro id_atividade.
+        - Renderiza o template 'atividades/editar_atividade.html' com o formulário AtividadesForms instanciado pelo parâmetro 'id_atividade' e com a variável 'atividade' contendo a instância do modelo Atividades relativa ao parâmetro 'id_atividade'. 
+
+    Tratamento de erros:
+    --------
+    - Caso o formulário enviado pelo usuário seja inválido, o formulário não será salvo e será exibida uma mensagem com as inconsistência do formulário para que o usuário posso ajustar.
+    - Caso o id_atividade tenha alguma inconsistência a 'atividade' receberá de um erro de status=404 ao tenta instanciar a atividade pela função 'get_object_or_404'.
+
+    Notas:
+    --------
+    - O campo id_vir é destinado a unificar o tratamento de atividades que foram 'quebradas' em duas por passarem da meia-noite. Para maiores entendimenos, ler a documentação da view 'criar_e_agendar_atividade' do app calendário.
+    """
 
     data_atual = datetime.today().date()
-    # Selecione data minima para filtragem no caso de edições em sequencias, garantindo a não edição de atividades que ja ocorreram
+    
     data_control = data_atual - timedelta(days=1)
+
     atividade = get_object_or_404(Atividades, id=id_atividade)
-    forms = AtividadesForms(instance=atividade)
 
     if request.method == 'POST':
 
@@ -410,15 +697,13 @@ def editar_atividade(request, id_atividade):
 
         if forms.is_valid():
 
-            # Obtem parametro enviado para usuario para saber se o mesmo deseja editar a atividade solo ou toda a sua sequencia
             param = forms['extra_param'].value()
             valor = forms['valor'].value()
-            valor = str(valor).replace('R$ ', '').replace(',', '').strip()
+            valor = str(valor).replace('R$ ', '').replace(',', '').strip() # Coloca mascará no campo valor
             nao_remunerado = forms['nao_remunerado'].value()
 
-            # Edita apenas a atividade acessada pelo formulário 
             if param == '1':
-                # Garante a edição de de ambas as atividades no caso de atividades que passem da meia noite (ver glossário para entender id_vir)
+                
                 atividades = Atividades.objects.filter(id_vir=atividade.id_vir)
 
                 inst = forms['instituicao'].value()
@@ -437,7 +722,6 @@ def editar_atividade(request, id_atividade):
                 messages.success(request, 'Atividade editada com sucesso')
                 return redirect('index')
             
-            # Edita todas as atividades criadas na mesma sequencia, filtradas através do campo cod (ver glossário para entender cod)
             elif param == '2':
                 atividades = Atividades.objects.filter(cod=atividade.cod, data__gt=data_control)
 
@@ -458,14 +742,39 @@ def editar_atividade(request, id_atividade):
                 return redirect('index')
         else:
             messages.error(request, f'{forms.errors}')
+    else:
+        forms = AtividadesForms(instance=atividade)
 
     return render(request, 'atividades/editar_atividade.html', {'forms':forms, 'atividade':atividade})
 
 def deletar_atividade(request, id_atividade):
 
-    # Deleta a atividade referente ao id_atividade enviado
+    """
+    View que deleta a(s) instância(s) do modelo Atividades baseado no campo 'id_vir' da atividade relativa ao parâmetro 'id_atividade'.
 
-    # Obtem id_vir para garantir o tratamento unificado de atividades que atravessem à meia noite
+    A view deleta apenas as atividades de mesmo 'id_vir' e mantém o restante da sequência, caso haja.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+    id_atividade: int
+        ID da instância que servirá de referência para deleção no modelo Atividades.
+
+    Retorno:
+    --------
+    redirect
+        Redireciona o usuário para a path 'index' exibindo uma mensagem de sucesso nas deleções realizadas.
+
+    Tratamento de erros:
+    --------
+    - Caso ocorra algum erro na filtragem da atividade pelo 'id_vir' o usuário será redicionado para a path 'index' e visualizará a mensagem 'Ocorreu um erro deleção não pode ser realizada!'.
+
+    Notas:
+    --------
+    - A Função percorre os objetos do modelo Calendario relativo as horas em que ocorreriam a atividade deletada e garante a retirada de seu respectivo agendamento.
+    """
+
     atividade_param = Atividades.objects.get(id=id_atividade)
 
     id_vir = atividade_param.id_vir
@@ -473,7 +782,6 @@ def deletar_atividade(request, id_atividade):
     atividade = Atividades.objects.filter(id_vir=id_vir)
     
     if atividade:
-
         for item in atividade:
             agenda = Calendario.objects.filter(atividades=item)
             
@@ -489,9 +797,32 @@ def deletar_atividade(request, id_atividade):
 
 def deletar_sequencia(request, id_atividade):
 
-    # Deleta todas as atividades da mesma sequencia da atividade referente ao id_atividade enviado pelo usuario
+    """
+    View que deleta as instâncias do modelo Atividades baseado no campo 'cod' da atividade relativa ao parâmetro 'id_atividade'.
 
-    # Filtra por data atual para garantir que atividades já ocorridas não sejam deletadas
+    A view deleta todas as atividade da mesma sequência.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+    id_atividade: int
+        ID da instância que servirá de referência para deleção no modelo Atividades.
+
+    Retorno:
+    --------
+    redirect
+        Redireciona o usuário para a path 'index' exibindo uma mensagem de sucesso nas deleções realizadas.
+
+    Tratamento de erros:
+    --------
+    - Caso ocorra algum erro na filtragem da atividade pelo 'cod' o usuário será redicionado para a path 'index' e visualizará a mensagem 'Ocorreu um erro deleção não pode ser realizada!'.
+
+    Notas:
+    --------
+    - A Função percorre os objetos do modelo Calendario relativo as horas em que ocorreriam a atividade deletada e garante a retirada de seu respectivo agendamento.
+    """
+
     data_atual = datetime.today().date()
     data_control = data_atual - timedelta(days=1)
 
@@ -519,7 +850,19 @@ def deletar_sequencia(request, id_atividade):
 
 def categorias(request):
 
-    # Seleciona e exibe categorias
+    """
+    View para exibir todas as categorias cadastradas.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+
+    Retorno:
+    --------
+    HttpResponse
+        Retorna uma resposta HTTP que renderiza o template 'atividades/categorias.html' com a QuerySet 'categorias' contendo as informações das categorias presentes no modelo Categoria.
+    """
 
     categorias = Categoria.objects.all()
 
@@ -527,7 +870,24 @@ def categorias(request):
 
 def nova_categoria(request):
 
-    # Formulario para criação de nova categoria
+    """
+    Formulário de cadastro de novas categorias.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+
+    Retorno:
+    --------
+    HttpResponse
+        Se o método for GET: Retorna uma resposta HTTP que renderiza o template 'atividades/nova_categoria.html' com o formulário CategoriaForms.
+        Se o método for POST: Salva o formulário enviado com as informações inseridas pelo usuário e o redirecionando para a path 'categorias', exibindo uma mensagem informando o sucesso no cadastro da nova categoria. 
+
+    Tratamento de erros:
+    --------
+    - Caso o formulário enviado pelo usuário seja inválido, o formulário não será salvo e o usuário sera encaminhado para a path 'categorias', visualizando mensagem informando erro no cadastro, pedindo revisão nos dados.
+    """
 
     forms = CategoriaForms()
 
@@ -546,6 +906,27 @@ def nova_categoria(request):
     return render(request, 'atividades/nova_categoria.html', {'forms':forms})
 
 def editar_categoria(request, categoria_id):
+
+    """
+    Formulário para editar a categoria relativa ao parâmetro 'categoria_id'.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+    categoria_id: int
+        ID da instância que deverá ser editada no modelo Categoria.
+
+    Retorno:
+    --------
+    HttpResponse
+        Se o método for GET: Retorna uma resposta HTTP que renderiza o template 'atividades/editar_categoria.html' com o formulário CategoriaForms instânciado pelo parâmetro 'categoria_id' e com a variável 'categoria' contendo a instância do modelo Categoria relativa ao parâmetro 'categoria_id'.
+        Se o método for POST: Salva o formulário enviado com as informações inseridas pelo usuário, atualizando em caso de qualquer alteração, e o redirecionando para a path 'categorias', exibindo uma mensagem informando o sucesso na edição da categoria. 
+
+    Tratamento de erros:
+    --------
+    - Caso o formulário enviado pelo usuário seja inválido, o formulário não será salvo e será exibida a mensagem 'Não foi possível realizar a edição. Favor revise os dados ou entre em contato com o administrador do sistema.'.
+    """
 
     # Formulario de categoria referente à categoria_id enviada para a edição
 
@@ -568,7 +949,21 @@ def editar_categoria(request, categoria_id):
 
 def deletar_categoria(request, categoria_id):
 
-    # Deleção de categoria referente à categoria_id enviada
+    """
+    View que deleta a instância do modelo Categoria relativa ao parâmetro 'categoria_id'.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+    categoria_id: int
+        ID da instância que deverá ser deletada no modelo Categoria.
+
+    Retorno:
+    --------
+    redirect
+        Redireciona o usuário para a path 'categorias' exibindo uma mensagem de sucesso na deleção da instância.
+    """
 
     categoria = Categoria.objects.get(id=categoria_id)
 
@@ -579,7 +974,28 @@ def deletar_categoria(request, categoria_id):
 
 def get_valor_fixo(request, instituicao_id):
 
-    # Consegue valor fixo mensal da instituição, caso haja, quando exibição no campo valor, quando CheckBox fixo_mensal é ativado pelo usuario
+    """
+    View que obtém o valor do campo 'valor_fixo' da instituição relativa ao parâmetro 'instituicao_id'.
+
+    Essa função é chamada no momento em que o usuário indica que determinada atividade deve integrar um valor fixo pago por determinada instituição, clicando no checkbox 'Fixo Mensal' do formulário de cadastro de novas atividades.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+    instituicao_id: int
+        ID da instância do modelo Instituicao que será usado como referência.
+
+    Retorno:
+    --------
+    JsonResponse
+        Retorna o campo 'valor_fixo' da instituição relativa ao parâmetro 'instituicao_id'.
+
+    Tratamento de erros:
+    --------
+    - Caso a instituição referência pelo parâmento 'instituicao_id' não exista, a função retorna um JsonResponse com o 'valor_padrao' vazio e o erro de status=404.
+
+    """
 
     try:
 
@@ -593,20 +1009,52 @@ def get_valor_fixo(request, instituicao_id):
     
 def filtrar_financeiro(atividades):
 
-    # Cria dicionario com campos devidamente formatados e filtrados para a apresentação no dashboard financeiro
+    """
+    View que gera dicionário com os dados da QuerySet atividades, enviada como parâmetro, filtrados e formatados para apresentação no dashboard Financeiro.
+
+    Parâmetros:
+    -----------
+    atividades: QuerySet
+        Query com instâncias do modelo 'Atividades' que foram previamente filtradas.
+
+    Retorno:
+    --------
+    dict
+        Dicionário contendo os seguintes contextos:
+        - 'dict_financ': Dicionário com dados da QuerySet atividades devidamente formatados e filtrados para apresentação no DashBoard Financeiro.
+        - 'etiquetas': Lista contendo os valores que serão usados como labels no gráfico padrão, obtido pela Função 'gerar_grafico_instituicao'.
+        - 'valores': Lista contendo os valores que serão usados para montar o gráfico padrão, obtido pela Função 'gerar_grafico_instituicao'. 
+
+    Funcionamento:
+    --------
+    - Obtém quantidade de meses transcorridos no período referênte as atividades presentes no parâmetro 'atividades'.
+    - Declara as variáves que serão necessárias no decorrer do código.
+    - Usa Função 'gerar_grafico_instituicao' para obter valores necessários para a geração de gráfico padrão. E separa o resultado em suas devidas variáveis.
+    - Percorre a QuerySet 'atividades' unificando e formatando os valores das atividades dentro do dicionário 'dict_financ'.
+    - Checa se a atividade percorrida tem True para o campo 'fixo_mensal_ativ'.
+    - Caso sim, garante o valor da atividade será somado apenas uma vez por mes no período referente as atividades.
+    - Caso não, efetua as somas normalmente.
+
+    Tratamento de erros:
+    --------
+    - Caso a QuerySet atividades enviada esteja vazia a função preenche os campos de 'dict_financ' e as variaveis 'etiquetas' e 'valores' com em branco para declara-las e evitar erros futuros na manipulação das mesmas.
+
+    Notas:
+    --------
+    - A Função garante que atividade 'quebradas' por passarem da meia-noite sejam tratadas de maneira unificada.
+    """
 
     dict_financ = {}
 
     if atividades:
 
-        # Obtem quantidade de meses dentre as atividades presentes na query "atividades" para gerar as médias
+        # Obtem quantidade de meses
         data_inicio = atividades.order_by('data').first()
         data_inicio = data_inicio.data
         data_final = atividades.order_by('data').last()
         data_final = data_final.data
         qt_meses = (data_final.month + 1) - data_inicio.month
 
-        # Sessão de declaração das variaveis uteis
         total = 0
         total_fixo = 0
         total_variavel = 0
@@ -617,14 +1065,14 @@ def filtrar_financeiro(atividades):
         list_id_vir = []
         list_fixo = []
 
-        # Obtem dados a partir da função de gerar_grafico_instituicao e separa em listas de etiquetas e valores para geração de gráfico
+        # Obtem dados para gerar gráfico
         dict_inst = gerar_grafico_instituicao(atividades, qt_meses)
         lista_etiqueta = list(dict_inst.keys())
         lista_valores = list(dict_inst.values())
 
         for atividade in atividades:
 
-            # Garante de não haverá mais de uma incidencia por mês nas atividades atribuidas à pagamentos fixos mensais
+            # Garante um incidência por mês em valores fixos
             if atividade.fixo_mensal_ativ:
                 if atividade.id_vir not in list_id_vir:
                     list_id_vir.append(atividade.id_vir)       
@@ -637,26 +1085,24 @@ def filtrar_financeiro(atividades):
                     total_variavel += float(atividade.valor)
                     list_id_vir.append(atividade.id_vir)
 
-            # Calculando a quantidade de horas verificando se há virada de dia
+            # Checa virada de dia para tratar quantidade de horas
             if atividade.entrada < atividade.saida:
                 qt_hora += (atividade.saida - atividade.entrada)
             else:
                 qt_hora += ((24 - atividade.entrada) + atividade.saida)
 
-            # Adiciona a data à lista de dias trabalhados se não estiver presente
             if atividade.data not in list_dia_trab:
                 list_dia_trab.append(atividade.data)
 
-            # Adiciona o mês à lista de meses se não estiver presente
             if atividade.data.month not in list_mes:
                 list_mes.append(atividade.data.month)
         
         qt_atividade = len(list_id_vir)
 
-        # Gerar o total de fixos mensais multiplicado pela quantidade de meses do período transcorrido na query sequencia
+        # Calcula o total de fixos mensais multiplicando pela quantidade de meses
         total_fixo = total_fixo * qt_meses
 
-        # Gerar o total fatura no período entre fixos e variaveis
+        # Gerar o total faturado no período entre fixos e variaveis
         total = total_fixo + total_variavel
 
         # Gera o dicionario com os valores já formatados
@@ -685,7 +1131,29 @@ def filtrar_financeiro(atividades):
 
 def filtrar_mes(mes):
 
-    # Filtra a query atividades de acordo com o mes enviado para posterior envido à função filtrar_financeiro
+    """
+    View que filtra os objetos do modelo Atividades pelo parâmetro 'mes'.
+    
+    Em seguida, envia o resultado para a função 'filtrar_financeiro' à fim de obter os dados formatados para o dashboard Financeiro.
+
+    Parâmetros:
+    -----------
+    mes : int
+        Mês pelo qual se filtrará os objetos do modelo Atividades.
+
+    Retorno:
+    --------
+    dict
+        Retorna um dicionário criado a partir dos dados da QuerySet 'atividades', que conta com as instâncias do modelo Atividades filtradas pelo parâmetro 'mes', contendo os seguintes contextos:
+        - 'dict_financ': Dicionário com os dados para uso no dashboard Financeiro.
+        - 'etiquetas': Lista com valores para serem usados como label na geração do gráfico padrão.
+        - 'valores': Lista com valores para serem usados na geração do gráfico padrão. 
+
+    Notas:
+    --------
+    - A Função exclui todas as atividades não remuneradas.
+    - Usa a Função 'filtrar_financeiro' para obter os dados formatados.
+    """
 
     atividades = Atividades.objects.filter(data__month=mes, nao_remunerado=False)
 
@@ -695,7 +1163,29 @@ def filtrar_mes(mes):
 
 def filtrar_ano(ano):
 
-    # Filtrar a query atividades de acordo com o ano enviado para posterior envido à função filtrar_financeiro
+    """
+    View que filtra os objetos do modelo Atividades pelo parâmetro 'ano'.
+    
+    Em seguida, envia o resultado para a função 'filtrar_financeiro' à fim de obter os dados formatados para o dashboard Financeiro.
+
+    Parâmetros:
+    -----------
+    ano : int
+        Ano pelo qual se filtrará os objetos do modelo Atividades.
+
+    Retorno:
+    --------
+    dict
+        Retorna um dicionário criado a partir dos dados da QuerySet 'atividades', que conta com as instâncias do modelo Atividades filtradas pelo parâmetro 'ano', contendo os seguintes contextos:
+        - 'dict_financ': Dicionário com os dados para uso no dashboard Financeiro.
+        - 'etiquetas': Lista com valores para serem usados como label na geração do gráfico padrão.
+        - 'valores': Lista com valores para serem usados na geração do gráfico padrão. 
+
+    Notas:
+    --------
+    - A Função exclui todas as atividades não remuneradas.
+    - Usa a Função 'filtrar_financeiro' para obter os dados formatados.
+    """
 
     atividades = Atividades.objects.filter(data__year=ano, nao_remunerado=False)
 
@@ -705,7 +1195,24 @@ def filtrar_ano(ano):
 
 def filtrar_ate_fim_mes():
 
-    # Filtrar a query atividades no periodo entre a data atual e o ultimo dia do mês corrente para posterior envido à função filtrar_financeiro
+    """
+    View que filtra os objetos do modelo Atividades tendo como referência a data atual até o último dia do mês atual.
+    
+    Em seguida, envia o resultado para a função 'filtrar_financeiro' à fim de obter os dados formatados para o dashboard Financeiro.
+
+    Retorno:
+    --------
+    dict
+        Retorna um dicionário criado a partir dos dados da QuerySet 'atividades', que conta com as instâncias do modelo Atividades filtradas pelo período da data_atual até o último dia do mês atual, contendo os seguintes contextos:
+        - 'dict_financ': Dicionário com os dados para uso no dashboard Financeiro.
+        - 'etiquetas': Lista com valores para serem usados como label na geração do gráfico padrão.
+        - 'valores': Lista com valores para serem usados na geração do gráfico padrão. 
+
+    Notas:
+    --------
+    - A Função exclui todas as atividades não remuneradas.
+    - Usa a Função 'filtrar_financeiro' para obter os dados formatados.
+    """
 
     data_inicio = datetime.today().date()
     ano = data_inicio.year
@@ -721,7 +1228,24 @@ def filtrar_ate_fim_mes():
 
 def filtrar_ate_fim_ano():
 
-    # Filtrar a query atividades no periodo entre a data atual e o ultimo dia do ano corrente para posterior envido à função filtrar_financeiro
+    """
+    View que filtra os objetos do modelo Atividades tendo como referência a data atual até o último dia do ano atual.
+    
+    Em seguida, envia o resultado para a função 'filtrar_financeiro' à fim de obter os dados formatados para o dashboard Financeiro.
+
+    Retorno:
+    --------
+    dict
+        Retorna um dicionário criado a partir dos dados da QuerySet 'atividades', que conta com as instâncias do modelo Atividades filtradas pelo período da data_atual até o último dia do ano atual, contendo os seguintes contextos:
+        - 'dict_financ': Dicionário com os dados para uso no dashboard Financeiro.
+        - 'etiquetas': Lista com valores para serem usados como label na geração do gráfico padrão.
+        - 'valores': Lista com valores para serem usados na geração do gráfico padrão. 
+
+    Notas:
+    --------
+    - A Função exclui todas as atividades não remuneradas.
+    - Usa a Função 'filtrar_financeiro' para obter os dados formatados.
+    """
 
     data_inicio = datetime.today().date()
     ano = data_inicio.year
@@ -735,7 +1259,22 @@ def filtrar_ate_fim_ano():
 
 def filtrar_todo_periodo():
 
-    # Gera query atividades a partir de todas as atividades cadastradas no BD para posterior envido à função filtrar_financeiro
+    """
+    View que obtem todos os objetos do modelo Atividades, exceto os não remunerados, e os envia para a função 'filtrar_financeiro' à fim de obter os dados formatados para o dashboard Financeiro.
+
+    Retorno:
+    --------
+    dict
+        Retorna um dicionário criado a partir dos dados da QuerySet 'atividades', que conta todas as instâncias do modelo Atividades, exceto as não remuneradas, contendo os seguintes contextos:
+        - 'dict_financ': Dicionário com os dados para uso no dashboard Financeiro.
+        - 'etiquetas': Lista com valores para serem usados como label na geração do gráfico padrão.
+        - 'valores': Lista com valores para serem usados na geração do gráfico padrão. 
+
+    Notas:
+    --------
+    - A Função exclui todas as atividades não remuneradas.
+    - Usa a Função 'filtrar_financeiro' para obter os dados formatados.
+    """
 
     atividades = Atividades.objects.filter(nao_remunerado=False)
 
@@ -745,7 +1284,31 @@ def filtrar_todo_periodo():
 
 def filtrar_personalizado(dataInicio, dataFinal):
 
-    # Filtrar a query atividades entre os periodo enviados pelo usuario para posterior envido à função filtrar_financeiro
+    """
+    View que filtra os objetos do modelo Atividades no período entre os parâmetros 'dataInicio' e 'dataFinal'.
+    
+    Em seguida, envia o resultado para a função 'filtrar_financeiro' à fim de obter os dados formatados para o dashboard Financeiro.
+
+    Parâmetros:
+    -----------
+    dataInicio : datetime
+        Data de inicio do período que o usuário deseja filtrar as informações.
+    dataFinal : datetime
+        Data de término do período que o usuário deseja filtrar as informações.
+
+    Retorno:
+    --------
+    dict
+        Retorna um dicionário criado a partir dos dados da QuerySet 'atividades', que conta com as instâncias do modelo Atividades filtradas pelo período entre os parâmetros 'dataInicio' e 'dataFinal', contendo os seguintes contextos:
+        - 'dict_financ': Dicionário com os dados para uso no dashboard Financeiro.
+        - 'etiquetas': Lista com valores para serem usados como label na geração do gráfico padrão.
+        - 'valores': Lista com valores para serem usados na geração do gráfico padrão. 
+
+    Notas:
+    --------
+    - A Função exclui todas as atividades não remuneradas.
+    - Usa a Função 'filtrar_financeiro' para obter os dados formatados.
+    """
 
     atividades = Atividades.objects.filter(data__range=(dataInicio, dataFinal), nao_remunerado=False)
 
@@ -755,7 +1318,35 @@ def filtrar_personalizado(dataInicio, dataFinal):
 
 def gerar_grafico_instituicao(atividades, qt_meses):
 
-    # Gera dicionario a partir do agrupamento por instituição dos valores da query atividades
+    """
+    View que gera um dicionário a partir da queryset atividades enviada como parâmetro. 
+    
+    A Função agrupa os valores recebidos por instituição no período transcorrido entre as atividades do parâmetro 'atividades'.
+    Cada instituição vira uma chave no dicionário sendo que seu valor será o total recebido por ela nesse período.
+
+    Parâmetros:
+    -----------
+    atividades : QuerySet
+        Query com instâncias do modelo 'Atividades' que foram previamente filtradas.
+    qt_meses : int
+        Número que representa a quantidade de meses transcorridos no período entre as atividades da query 'atividades'.
+
+    Retorno:
+    --------
+    dict
+        Retorna um dicionário com total dos valores recebidos por instituição dentre as atividades presentes na query 'atividades'.  
+
+    Tratamento de erros:
+    --------
+    - Caso haja erro de conversão dos valores para o tipo float, a função adiciona 0 ao campo prevendo erros futuros.
+
+    Notas:
+    --------
+    - As chaves dessa função formarão as labels para geração do gráfico financeiro por instituição.
+    - Os valores dessa função serão os valores para a geração do gráfico financeiro por instituição.
+    - A Função trata atividades 'quebradas' por passarem da meia-noite de maneira unificada.
+    - A Função garante que valores fixos sejam somados apenas uma vez a cada mes.
+    """
 
     dict_inst = {}
     list_cod_fixo = []
@@ -764,11 +1355,9 @@ def gerar_grafico_instituicao(atividades, qt_meses):
     for atividade in atividades:
         nome_inst = atividade.instituicao.nome_inst
 
-        # Garante o tratamento unificado das unidades de mesmo id_vir
         if atividade.id_vir not in list_id_vir:
             list_id_vir.append(atividade.id_vir)
 
-            # Inicializa o total se a instituição ainda não estiver no dicionário
             if nome_inst not in dict_inst:
                 dict_inst[nome_inst] = 0
 
@@ -778,17 +1367,44 @@ def gerar_grafico_instituicao(atividades, qt_meses):
                     dict_inst[nome_inst] += valor
                     list_cod_fixo.append(atividade.cod_fixo_ativ)
             else:
-                # Adiciona o valor da atividade ao total da instituição
                 try:
                     dict_inst[nome_inst] += float(atividade.valor)
                 except ValueError:
-                    dict_inst[nome_inst] += 0  # Se ocorrer um erro de conversão, adicione 0
+                    dict_inst[nome_inst] += 0  # Adiciona 0 caso ocorra um erro de conversão
     
     return dict_inst
 
 def gerar_grafico_tipo(atividades, qt_meses) :
 
-    # Gera dicionario a partir do agrupamento por tipo de atividades dos valores da query atividades
+    """
+    View que gera um dicionário a partir da queryset atividades enviada como parâmetro. 
+    
+    A Função agrupa os valores recebidos por 'tipo de atividade' no período transcorrido entre as atividades do parâmetro 'atividades'.
+    Cada tipo de atividade vira uma chave no dicionário sendo que seu valor será o total recebido por ela nesse período.
+
+    Parâmetros:
+    -----------
+    atividades : QuerySet
+        Query com instâncias do modelo 'Atividades' que foram previamente filtradas.
+    qt_meses : int
+        Número que representa a quantidade de meses transcorridos no período entre as atividades da query 'atividades'.
+
+    Retorno:
+    --------
+    dict
+        Retorna um dicionário com total dos valores recebidos por tipo de atividade dentre as atividades presentes na query 'atividades'.  
+
+    Tratamento de erros:
+    --------
+    - Caso haja erro de conversão dos valores para o tipo float, a função adiciona 0 ao campo prevendo erros futuros.
+
+    Notas:
+    --------
+    - As chaves dessa função formarão as labels para geração do gráfico financeiro por tipo de atividade.
+    - Os valores dessa função serão os valores para a geração do gráfico financeiro por tipo de atividade.
+    - A Função trata atividades 'quebradas' por passarem da meia-noite de maneira unificada.
+    - A Função garante que valores fixos sejam somados apenas uma vez a cada mes.
+    """
 
     dict_tipo = {}
     list_cod_fixo = []
@@ -800,7 +1416,6 @@ def gerar_grafico_tipo(atividades, qt_meses) :
         if atividade.id_vir not in list_id_vir:
             list_id_vir.append(atividade.id_vir)
 
-            # Inicializa o total se a instituição ainda não estiver no dicionário
             if nome_tipo not in dict_tipo:
                 dict_tipo[nome_tipo] = 0
 
@@ -810,17 +1425,42 @@ def gerar_grafico_tipo(atividades, qt_meses) :
                     dict_tipo[nome_tipo] += valor
                     list_cod_fixo.append(atividade.cod_fixo_ativ)
             else:
-                # Adiciona o valor da atividade ao total da instituição
                 try:
                     dict_tipo[nome_tipo] += float(atividade.valor)
                 except ValueError:
-                    dict_tipo[nome_tipo] += 0  # Se ocorrer um erro de conversão, adicione 0
+                    dict_tipo[nome_tipo] += 0  # Adicionar 0 caso ocorra erro na conversão
 
     return dict_tipo
 
 def gerar_grafico_mes(atividades) :
 
-    # Gera dicionario a partir do agrupamento por mês dos valores da query atividades
+    """
+    View que gera um dicionário a partir da queryset atividades enviada como parâmetro. 
+    
+    A Função agrupa os valores recebidos por mês no período transcorrido entre as atividades do parâmetro 'atividades'.
+    Cada mês vira uma chave no dicionário sendo que seu valor será o total recebido por ela nesse período.
+
+    Parâmetros:
+    -----------
+    atividades : QuerySet
+        Query com instâncias do modelo 'Atividades' que foram previamente filtradas.
+
+    Retorno:
+    --------
+    dict
+        Retorna um dicionário com total dos valores recebidos por mês dentre as atividades presentes na query 'atividades'.  
+
+    Tratamento de erros:
+    --------
+    - Caso haja erro de conversão dos valores para o tipo float, a função adiciona 0 ao campo prevendo erros futuros.
+
+    Notas:
+    --------
+    - As chaves dessa função formarão as labels para geração do gráfico financeiro por mês.
+    - Os valores dessa função serão os valores para a geração do gráfico financeiro por mês.
+    - A Função trata atividades 'quebradas' por passarem da meia-noite de maneira unificada.
+    - A Função garante que valores fixos sejam somados apenas uma vez a cada mes.
+    """
 
     dict_mes = {}
     list_id_vir = []
@@ -834,7 +1474,6 @@ def gerar_grafico_mes(atividades) :
         if atividade.id_vir not in list_id_vir:
             list_id_vir.append(atividade.id_vir)
 
-            # Inicializa o total se a instituição ainda não estiver no dicionário
             if nome_mes not in dict_mes:
                 dict_mes[nome_mes] = 0
 
@@ -843,17 +1482,37 @@ def gerar_grafico_mes(atividades) :
                     dict_mes[nome_mes] += float(atividade.valor)
                     list_Control.append(control)
             else:
-                # Adiciona o valor da atividade ao total da instituição
                 try:
                     dict_mes[nome_mes] += float(atividade.valor)
                 except ValueError:
-                    dict_mes[nome_mes] += 0  # Se ocorrer um erro de conversão, adicione 0
+                    dict_mes[nome_mes] += 0  # Adicionar 0 caso ocorra erro na conversão
         
     return dict_mes
     
 def financeiro(request):
 
-    # Faz a primeira chamada do dashboard Financeiro devolvendo os valores totais, médias e para a geração do gráfico
+    """
+    View que renderiza o template 'atividades/financeiro.html' com suas informações pertinentes para a exibição do dashboad Financeiro.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+
+    Retorno:
+    --------
+    HttpResponse
+        Retorna uma resposta HTTP que renderiza o template 'atividades/financeiro.html' com dicionário contento os seguintes contextos:
+        - 'dict_financ': Dicionário com os dados financeiros referente ao mês atual, filtrados e formatados para a exibição no dashboard Financeiro.
+        - 'etiquetas': Lista convertida para JSON com os rótulos (labels) para geração do gráfico financeiro por instituição.
+        - 'valores': Lista convertida para JSON com os valores para geração do gráfico financeiro por instituição.
+        - 'tipo': String convertida para JSON com o tipo de gráfico definido nas preferências do usuário.
+
+    Notas:
+    --------
+    - Recupera as preferências do usuário a partir do modelo Preferencias.
+    - Usa a função 'filtrar_mes' enviando o mês atual de parâmetro para obter demais dados.
+    """
 
     mes = datetime.today().month
 
@@ -868,15 +1527,45 @@ def financeiro(request):
 
     return render(request, 'atividades/financeiro.html', {'financeiro': dict_financ, 'etiquetas': json.dumps(etiquetas), 'valores': json.dumps(valores), 'tipo': json.dumps(tipo_grafico)})
 
-# View para atualizar dados do dashboard Financeiro a partir de requisição AJAX enviadas com as com as preferencias do usuario. 
-# Inicia com um decorador garantindo que a view só aceite requisições do tipo GET
 @require_GET
 def atualizar_financeiro(request):
 
-    # Verifica se trata de um requisição do tipo AJAX, verificando o cabeçalho 'X-Requested-With'
+    """
+    View que atualiza os dados do dashboard Financeiro a partir de uma requição AJAX contento os parâmetros solicitados pelo usuário.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+
+    Retorno:
+    --------
+    JsonResponse
+        Retorna um JSON contendo o HTML atualizado do template 'atividades/partials/base_financeiro.html' com um dicionário contento os seguintes contextos:
+        - 'dict_financ': Dicionário com os dados financeiros formatados e filtrados conforme parâmetros enviados pelo usuário.
+        - 'etiquetas': Lista com os rótulos (labels) para geração do gráfico financeiro por instituição.
+        - 'valores': Lista com os valores para geração do gráfico financeiro por instituição.
+        - 'tipo': String com o tipo de gráfico definido nas preferências do usuário.
+
+    Funcionamento:
+    --------
+    - A função verifica se a requisição é uma requisição AJAX, através do cabeçalho 'X-Requested-With'.
+    - Obtém o tipo de período selecionado pelo usuário.
+    - Checar qual tipo de período e obtém os demais parâmetros para chamar a função relativa ao período selecionado. A Função retornará o 'dict_financ' que é o dicionário com os contextos necessários para a atualização da página.
+    - Divide o 'dict_financ' em suas devidas variáveis e recupera as preferências de usuário para obter o tipo do gráfico.
+    - Renderiza o template 'atividades/partials/base_financeiro.html' com os dados.
+
+    Tratamento de erros:
+    --------
+    - Caso não seja um requisição AJAX, retorna erro 'Requisição Inválida' (HTTP 400).
+    - Se o a informação fornecida no parâmetro `periodoSelect` for inválida, retorna um erro 'Data inválida' (HTTP 400).
+    - Caso o período selecionado for o 'personalizado' (periodoSelect == 6), a função formatará a data para o formatado %Y-%m-%d, caso haja erro na formatação retornará o erro 'Formato de data inválido. Use YYYY-MM-DD.' (HTTP 400).
+    - Se houver erro na Função usada para gerar o dicionário 'dict_financ' a função retornará 'Não foi possível gerar dict_financeiro a partir do período selecionado'. (HTTP 404)
+    
+    """
+
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
 
-        #Obtem periodo selecionado pelo usuario e filtrar os valores em suas devidas funções baseado nessa seleção
         periodoSelect = request.GET.get('periodoSelect')
         try:
             if periodoSelect == '1':
@@ -910,43 +1599,71 @@ def atualizar_financeiro(request):
         except ValueError:
             return JsonResponse({'error': 'Data inválida'}, status=400)
         
-        # Caso haja retorno de dict_financ, trata os valores para retorno da função 
         if dict_financ:
-            # Obtem etiquetas e valores para uso na geração de gráfico
             etiquetas = dict_financ['etiquetas']
             valores = dict_financ['valores']
-            # Obtem valores totais e médias para o dashboard
+            
             dict_financ = dict_financ['dict_financ']
-            #recupera preferencia do usuario de tipo de gráfico a ser usuado
+            
             preferencias = Preferencias.objects.get(id=1)
             tipo = preferencias.tipo_grafico
         else:       
             return JsonResponse({'error': 'Não foi possível gerar dict_financeiro a partir do período selecionado'}, status=404)
 
         try:
-            #Renderiza um template parcial (base_financeiro.html) usando os dados financeiros filtrados. Esse HTML será injetado no frontend.
+            
             html_content = render_to_string('atividades/partials/base_financeiro.html', {'financeiro': dict_financ, 'etiquetas': etiquetas, 'valores': valores, 'tipo': tipo})
         except Exception as e:
             return JsonResponse({'error': f'Erro ao renderizar o template: {str(e)}'}, status=500)
 
-        # Retorna uma resposta JSON contendo o HTML renderizado, as etiquetas, valores e o tipo de gráfico para que o frontend possa atualizar a interface.
         return JsonResponse({'html': html_content, 'etiquetas': etiquetas, 'valores': valores, 'tipo': tipo})
     else:
         return JsonResponse({'error': 'Requisição inválida'}, status=400)
     
-# View para atualizar gráfico Financeiro a partir de requisição AJAX enviada com as preferencias do usuario. 
-# Inicia com um decorador garantindo que a view só aceite requisições do tipo GET    
 @require_GET
 def atualizar_grafico(request):
 
-    # Verifica se trata de um requisição do tipo AJAX, verificando o cabeçalho 'X-Requested-With'
+    """
+    View que atualiza os dados para a geração do gráfico do dashboard Financeiro a partir de uma requição AJAX contento os parâmetros solicitados pelo usuário.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+
+    Retorno:
+    --------
+    JsonResponse
+        Retorna um JSON contendo com um dicionário contento os seguintes contextos:
+        - 'etiquetas': Lista com os rótulos (labels) para geração do gráfico.
+        - 'valores': Lista com os valores para geração do gráfico.
+        - 'tipo': String com o tipo de gráfico definido nas preferências do usuário.
+
+    Funcionamento:
+    --------
+    - A função verifica se a requisição é uma requisição AJAX, através do cabeçalho 'X-Requested-With'.
+    - Obtém o tipo de período e o gráfico desejado selecionado pelo usuário.
+    - Checar qual tipo de período e obtém os demais parâmetros para filtrar as instâncias do modelo Atividades de acordo com o período selecionado.
+    - Obtém a quantidade de meses transcorridas entre as atividades da query 'atividades'.
+    - Com a query 'atividades' e a quantidade de meses, a Função checa qual o gráfico solicitado pelo usuário através da variável 'graficoSelect' e chama a função de geração de gráfico de acordo com o que foi selecionado. A Função será retornada para o dicionário 'dict_financ'.
+    - Divide o 'dict_financ' em suas devidas variáveis e recupera as preferências de usuário para obter o tipo do gráfico.
+
+    Tratamento de erros:
+    --------
+    - Caso a requisição não seja uma requisição AJAX, retorna o erro 'Requisição Inválida' (HTTP 400).
+    - Se a informação fornecida no parâmetro `periodoSelect` for inválida, retorna um erro 'Data inválida' (HTTP 400).
+    - Caso o período selecionado for o 'personalizado' (periodoSelect == 6), a função formatará a data para o formatado %Y-%m-%d, caso haja erro na formatação retornará o erro 'Formato de data inválido. Use YYYY-MM-DD.' (HTTP 400).
+    - Se a query 'atividades' retornar vazia, o dicionário 'dict_financ' é preenchido com valor nulo para prevenção de erro em manipulações futuras.
+    - Se a informação fornecida no parâmetro 'graficoSelect' for inválida, retorna um erro 'Erro ao gerar o gráfico' (HTTP 400).
+    - Se houver erro na Função usada para gerar o dicionário 'dict_financ' a função retornará 'Não foi possível gerar dict_financeiro a partir do período selecionado' (HTTP 404)
+    
+    """
+
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
 
-        # Obtém periodo e tipo de gráfico selecionado pelo usuario
         periodoSelect = request.GET.get('periodoSelect')
         graficoSelect = request.GET.get('graficoSelect')
 
-        # Filtra a query atividades a partir do período selecionado, para geração do gráfico
         try:
             if periodoSelect == '1':
                 mesSelect = request.GET.get('mesSelect')
@@ -988,7 +1705,6 @@ def atualizar_grafico(request):
         except ValueError:
             return JsonResponse({'error': 'Data inválida'}, status=400)
         
-        # Obtém quantidade de meses a partir da query atividades caso seja necessária para geração do gráfico
         if atividades:
             data_inicio = atividades.order_by('data').first()
             data_inicio = data_inicio.data
@@ -996,7 +1712,6 @@ def atualizar_grafico(request):
             data_final = data_final.data
             qt_meses = (data_final.month + 1) - data_inicio.month
 
-            # Gerá o grafico a partir da query atividades obtida e do tipo de gráfico selecionado
             try:
                 if graficoSelect == '1':
                     dict_financ = gerar_grafico_instituicao(atividades, qt_meses)
@@ -1007,43 +1722,72 @@ def atualizar_grafico(request):
             except ValueError:
                 return JsonResponse({'error': 'Erro ao gerar o gráfico'}, status=400)
         else:
-            # Declara a dict_financ com valores vazios caso a query atividades retorne vazia por não haver dados para o período selecionado
+            
             dict_financ = {
                 '':''
             }
         
-        # Trata os valores para retorno da função
         if dict_financ:
-            #obtém etiquetas e valores para a geração do gráfico
+            
             etiquetas = list(dict_financ.keys())
             valores = list(dict_financ.values())
-            #recupera preferencias do usuario para qual tipo de gráfico deve ser usado
+            
             preferencias = Preferencias.objects.get(id=1)
             tipo = preferencias.tipo_grafico
         else:       
             return JsonResponse({'error': 'Nenhum dado encontrado'}, status=404)
 
-        # retorna os valores que devem ser usados na geração do gráfico no JavaScript
         return JsonResponse({'etiquetas': etiquetas, 'valores': valores, 'tipo': tipo})
     else:
         return JsonResponse({'error': 'Requisição inválida'}, status=400)
     
 def filtrar_rotina(atividades, quant_dias):
 
-    # Cria dicionario com campos devidamente formatados e filtrados para a apresentação no dashboard Rotina
+    """
+    View que gera dicionário com os dados da QuerySet atividades, enviada como parâmetro, filtrados e formatados para apresentação no dashboard Rotina.
+
+    Parâmetros:
+    -----------
+    atividades: QuerySet
+        Query com instâncias do modelo 'Atividades' que foram previamente filtradas.
+    quant_dias: int
+        Quantidade de dias que transcorrerão no período entre as atividades presentes na queryset 'atividades'.
+
+    Retorno:
+    --------
+    dict
+        Dicionário contendo os seguintes contextos:
+        - 'dict_rotina': Dicionário com dados da QuerySet atividades devidamente formatados e filtrados para apresentação no DashBoard Rotina.
+        - 'etiquetas': Lista contendo os valores que serão os rótulos (labels) no gráfico padrão, obtido pela Função 'gerar_grafico_remuneracao_rotina'.
+        - 'valores': Lista contendo os valores que serão usados para montar o gráfico padrão, obtido pela Função 'gerar_grafico_remuneracao_rotina'. 
+
+    Funcionamento:
+    --------
+    - Obtém quantidade de horas totais e quantidade de semanas a partir da variável 'quant_dias'.
+    - Recupera preferências do usuário para obter quantidade de horas de sono no período transcorrido entra as atividades presentes na queryset 'atividades'.
+    - Declara as variáves que serão necessárias no decorrer do código.
+    - Usa Função 'gerar_grafico_remuneracao_rotina para obter valores necessários para a geração de gráfico padrão. E separa o resultado em suas devidas variáveis.
+    - Percorre a QuerySet 'atividades' unificando e formatando os valores das atividades dentro do dicionário 'dict_rotina'.
+
+    Tratamento de erros:
+    --------
+    - Caso a QuerySet atividades enviada esteja vazia a função preenche os campos de 'dict_rotina' e as variaveis 'etiquetas' e 'valores' com valores nulos e em branco para declara-las e evitar erros futuros na manipulação das mesmas.
+
+    Notas:
+    --------
+    - A Função garante que atividade 'quebradas' por passarem da meia-noite sejam contabilizadas como apenas ' atividade.
+    - A Função retorna número de horas de atividades remuneradas e não remuneradas.
+    """
 
     dict_rotina = {}
 
-    # Obtém quantidade de horas e semanas para a geração de média de horas
     quant_horas_totais = quant_dias*24
     quant_semanas = quant_dias // 7 if (quant_dias // 7) > 0 else 1
     
-    # Recupera preferencias do usuario para quantia de sonos ideais para definição de horas de sono que serão usadas para geração das horas livres
     preferencias = get_preferencias()
     horas_sono = preferencias['horas_sono']
     quant_horas_sono = horas_sono * quant_dias
 
-    # Definição de variaveis
     qt_atividade = 0
     horas = 0
     qt_hora = 0
@@ -1051,7 +1795,6 @@ def filtrar_rotina(atividades, quant_dias):
     qt_hora_livre = quant_horas_totais
     list_id_vir = []
 
-    # Obtem dados a partir da função de gerar_grafico_remuneracao_rotina e separa em listas de etiquetas e valores para geração de gráfico  
     dict_remu = gerar_grafico_remuneracao_rotina(atividades)
     lista_etiqueta = list(dict_remu.keys())
     lista_valores = list(dict_remu.values())
@@ -1059,17 +1802,14 @@ def filtrar_rotina(atividades, quant_dias):
     if atividades :
         for atividade in atividades:
 
-            # Garante um só tratamento em quantidade de atividades para atividades com o mesmo id_vir
             if atividade.id_vir not in list_id_vir:    
                 list_id_vir.append(atividade.id_vir)
 
-            # Garante correta contagem de horas para atividades que viram a meia noite
             if atividade.entrada < atividade.saida:
                 horas = (atividade.saida - atividade.entrada)
             else:
                 horas = ((24 - atividade.entrada) + atividade.saida)
 
-            # Calcula horas remuneradas e não remuneradas a partir do campo nao_remunerado
             if atividade.nao_remunerado == False:
                 qt_hora = qt_hora + horas
                 qt_hora_remu = qt_hora_remu + horas
@@ -1079,7 +1819,6 @@ def filtrar_rotina(atividades, quant_dias):
             qt_hora_livre = quant_horas_totais - (qt_hora + quant_horas_sono)
             qt_atividade = len(list_id_vir)
 
-        # Gera o dicionario com os valores já formatados
         dict_rotina['rotina'] = {
             'horas_atividade': qt_hora,
             'horas_livres': qt_hora_livre,
@@ -1110,7 +1849,29 @@ def filtrar_rotina(atividades, quant_dias):
 
 def filtrar_mes_rotina(mes):
 
-    # Filtra a query atividades e obtém quantidade de dias de acordo com o mes enviado para posterior envido à função filtrar_rotina
+    """
+    View que filtra os objetos do modelo Atividades pelo parâmetro 'mes'.
+    
+    Em seguida, envia o resultado para a função 'filtrar_rotina' à fim de obter os dados formatados para o dashboard Rotina.
+
+    Parâmetros:
+    -----------
+    mes : int
+        Mês pelo qual se filtrará os objetos do modelo Atividades.
+
+    Retorno:
+    --------
+    dict
+        Retorna um dicionário criado a partir dos dados da QuerySet 'atividades', que conta com as instâncias do modelo Atividades filtradas pelo parâmetro 'mes', contendo os seguintes contextos:
+        - 'dict_rotina': Dicionário com os dados para uso no dashboard Financeiro.
+        - 'etiquetas': Lista com valores para serem usados como label na geração do gráfico padrão.
+        - 'valores': Lista com valores para serem usados na geração do gráfico padrão. 
+
+    Notas:
+    --------
+    - A Função exclui todas as atividades não remuneradas.
+    - Usa a Função 'filtrar_rotina' para obter os dados formatados.
+    """
 
     atividades = Atividades.objects.filter(data__month=mes)
 
@@ -1122,7 +1883,29 @@ def filtrar_mes_rotina(mes):
 
 def filtrar_ano_rotina(ano):
 
-    # Filtra a query atividades e obtém quantidade de dias de acordo com o ano enviado para posterior envido à função filtrar_rotina
+    """
+    View que filtra os objetos do modelo Atividades pelo parâmetro 'ano'.
+    
+    Em seguida, envia o resultado para a função 'filtrar_rotina' à fim de obter os dados formatados para o dashboard Rotina.
+
+    Parâmetros:
+    -----------
+    ano : int
+        Ano pelo qual se filtrará os objetos do modelo Atividades.
+
+    Retorno:
+    --------
+    dict
+        Retorna um dicionário criado a partir dos dados da QuerySet 'atividades', que conta com as instâncias do modelo Atividades filtradas pelo parâmetro 'ano', contendo os seguintes contextos:
+        - 'dict_rotina': Dicionário com os dados para uso no dashboard Rotina.
+        - 'etiquetas': Lista com valores para serem usados como label na geração do gráfico padrão.
+        - 'valores': Lista com valores para serem usados na geração do gráfico padrão. 
+
+    Notas:
+    --------
+    - A Função exclui todas as atividades não remuneradas.
+    - Usa a Função 'filtrar_rotina' para obter os dados formatados.
+    """
 
     atividades = Atividades.objects.filter(data__year=ano)
 
@@ -1138,7 +1921,24 @@ def filtrar_ano_rotina(ano):
 
 def filtrar_ate_fim_mes_rotina():
 
-    # Filtra a query atividades e obtém quantidade de dias para o periodo entre a data atual e o ultimo dia do fim do mês corrente para posterior envido à função filtrar_rotina
+    """
+    View que filtra os objetos do modelo Atividades tendo como referência a data atual até o último dia do mês atual.
+    
+    Em seguida, envia o resultado para a função 'filtrar_rotina' à fim de obter os dados formatados para o dashboard Rotina.
+
+    Retorno:
+    --------
+    dict
+        Retorna um dicionário criado a partir dos dados da QuerySet 'atividades', que conta com as instâncias do modelo Atividades filtradas pelo período da data_atual até o último dia do mês atual, contendo os seguintes contextos:
+        - 'dict_rotina': Dicionário com os dados para uso no dashboard Rotina.
+        - 'etiquetas': Lista com valores para serem usados como label na geração do gráfico padrão.
+        - 'valores': Lista com valores para serem usados na geração do gráfico padrão. 
+
+    Notas:
+    --------
+    - A Função exclui todas as atividades não remuneradas.
+    - Usa a Função 'filtrar_rotina' para obter os dados formatados.
+    """
 
     data_inicio = datetime.today().date()
     ano = data_inicio.year
@@ -1156,7 +1956,24 @@ def filtrar_ate_fim_mes_rotina():
 
 def filtrar_ate_fim_ano_rotina():
 
-    # Filtra a query atividades e obtém quantidade de dias para o periodo entre a data atual e o ultimo dia do fim do ano corrente para posterior envido à função filtrar_rotina
+    """
+    View que filtra os objetos do modelo Atividades tendo como referência a data atual até o último dia do ano atual.
+    
+    Em seguida, envia o resultado para a função 'filtrar_rotina' à fim de obter os dados formatados para o dashboard Rotina.
+
+    Retorno:
+    --------
+    dict
+        Retorna um dicionário criado a partir dos dados da QuerySet 'atividades', que conta com as instâncias do modelo Atividades filtradas pelo período da data_atual até o último dia do ano atual, contendo os seguintes contextos:
+        - 'dict_rotina': Dicionário com os dados para uso no dashboard Rotina.
+        - 'etiquetas': Lista com valores para serem usados como label na geração do gráfico padrão.
+        - 'valores': Lista com valores para serem usados na geração do gráfico padrão. 
+
+    Notas:
+    --------
+    - A Função exclui todas as atividades não remuneradas.
+    - Usa a Função 'filtrar_rotina' para obter os dados formatados.
+    """
 
     data_inicio = datetime.today().date()
     ano = data_inicio.year
@@ -1173,7 +1990,22 @@ def filtrar_ate_fim_ano_rotina():
 
 def filtrar_todo_periodo_rotina():
 
-    # Filtra a query atividades e obtém quantidade de dias de acordo com todas as atividades cadastradas no BD para posterior envido à função filtrar_rotina
+    """
+    View que obtem todos os objetos do modelo Atividades e os envia para a função 'filtrar_rotina' à fim de obter os dados formatados para o dashboard Rotina.
+
+    Retorno:
+    --------
+    dict
+        Retorna um dicionário criado a partir dos dados da QuerySet 'atividades', que conta todas as instâncias do modelo Atividades, contendo os seguintes contextos:
+        - 'dict_rotina': Dicionário com os dados para uso no dashboard Rotina.
+        - 'etiquetas': Lista com valores para serem usados como label na geração do gráfico padrão.
+        - 'valores': Lista com valores para serem usados na geração do gráfico padrão. 
+
+    Notas:
+    --------
+    - A Função exclui todas as atividades não remuneradas.
+    - Usa a Função 'filtrar_rotina' para obter os dados formatados.
+    """
 
     atividades = Atividades.objects.all()
 
@@ -1190,7 +2022,31 @@ def filtrar_todo_periodo_rotina():
 
 def filtrar_personalizado_rotina(dataInicio, dataFinal):
 
-    # Filtra a query atividades e obtém quantidade de dias para o periodo entre as datas enviadas pelo usuario para posterior envido à função filtrar_rotina
+    """
+    View que filtra os objetos do modelo Atividades no período entre os parâmetros 'dataInicio' e 'dataFinal'.
+    
+    Em seguida, envia o resultado para a função 'filtrar_rotina' à fim de obter os dados formatados para o dashboard Rotina.
+
+    Parâmetros:
+    -----------
+    dataInicio : datetime
+        Data de inicio do período que o usuário deseja filtrar as informações.
+    dataFinal : datetime
+        Data de término do período que o usuário deseja filtrar as informações.
+
+    Retorno:
+    --------
+    dict
+        Retorna um dicionário criado a partir dos dados da QuerySet 'atividades', que conta com as instâncias do modelo Atividades filtradas pelo período entre os parâmetros 'dataInicio' e 'dataFinal', contendo os seguintes contextos:
+        - 'dict_rotina': Dicionário com os dados para uso no dashboard Rotina.
+        - 'etiquetas': Lista com valores para serem usados como label na geração do gráfico padrão.
+        - 'valores': Lista com valores para serem usados na geração do gráfico padrão. 
+
+    Notas:
+    --------
+    - A Função exclui todas as atividades não remuneradas.
+    - Usa a Função 'filtrar_rotina' para obter os dados formatados.
+    """
 
     atividades = Atividades.objects.filter(data__range=(dataInicio, dataFinal))
 
@@ -1206,7 +2062,26 @@ def filtrar_personalizado_rotina(dataInicio, dataFinal):
 
 def gerar_grafico_remuneracao_rotina(atividades) :
 
-    # Agrupa os dados da query atividades, entre remunerados e não remunerados para posterior geração de gráfico de rotina
+    """
+    View que gera um dicionário a partir da queryset atividades enviada como parâmetro. 
+    
+    A Função agrupa as horas de atividade por remuneradas ou não remuneradas, percorrendo todos as instâncias do parâmetro 'atividades'.
+
+    Parâmetros:
+    -----------
+    atividades : QuerySet
+        Query com instâncias do modelo 'Atividades' que foram previamente filtradas.
+    
+    Retorno:
+    --------
+    dict
+        Retorna um dicionário com total de horas de atividades as agrupando nas chaves 'remuneradas' e 'não remuneradas'.  
+
+    Notas:
+    --------
+    - As chaves dessa função formarão as labels para geração do gráfico rotina por remuneração.
+    - Os valores dessa função serão os valores para a geração do gráfico rotina por remuneração.
+    """
 
     dict_remu = {}
     horas_remu = 0
@@ -1231,13 +2106,31 @@ def gerar_grafico_remuneracao_rotina(atividades) :
 
 def gerar_grafico_tipo_rotina(atividades):
 
-    # Agrupa os dados da query atividades por tipo de atividade para posterior geração de gráfico de rotina
+    """
+    View que gera um dicionário a partir da queryset atividades enviada como parâmetro. 
+    
+    A Função agrupa as horas de atividade por tipo de atividade, percorrendo todos as instâncias do parâmetro 'atividades'.
+
+    Parâmetros:
+    -----------
+    atividades : QuerySet
+        Query com instâncias do modelo 'Atividades' que foram previamente filtradas.
+    
+    Retorno:
+    --------
+    dict
+        Retorna um dicionário com total de horas de atividades agrupadas por tipo de atividades.  
+
+    Notas:
+    --------
+    - As chaves dessa função formarão as labels para geração do gráfico rotina por tipo de atividade.
+    - Os valores dessa função serão os valores para a geração do gráfico rotina por tipo de atividade.
+    """
 
     dict_tipo = {}
     horas = 0
 
     if atividades:
-
         for atividade in atividades:
 
             if atividade.entrada < atividade.saida:
@@ -1247,21 +2140,35 @@ def gerar_grafico_tipo_rotina(atividades):
 
             nome_tipo = atividade.tipo_atividade.nome_tipo
 
-            # Inicializa o total se a instituição ainda não estiver no dicionário
             if nome_tipo not in dict_tipo:
                 dict_tipo[nome_tipo] = 0
             
-            # Adiciona o valor da atividade ao total da instituição
-            try:
-                dict_tipo[nome_tipo] += horas
-            except ValueError:
-                dict_tipo[nome_tipo] += 0  # Se ocorrer um erro de conversão, adicione 0
+            dict_tipo[nome_tipo] += horas
 
     return dict_tipo
 
 def gerar_grafico_categoria_rotina(atividades):
 
-    # Agrupa os dados da query atividades por categoria de atividade para posterior geração de gráfico de rotina
+    """
+    View que gera um dicionário a partir da queryset atividades enviada como parâmetro. 
+    
+    A Função agrupa as horas de atividade por categoria, percorrendo todos as instâncias do parâmetro 'atividades'.
+
+    Parâmetros:
+    -----------
+    atividades : QuerySet
+        Query com instâncias do modelo 'Atividades' que foram previamente filtradas.
+    
+    Retorno:
+    --------
+    dict
+        Retorna um dicionário com total de horas de atividades agrupadas por categoria.  
+
+    Notas:
+    --------
+    - As chaves dessa função formarão as labels para geração do gráfico rotina por categoria.
+    - Os valores dessa função serão os valores para a geração do gráfico rotina por categoria.
+    """
 
     dict_categoria = {}
     horas = 0
@@ -1277,21 +2184,39 @@ def gerar_grafico_categoria_rotina(atividades):
 
             nome_categoria = atividade.tipo_atividade.categoria.nome_categoria
 
-            # Inicializa o total se a instituição ainda não estiver no dicionário
             if nome_categoria not in dict_categoria:
                 dict_categoria[nome_categoria] = 0
             
-            # Adiciona o valor da atividade ao total da instituição
-            try:
-                dict_categoria[nome_categoria] += horas
-            except ValueError:
-                dict_categoria[nome_categoria] += 0  # Se ocorrer um erro de conversão, adicione 0
+            dict_categoria[nome_categoria] += horas
 
     return dict_categoria
 
 def gerar_grafico_ocupacao_rotina(atividades, quant_horas_totais, qt_horas_sono):
 
-    # Agrupa os dados da query atividades, entre horas ocupadas e horas livres para posterior geração de gráfico de rotina
+    """
+    View que gera um dicionário a partir da queryset atividades enviada como parâmetro. 
+    
+    A Função agrupa as horas de atividade por horas ocupadas e horas livres, percorrendo todos as instâncias do parâmetro 'atividades'.
+
+    Parâmetros:
+    -----------
+    atividades : QuerySet
+        Query com instâncias do modelo 'Atividades' que foram previamente filtradas.
+    quant_horas_totais : int
+        Quantidade de horas de atividades do período transcorrido entre as atividades presentes na queryset 'atividades'
+    qt_horas_sono : int
+        Quantidade de horas de sono recuperadas do modelo Preferencias relativo às preferências do usuário.
+    
+    Retorno:
+    --------
+    dict
+        Retorna um dicionário com total de horas de atividades agrupadas por horas ocupadas e horas livres.  
+
+    Notas:
+    --------
+    - As chaves dessa função formarão as labels para geração do gráfico rotina por ocupação.
+    - Os valores dessa função serão os valores para a geração do gráfico rotina por ocupação.
+    """
 
     dict_ocupacao = {}
 
@@ -1314,7 +2239,28 @@ def gerar_grafico_ocupacao_rotina(atividades, quant_horas_totais, qt_horas_sono)
 
 def rotina(request):
 
-    # Realiza a primeira chamada para o dashboard rotina
+    """
+    View que renderiza o template 'atividades/rotina.html' com suas informações pertinentes para a exibição do dashboad Rotina.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+
+    Retorno:
+    --------
+    HttpResponse
+        Retorna uma resposta HTTP que renderiza o template 'atividades/rotina.html' com dicionário contento os seguintes contextos:
+        - 'dict_rotina': Dicionário com os dados de rotina referente ao mês atual, filtrados e formatados para a exibição no dashboard Rotina.
+        - 'etiquetas': Lista convertida para JSON com os rótulos (labels) para geração do gráfico rotina por remuneração.
+        - 'valores': Lista convertida para JSON com os valores para geração do gráfico rotina por remuneração.
+        - 'tipo': String convertida para JSON com o tipo de gráfico definido nas preferências do usuário.
+
+    Notas:
+    --------
+    - Recupera as preferências do usuário a partir do modelo Preferencias.
+    - Usa a função 'filtrar_mes_rotina' enviando o mês atual de parâmetro para obter demais dados.
+    """
 
     mes = datetime.today().month        
 
@@ -1329,15 +2275,46 @@ def rotina(request):
 
     return render(request, 'atividades/rotina.html', {'rotina': dict_rotina, 'etiquetas': json.dumps(etiquetas), 'valores': json.dumps(valores), 'tipo': json.dumps(tipo)})
 
-# View para atualizar dados do dashboard Rotina a partir de requisição AJAX enviadas com as com as preferencias do usuario. 
-# Inicia com um decorador garantindo que a view só aceite requisições do tipo GET
 @require_GET
 def atualizar_rotina(request):
 
-    # Verifica se trata de um requisição do tipo AJAX, verificando o cabeçalho 'X-Requested-With'
+    """
+    View que atualiza os dados do dashboard Rotina a partir de uma requição AJAX contento os parâmetros solicitados pelo usuário.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+
+    Retorno:
+    --------
+    JsonResponse
+        Retorna um JSON contendo o HTML atualizado do template 'atividades/partials/base_rotina.html' com um dicionário contento os seguintes contextos:
+        - 'dict_rotina': Dicionário com os dados de rotina formatados e filtrados conforme parâmetros enviados pelo usuário.
+        - 'etiquetas': Lista com os rótulos (labels) para geração do gráfico de rotina por remuneração.
+        - 'valores': Lista com os valores para geração do gráfico de rotina por remuneração.
+        - 'tipo': String com o tipo de gráfico definido nas preferências do usuário.
+
+    Funcionamento:
+    --------
+    - A função verifica se a requisição é uma requisição AJAX, através do cabeçalho 'X-Requested-With'.
+    - Obtém o tipo de período selecionado pelo usuário.
+    - Checar qual tipo de período e obtém os demais parâmetros para chamar a função relativa ao período selecionado. A Função retornará o 'dict_rotina' que é o dicionário com os contextos necessários para a atualização da página.
+    - Divide o 'dict_rotina' em suas devidas variáveis e recupera as preferências de usuário para obter o tipo do gráfico.
+    - Renderiza o template 'atividades/partials/base_rotina.html' com os dados.
+
+    Tratamento de erros:
+    --------
+    - Caso não seja um requisição AJAX, retorna erro 'Requisição Inválida' (HTTP 400).
+    - Se a informação fornecida no parâmetro `periodoSelect` for inválida, retorna um erro 'Data inválida' (HTTP 400).
+    - Caso o período selecionado for o 'personalizado' (periodoSelect == 6), a função formatará a data para o formatado %Y-%m-%d, caso haja erro na formatação retornará o erro 'Formato de data inválido. Use YYYY-MM-DD.' (HTTP 400).
+    - Se houver erro na Função usada para gerar o dicionário 'dict_rotina' a função retornará 'Nenhum dado encontrado' (HTTP 404)
+    - Se houver erro ao renderizar o template retorno o erro 'Erro ao renderizar o template:' com um código de erro específico (HTTP 500) 
+    
+    """
+
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
 
-        #Obtem periodo selecionado pelo usuario e filtrar os valores em suas devidas funções baseado nessa seleção
         periodoSelect = request.GET.get('periodoSelect')
         try:
             if periodoSelect == '1':
@@ -1366,43 +2343,69 @@ def atualizar_rotina(request):
         except ValueError:
             return JsonResponse({'error': 'Data inválida'}, status=400)
         
-        # Caso haja retorno de dict_financ, trata os valores para retorno da função
         if dict_rotina:
-            # Obtem etiquetas e valores para uso na geração de gráfico
             etiquetas = dict_rotina['etiquetas']
             valores = dict_rotina['valores']
-            # Obtem valores totais e médias para o dashboard
+            
             dict_rotina = dict_rotina['dict_rotina']
-            #recupera preferencia do usuario
+            
             preferencias = get_preferencias()
         else:       
             return JsonResponse({'error': 'Nenhum dado encontrado'}, status=404)
 
         try:
-            #Renderiza um template parcial (base_rotina.html) usando os dados filtrados. Esse HTML será injetado no frontend.
             html_content = render_to_string('atividades/partials/base_rotina.html', {'rotina': dict_rotina, 'etiquetas': etiquetas, 'valores': valores, 'tipo':preferencias['tipo_grafico']})
         except Exception as e:
             return JsonResponse({'error': f'Erro ao renderizar o template: {str(e)}'}, status=500)
 
-        # Retorna uma resposta JSON contendo o HTML renderizado, as etiquetas, valores e o tipo de gráfico para que o frontend possa atualizar a interface.
         return JsonResponse({'html': html_content, 'etiquetas': etiquetas, 'valores': valores, 'tipo':preferencias['tipo_grafico']})
     else:
         return JsonResponse({'error': 'Requisição inválida'}, status=400)
     
-# View para atualizar gráfico Rotina a partir de requisição AJAX enviada com as preferencias do usuario. 
-# Inicia com um decorador garantindo que a view só aceite requisições do tipo GET   
 @require_GET
 def atualizar_grafico_rotina(request):
 
-    # Verifica se trata de um requisição do tipo AJAX, verificando o cabeçalho 'X-Requested-With'
+    """
+    View que atualiza os dados para a geração do gráfico do dashboard Rotina a partir de uma requição AJAX contento os parâmetros solicitados pelo usuário.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+
+    Retorno:
+    --------
+    JsonResponse
+        Retorna um JSON contendo com um dicionário contento os seguintes contextos:
+        - 'etiquetas': Lista com os rótulos (labels) para geração do gráfico.
+        - 'valores': Lista com os valores para geração do gráfico.
+        - 'tipo': String com o tipo de gráfico definido nas preferências do usuário.
+
+    Funcionamento:
+    --------
+    - A função verifica se a requisição é uma requisição AJAX, através do cabeçalho 'X-Requested-With'.
+    - Obtém o tipo de período e o gráfico desejado selecionado pelo usuário e recupera as preferências do usuário.
+    - Checar qual tipo de período e obtém os demais parâmetros para filtrar as instâncias do modelo Atividades, obter a quantidade de dias, de horas e de horas de sono do período relativo às atividades filtradas.
+    - Checa qual foi o gráfico escolhido pelo usuário e usa a Função pertinente à escolha para a geração do dicionário 'dict_rotina', que conterá as informações necessárias para a geração do gráfico.
+    - Divide o 'dict_rotina' em suas devidas variáveis.
+
+    Tratamento de erros:
+    --------
+    - Caso a requisição não seja uma requisição AJAX, retorna o erro 'Requisição Inválida' (HTTP 400).
+    - Se a informação fornecida no parâmetro `periodoSelect` for inválida, retorna um erro 'Data inválida' (HTTP 400).
+    - Caso o período selecionado for o 'personalizado' (periodoSelect == 6), a função formatará a data para o formatado %Y-%m-%d, caso haja erro na formatação retornará o erro 'Formato de data inválido. Use YYYY-MM-DD.' (HTTP 400).
+    - Se a query 'atividades' retornar vazia, o dicionário 'dict_rotina' é preenchido com valor nulo para prevenção de erro em manipulações futuras.
+    - Se a informação fornecida no parâmetro 'graficoSelect' for inválida, retorna o erro 'Grafico Select Inválido' (HTTP 400).
+    - Se houver erro na Função usada para gerar o dicionário 'dict_rotina' a função retornará 'Não foi possível gerar dict_financeiro a partir do período selecionado'. (HTTP 404)
+    
+    """
+
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
 
-        # Obtém periodo e tipo de gráfico selecionados e recupera as preferencias do usuario
         periodoSelect = request.GET.get('periodoSelect')
         graficoSelect = request.GET.get('graficoSelect')
         preferencias = get_preferencias()
 
-        # Filtra a query atividades, obtém número de dias, horas e horas de sono a partir do período selecionado e das preferencias do usuario
         try:
             if periodoSelect == '1':
                 mesSelect = request.GET.get('mesSelect')
@@ -1477,7 +2480,6 @@ def atualizar_grafico_rotina(request):
         except ValueError:
             return JsonResponse({'error': 'Data inválida'}, status=400)
         
-        # Obtém dados para geração de gráfico usando a query atividades e a partir do tipo de gráfico selecionado
         if atividades:        
             try:
                 if graficoSelect == '1':
@@ -1491,26 +2493,35 @@ def atualizar_grafico_rotina(request):
             except ValueError:
                 return JsonResponse({'error': 'Grafico Select Inválido'}, status=400)
         else:
-            # Declara dict_rotina com dados em branco caso atividades retorne vazia
             dict_rotina = {
                 '':'',
             }
         
         if dict_rotina:
-            # Separa as etiquetas e valores em duas respectivas variaveis
             etiquetas = list(dict_rotina.keys())
             valores = list(dict_rotina.values())
         else:       
             return JsonResponse({'error': 'Nenhum dado encontrado'}, status=404)
 
-        # Retorna os dados para a geração de gráfico no JavaScript
         return JsonResponse({'etiquetas': etiquetas, 'valores': valores, 'tipo':preferencias['tipo_grafico']})
     else:
         return JsonResponse({'error': 'Requisição inválida'}, status=400)
     
 def preferencias(request):
 
-    # Exibe registro único das preferências do usuario
+    """
+    View que exibir registro único das preferências do usuário.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+
+    Retorno:
+    --------
+    HttpResponse
+        Retorna uma resposta HTTP que renderiza o template 'atividades/preferencias.html' com o dicionário 'dict_preferencia' contendo as informações, já formatadas para exibição, das preferências do usuário do sistema.
+    """
 
     preferencias = Preferencias.objects.get(id=1)
 
@@ -1543,7 +2554,24 @@ def preferencias(request):
 
 def editar_preferencias(request):
 
-    # Retorna formulário de registro único das preferências do usuario para possível edição
+    """
+    Formulário para editar as preferências do usuário.
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+
+    Retorno:
+    --------
+    HttpResponse
+        Se o método for GET: Retorna uma resposta HTTP que renderiza o template 'atividades/editar_preferencias.html' com o formulário PreferenciaForms instanciado pelo id 1, que é o único parâmentro desse modelo.
+        Se o método for POST: Salva o formulário enviado com as informações inseridas pelo usuário, atualizando em caso de qualquer alteração, e o redirecionando para a path 'preferencias', exibindo uma mensagem informando o sucesso na edição do tipo de atividade. 
+
+    Tratamento de erros:
+    --------
+    - Caso o formulário enviado pelo usuário seja inválido, o formulário não será salvo e será exibida a mensagem de erro "Não foi possível realizar a edição. Favor revise os dados ou entre em contato com o administrador do sistema.".
+    """
 
     preferencia = Preferencias.objects.get(id=1)
     forms = PreferenciasForms(instance=preferencia)
@@ -1563,11 +2591,26 @@ def editar_preferencias(request):
 
 def get_preferencias():
 
+    """
+    View que recupera as prefências do usuário do modelo Preferencias instânciada no objeto único desse modelo.
+
+    Retorno:
+    --------
+    dict
+        Retorna um dicionário com as preferências cadastradas pelo usuário na tela de preferências em consfigurações.
+
+    Notas:
+    --------
+    - Essa versão do sistema é prepara apenas para um usuário único, com isso o modelo Preferencia terá sempre um único objeto de id=1.
+
+    """
+
     preferencias = Preferencias.objects.get(id=1)
 
     dict_preferencia = {
         'horas_sono': preferencias.horas_sono,
-        'tipo_grafico': preferencias.tipo_grafico 
+        'tipo_grafico': preferencias.tipo_grafico,
+        'inicio_semana': preferencias.inicio_semana 
     }
 
     return dict_preferencia

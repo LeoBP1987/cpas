@@ -1,0 +1,26 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% block content %}
+    <main class="main">
+        <h2 class="main-titulo">Usuário</h2>
+        <div class="main-show__atividade">
+            <div class="main-show__atividade__campos">
+                <div class="main-show__atividade__campo">
+                    <h2 class="main-show__atividade__titulo">Nome Completo:</h2>
+                    <p class="main-show__atividade__texto">{{usuario.first_name}}</p>
+                </div>
+                <div class="main-show__atividade__campo">
+                    <h2 class="main-show__atividade__titulo">Login:</h2>
+                    <p class="main-show__atividade__texto">{{usuario.username}}</p>
+                </div>
+                <div class="main-show__atividade__campo">
+                    <h2 class="main-show__atividade__titulo">Email:</h2>
+                    <p class="main-show__atividade__texto">{{usuario.email}}</p>
+                </div>
+            </div>
+        </div>
+        <div class="main-show__atividade__botoes">
+            <a class="main-novo__tipo_link_config" href="{% url 'editar_usuario' %}"><button class="main-show__atividade__botoes_botao">EDITAR</button></a>
+        </div>
+    </main>
+{% endblock %}

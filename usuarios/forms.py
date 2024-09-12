@@ -12,7 +12,6 @@ class LoginForms(forms.Form):
         widget = forms.TextInput(
                                         attrs={
                                             'class':'main-forms__campo_input',
-                                            'placeholder':'Ex.: João Silva'
                                         }
                                     )
     )
@@ -62,6 +61,40 @@ class AlterarSenhaForms(forms.Form):
                 raise forms.ValidationError('As senhas digitadas não são iguais')
             else:
                 return senha
+
+class UsuarioForms(forms.Form):
+    nome_completo = forms.CharField(
+        label='Nome Completo',
+        required=True,
+        max_length=100,
+        widget= forms.TextInput(
+                                attrs={
+                                    'class':'main-forms__campo_input',
+                                }
+                           )
+    )
+
+    login = forms.CharField(
+        label='Login de acesso',
+        required=True,
+        max_length=100,
+        widget= forms.TextInput(
+                                attrs={
+                                    'class':'main-forms__campo_input',
+                                }
+                           )
+    )
+
+    email = forms.EmailField(
+        label='Email',
+        required=True,
+        max_length=70,
+        widget= forms.EmailInput(
+                                attrs={
+                                    'class':'main-forms__campo_input',
+                                }
+                           )
+    )
             
 class CustomPasswordResetForm(PasswordResetForm):
     def __init__(self, *args, **kwargs):

@@ -148,12 +148,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Configurando serviço de disparo de E-mail
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # Exemplo: smtp.gmail.com
-EMAIL_PORT = 587  # Ou 465 para SSL
-EMAIL_USE_TLS = True  # Ou EMAIL_USE_SSL = True para SSL
-EMAIL_HOST_USER = 'leonardobp1987@gmail.com'
-EMAIL_HOST_PASSWORD = 'scsx dpcu rrpo jaia'
-DEFAULT_FROM_EMAIL = 'leonardobp1987@gmail.com'
+EMAIL_HOST = str(os.getenv('EMAIL_HOST'))
+EMAIL_PORT = os.getenv('EMAIL_PORT')
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS')
+EMAIL_HOST_USER = str(os.getenv('EMAIL_HOST_USER'))
+EMAIL_HOST_PASSWORD = str(os.getenv('EMAIL_HOST_PASSWORD'))
+DEFAULT_FROM_EMAIL = str(os.getenv('DEFAULT_FROM_EMAIL'))
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
