@@ -1038,6 +1038,7 @@ def filtrar_financeiro(atividades):
     Tratamento de erros:
     --------
     - Caso a QuerySet atividades enviada esteja vazia a função preenche os campos de 'dict_financ' e as variaveis 'etiquetas' e 'valores' com em branco para declara-las e evitar erros futuros na manipulação das mesmas.
+    - Se o o campo valor estiver vazio, ele insere 0 para evitar erro de conversão.
 
     Notas:
     --------
@@ -1082,8 +1083,12 @@ def filtrar_financeiro(atividades):
                     list_fixo.append(atividade.cod_fixo_ativ)
             else:
                 if atividade.id_vir not in list_id_vir:
-                    total_variavel += float(atividade.valor)
                     list_id_vir.append(atividade.id_vir)
+
+                    if atividade.valor:  # Caso valor seja vazio, adiciona zero para evitar erro de conversão
+                        total_variavel += float(atividade.valor)
+                    else:
+                        total_variavel += 0
 
             # Checa virada de dia para tratar quantidade de horas
             if atividade.entrada < atividade.saida:
