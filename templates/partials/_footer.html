@@ -2,7 +2,57 @@
     <p class="rodape-paragrafo">Desenvolvido por Leonardo Pereira</p>
 </footer>
 <script>
+
+    //Template nova_atividade.html
+
+    //Inicia todas as funções pertinentes ao template 'nova_atividade' assim que o DOMContent carrega por completo
     document.addEventListener('DOMContentLoaded', function() {
+        // carrega o label do dia da semana da data da atividade
+        diaSemanaLabel();
+
+        // Ajusta a data mínima aceita pelo campo Data Final da sequência quando a data da atividade é alterada
+        ajustaDataFinalSeqDataAtiv();
+
+        // Ajusta a data mínima aceita pelo campo Data Final da sequência quando a hora de entrada alterada
+        ajustaDataFinalSeqEnt();
+
+        // Ajusta a data mínima aceita pelo campo Data Final da sequência quando a hora de saida é alterada
+        ajustaDataFinalSeqSai();
+
+        // Ajusta a data mínima aceita pelo campo Data Final da sequência no momento em que o usuário escolhe a sequência
+        ajustaDataFinalSeqEscolha();
+
+        // Atualiza classe dos campos Data Final e Sequência Personalizada de acordo com a sequência escolhida pelo usuário
+        exibeDataFinalEseqPerso();
+
+        // Atualiza label da Data Final após data final da sequência ser selecionada pelo usuário
+        atualizaLabelDataFinal();
+
+        // Obtém disponibilidade de horários de entrada e saída de acordo com a data da atividade
+        disponibilidadeHorario();
+
+        // Exibe label quando a saída da atividade ocorre no outro dia
+        saidaLabel();
+
+        // Checa disponibilidade de todas as datas incluídas em uma sequência
+        validaSequencia();
+
+        // Configura o campo valor da atividade
+        ajustaValorAtiv();
+
+        // Atualiza classes para manter campos corretos caso usuário ative campo 'Não Remunerado'
+        ativaNaoRemunerado();
+
+        // Atualiza o Event Listener do checkbox de 'Fixo Mensal'
+        setupEventListenerFormataCampoValor();
+
+        // Atualiza classes para exibição dos campos corretos no caso do usuário optar por selecionar um sequência personalizada
+        atualizaCamposSeqPerson();
+
+    });
+
+    // Função que carrega o label do dia da semana da Data da Atividade
+    function diaSemanaLabel() {
         document.getElementById('id_data').addEventListener('change', function() {
             const dateInput = this.value;
             const diadasemanaLabel = document.getElementById('diadasemana');
@@ -14,80 +64,54 @@
                 diadasemanaLabel.textContent = '';
             }
         });
+    }
 
-    });
+    // Função que obtém o dia da semana baseado em uma data
+    function getDayOfWeek(date) {
+        const newDate = date;
+        newDate.setDate(newDate.getDate() + 1);
+        const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+        return daysOfWeek[newDate.getDay()];
+    }
 
-        function getDayOfWeek(date) {
-            const newDate = date;
-            newDate.setDate(newDate.getDate() + 1);
-            const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
-            return daysOfWeek[newDate.getDay()];
-        }
-
-    document.addEventListener('DOMContentLoaded', function() {
+    // Função que ajusta a data mínima aceita pelo campo Data Final da sequência quando a data da atividade é alterada
+    function ajustaDataFinalSeqDataAtiv() {
         var dataField = document.getElementById('id_data');
         
         dataField.addEventListener('change', function() {
-            var dataFinalSeqField = document.getElementById('id_data_final_seq');
-            selectedDate = ajustaData();
-            
-            dataFinalSeqField.min = selectedDate
+            dataFinalSeqMin();            
         });
-    });
+    }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    // Função que ajusta a data mínima aceita pelo campo Data Final da sequência quando a hora de entrada é alterada
+    function ajustaDataFinalSeqEnt() {
         var timeEntradaField = document.getElementById('id_entrada');
 
         timeEntradaField.addEventListener('change', function() {
-            var dataFinalSeqField = document.getElementById('id_data_final_seq');
-            selectedDate = ajustaData();
-            
-            dataFinalSeqField.min = selectedDate
+            dataFinalSeqMin();
         });
-    });
+    }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    // Função que ajusta a data mínima aceita pelo campo Data Final da sequência quando a hora de saida é alterada
+    function ajustaDataFinalSeqSai() {
         var timeSaidaField = document.getElementById('id_saida');
 
         timeSaidaField.addEventListener('change', function() {
-            var dataFinalSeqField = document.getElementById('id_data_final_seq');
-            selectedDate = ajustaData();
-            
-            dataFinalSeqField.min = selectedDate
+            dataFinalSeqMin();
         });
-    });
-
-    function ajustaData() {
-        var dataField = document.getElementById('id_data');
-        var timeEntradaField = document.getElementById('id_entrada');
-        var timeSaidaField = document.getElementById('id_saida');
-
-        var selectedDate = dataField.value;
-        var selectEntrada = parseInt(timeEntradaField.value, 10);
-        var selectSaida = parseInt(timeSaidaField.value, 10);
-        var checar = selectSaida - selectEntrada;
-
-        if (checar < 0) {
-            var newDate = new Date(dataField.value);
-            newDate.setDate(newDate.getDate() + 1);
-            var selectedDate = newDate.toISOString().split('T')[0];
-        } else {
-            var selectedDate = dataField.value;
-        }
-
-        return selectedDate
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    // Função que ajusta a data mínima aceita pelo campo Data Final da sequência no momento em que o usuário escolhe a sequência
+    function ajustaDataFinalSeqEscolha() {
         const radioButtons = document.querySelectorAll('input[name="sequencia"]');
         const diafinal = document.getElementById('id_data_final_seq');
         const dataSelect = document.getElementById('id_data');
 
         radioButtons.forEach(radio => {
             radio.addEventListener('change', function() {
-                // Obter o valor selecionado do radio button
+                // Obtém o valor selecionado do radio button
                 const opcao = document.querySelector('input[name="sequencia"]:checked').value;
-                // Obter o valor da data e convertê-lo para um objeto Date
+                // Obtém o valor da data e converte para um objeto Date
                 const dataSelecionada = new Date(dataSelect.value);
                 
                 // Calcular a nova data
@@ -116,9 +140,40 @@
                 diafinal.min = novaDataFormatada;
             });
         });
-    });
+    }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    // Função que ajusta a data mínima aceita pelo campo Data Final da sequência
+    function dataFinalSeqMin(){
+        var dataFinalSeqField = document.getElementById('id_data_final_seq');
+        selectedDate = ajustaData();
+            
+        dataFinalSeqField.min = selectedDate
+    }
+
+    // Obtém data mínima a ser aceita pelo campo Data Final da sequência baseado na data da atividade escolhida pelo usuário
+    function ajustaData() {
+        var dataField = document.getElementById('id_data');
+        var timeEntradaField = document.getElementById('id_entrada');
+        var timeSaidaField = document.getElementById('id_saida');
+
+        var selectedDate = dataField.value;
+        var selectEntrada = parseInt(timeEntradaField.value, 10);
+        var selectSaida = parseInt(timeSaidaField.value, 10);
+        var checar = selectSaida - selectEntrada;
+
+        if (checar < 0) {
+            var newDate = new Date(dataField.value);
+            newDate.setDate(newDate.getDate() + 1);
+            var selectedDate = newDate.toISOString().split('T')[0];
+        } else {
+            var selectedDate = dataField.value;
+        }
+
+        return selectedDate
+    }
+
+    // Função que exibe o campo Data Final e esconde o campo de sequência personalizada sempre que um sequência é selecionada pelo usuário
+    function exibeDataFinalEseqPerso() {
         const radioButtons = document.querySelectorAll('input[name="sequencia"]');
         const diafinal = document.getElementById('diafinal');
         const seqPersoDiv = document.getElementById('id_seqPersoTitulo');
@@ -141,9 +196,10 @@
                 }
             });
             });
-    });
+    }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    // Função que atualiza label da Data Final após data final da sequência ser selecionada pelo usuário
+    function atualizaLabelDataFinal() {
         document.getElementById('id_data_final_seq').addEventListener('change', function() {
             const diafinal = this.value;
             const repeticaolabel = document.getElementById('repeticaolabel');
@@ -167,18 +223,19 @@
                 
             }
         });
-    });
+    }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    // Função que insere valor fixo mensal da instituição selecionada no campo valor a partir do event 'change' do checkbox 'Fixo Mensal'
+    function insereValorFixo() {
         const fixoCheckbox = document.getElementById('id_fixo_mensal_ativ');
 
         fixoCheckbox.addEventListener('change', function() {
-
             formataCampoValor();
-            setupEventListenersFormataCampoValor();       
+            setupEventListenerFormataCampoValor();       
         });
-    });
+    }
 
+    // Função que obtém valor fixo mensal da instituição e ajusta classes de campos "Não Remunerado" e "Fixo Mensal"
     function formataCampoValor() {
         const fixoCheckbox = document.getElementById('id_fixo_mensal_ativ');
         const nrCheckbox = document.getElementById('id_div_nao_remunerado');
@@ -186,45 +243,31 @@
         const valorInput = document.getElementById('id_valor');
         const valorPadraoInput = document.getElementById('valor_padrao_instituicao');
 
-        console.log("Checkbox fixo encontrado:", fixoCheckbox);
-        console.log("Checkbox NR encontrado:", nrCheckbox);
-        console.log("Instituição selecionada:", instituicaoSelect.value);
-        console.log("Valor inicial:", valorInput.value);
-
         if (fixoCheckbox.checked) {
                 const instituicaoId= instituicaoSelect.value;
                 get_valor_fixo(instituicaoId, valorInput);
+                //Esconde campo 'não remunerado' quando 'fixo mensal' é selecionado
                 nrCheckbox.classList.add('hidden_edit');
                 nrCheckbox.classList.remove('main-forms__valor_checkbox_campo');
             } else {
                 valorInput.value = '';
+                //Reinsere campo 'não remunerado' quando 'fixo mensal' é desmarcado
                 nrCheckbox.classList.remove('hidden_edit');
                 nrCheckbox.classList.add('main-forms__valor_checkbox_campo');
                 valorInput.readOnly = false;
             }            
     }
 
-    function setupEventListenersFormataCampoValor() {
-    const fixoCheckbox = document.getElementById('id_fixo_mensal_ativ');
-    
-    if (fixoCheckbox) {
-        fixoCheckbox.removeEventListener('change', formataCampoValor); // Remove event listener para evitar múltiplos eventos
-        fixoCheckbox.addEventListener('change', formataCampoValor);
-    } else {
-        console.log('Checkbox não encontrado');
-    }
-    }
-
+    // Função que recupera valor fixo da instituição através de uma requisição AJAX
     function get_valor_fixo(instituicaoId, valorInput) {
         const fixoCheckbox = document.getElementById('id_fixo_mensal_ativ');
         const nrCheckbox = document.getElementById('id_div_nao_remunerado');
 
-        // Simular uma requisição para obter o valor padrão da instituição (pode ser um endpoint que você cria)
         fetch(`get_valor_fixo/${instituicaoId}/`)
                 .then(response => response.json())
                 .then(data => {
                     if (data && data.valor_fixo) {
-                        valor_formatado = mascaraValor(data.valor_fixo)
+                        valor_formatado = mascaraValorInit(data.valor_fixo)
                         valorInput.value = valor_formatado;
                         valorInput.readOnly = true;
                     } else {
@@ -237,49 +280,80 @@
                     }
                 });
     }
+
+    // Função que atualiza o Event Listener do campo 'Fixo Mensal'
+    function setupEventListenerFormataCampoValor() {
+        const fixoCheckbox = document.getElementById('id_fixo_mensal_ativ');
+        
+        if (fixoCheckbox) {
+            fixoCheckbox.removeEventListener('change', formataCampoValor); 
+            fixoCheckbox.addEventListener('change', formataCampoValor);
+        } else {
+            console.log('Checkbox não encontrado');
+        }
+    }
     
-    document.addEventListener('DOMContentLoaded', function() {
+    // Função que obtém disponibilidade de horários de entrada e saída de acordo com a data da atividade
+    function disponibilidadeHorario() {
+        
+        var dataField = document.getElementById('id_data');
+        var entradaField = document.getElementById('id_entrada');
+
+        disponibilidade();
+
+        disponibilidade_saida();        
+
+        dataField.addEventListener('change', disponibilidade);
+        entradaField.addEventListener('change', disponibilidade_saida);
+    }
+
+    // Função que obtém disponibilidade de horários para entrada de acordo com a data da atividade
+    function disponibilidade() {
         var dataField = document.getElementById('id_data');
         var entradaField = document.getElementById('id_entrada');
         var saidaField = document.getElementById('id_saida');
 
-        function disponibilidade() {
-            var data = dataField.value;
-            var entrada = entradaField.value;
-            var saida = saidaField.value;
+        var data = dataField.value;
+        var entrada = entradaField.value;
+        var saida = saidaField.value;
 
-            if (!data) {
-                return;
-            }
-
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', `/disponibilidade/?data=${data}`, true);
-            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-
-            xhr.onload = function() {
-                if (xhr.status >= 200 && xhr.status < 400) {
-                    var response = JSON.parse(xhr.responseText);
-                    if (response.disponibilidade) {
-                        entradaField.innerHTML = '';
-                        response.disponibilidade.forEach(hora => {
-                            let optionEntrada = new Option(hora[1], hora[0]);
-                            entradaField.add(optionEntrada);
-                        });
-                    } else {
-                        entradaField.innerHTML = '';
-                        saidaField.innerHTML = '';
-                    }
-                }
-            };
-
-            xhr.onerror = function() {
-                console.error('Erro na solicitação AJAX.');
-            };
-
-            xhr.send();
+        if (!data) {
+            return;
         }
 
-        function disponibilidade_saida() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', `/disponibilidade/?data=${data}`, true);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+        xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 400) {
+                var response = JSON.parse(xhr.responseText);
+                if (response.disponibilidade) {
+                    entradaField.innerHTML = '';
+                    response.disponibilidade.forEach(hora => {
+                    let optionEntrada = new Option(hora[1], hora[0]);
+                    entradaField.add(optionEntrada);
+                });
+                } else {
+                    entradaField.innerHTML = '';
+                     saidaField.innerHTML = '';
+                }
+            }
+        };
+
+        xhr.onerror = function() {
+        console.error('Erro na solicitação AJAX.');
+        };
+
+        xhr.send();
+    }
+
+    // Função que obtém disponibilidade de saídas de acordo com data e hora de entradada atividade
+    function disponibilidade_saida() {
+            var dataField = document.getElementById('id_data');
+            var entradaField = document.getElementById('id_entrada');
+            var saidaField = document.getElementById('id_saida');
+
             var data = dataField.value;            
             var entrada = entradaField.value;
             var saida = saidaField.value;
@@ -305,9 +379,7 @@
                     });
                     } else {
                         saidaField.innerHTML = '';
-                    }
-
-                    
+                    }                    
                 }
             };
 
@@ -316,29 +388,26 @@
             };
 
             xhr.send();
-        }
+    }
 
-        dataField.addEventListener('change', disponibilidade);
-        entradaField.addEventListener('change', disponibilidade_saida);
-    });
+    // Função que exibe label quando a saída da atividade ocorre no outro dia
+    function saidaLabel() {
+        document.getElementById('id_saida').addEventListener('change', function() {
+            const saidaField = parseInt(document.querySelector('#id_saida').value, 10);
+            const entradaField = parseInt(document.querySelector('#id_entrada').value, 10);
+            const dataField = document.getElementById('id_data').value;
+            const dataSaida = adicionarDias(dataField, 2)
+            const saidaLabel = document.getElementById('id_saida_label');
 
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('id_saida').addEventListener('change', function() {
-        const saidaField = parseInt(document.querySelector('#id_saida').value, 10);
-        const entradaField = parseInt(document.querySelector('#id_entrada').value, 10);
-        const dataField = document.getElementById('id_data').value;
-        const dataSaida = adicionarDias(dataField, 2)
-        const saidaLabel = document.getElementById('id_saida_label');
+            if (saidaField < entradaField) {
+                saidaLabel.textContent = `A saída dessa atividade será às ${saidaField} horas do dia ${dataSaida}`;
+            } else {
+                saidaLabel.textContent = '';
+            }
+        });
+    }
 
-        if (saidaField < entradaField) {
-            saidaLabel.textContent = `A saída dessa atividade será às ${saidaField} horas do dia ${dataSaida}`;
-        } else {
-            saidaLabel.textContent = '';
-        }
-    });
-
-});
-
+    // Função que adiciona dias em uma data especifica de acordo com os parâmetros enviados
     function adicionarDias(data, dias) {
         const novaData = new Date(data); // Cria uma nova instância da data
         novaData.setDate(novaData.getDate() + dias); // Adiciona o número de dias
@@ -347,128 +416,243 @@ document.addEventListener('DOMContentLoaded', function() {
         return dataformatada;
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('id_form');
+    // Função que checa disponibilidade de todas as datas incluídas em uma sequência
+    function validaSequencia() {
+        const form = document.getElementById('id_form');
 
-    form.addEventListener('submit', function(event) {
-        const sequenciaField = document.querySelector('input[name="sequencia"]:checked');
-        const seqPersonField = document.querySelector('#id_seqPersoCheck');
-        
-        if ((sequenciaField && sequenciaField.value !== '') || (seqPersonField && seqPersonField.checked)) {
-            event.preventDefault(); // Impede o envio padrão do formulário
-
-            const dataField = document.getElementById('id_data');
-            const entradaField = document.getElementById('id_entrada');
-            const saidaField = document.getElementById('id_saida');
-            const dataFinalField = document.getElementById('id_data_final_seq');
-            const seqPersonValue = document.querySelectorAll('input[name="seq_perso"]:checked'); 
+        form.addEventListener('submit', function(event) {
+            const sequenciaField = document.querySelector('input[name="sequencia"]:checked');
+            const seqPersonField = document.querySelector('#id_seqPersoCheck');
             
-            // Constrói a URL de requisição com os parâmetros necessários
-            const url = new URL('/validar_sequencia', window.location.origin);
-            url.searchParams.append('data', dataField.value);
-            url.searchParams.append('entrada', entradaField.value);
-            url.searchParams.append('saida', saidaField.value);
-            url.searchParams.append('data_final_seq', dataFinalField.value);
-            url.searchParams.append('sequencia', sequenciaField.value);
+            if ((sequenciaField && sequenciaField.value !== '') || (seqPersonField && seqPersonField.checked)) {
+                event.preventDefault(); // Paraliza o envio padrão do formulário
 
-            // Se seq_perso for uma lista de valores, adiciona cada um
-            seqPersonValue.forEach(checkbox => {
-                url.searchParams.append('seq_perso', checkbox.value);
-            });
+                const dataField = document.getElementById('id_data');
+                const entradaField = document.getElementById('id_entrada');
+                const saidaField = document.getElementById('id_saida');
+                const dataFinalField = document.getElementById('id_data_final_seq');
+                const seqPersonValue = document.querySelectorAll('input[name="seq_perso"]:checked'); 
+                
+                // Constrói a URL de requisição com os parâmetros necessários
+                const url = new URL('/validar_sequencia', window.location.origin);
+                url.searchParams.append('data', dataField.value);
+                url.searchParams.append('entrada', entradaField.value);
+                url.searchParams.append('saida', saidaField.value);
+                url.searchParams.append('data_final_seq', dataFinalField.value);
+                url.searchParams.append('sequencia', sequenciaField.value);
 
-            // Faz a requisição AJAX para validar a sequência
-            fetch(url, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.confirm) {
-                    if (confirm(result.msg_confirm + ' Deseja continuar?')) {
-                        form.submit(); // Envia o formulário se o usuário confirmar
-                    } else {
-                        alert('Envio do formulário cancelado.');
+                // Se seq_perso tiver mais de uma opção, adiciona cada um
+                seqPersonValue.forEach(checkbox => {
+                    url.searchParams.append('seq_perso', checkbox.value);
+                });
+
+                // Faz a requisição AJAX para validar a sequência
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
                     }
-                } else {
-                    form.submit(); // Envia o formulário diretamente se não houver conflito
-                }
-            })
-            .catch(error => {
-                console.error('Erro na validação da sequência:', error);
-                alert('Ocorreu um erro. Tente novamente mais tarde.');
-            });
-        } else {
-            // Caso não haja sequenciaField, envie o formulário diretamente
-            event.preventDefault();
-            form.submit();
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.confirm) {
+                        // Caso haja, exibe mensagem com datas indisponiveis da sequência para usuário decidir se continua
+                        if (confirm(result.msg_confirm + ' Deseja continuar?')) { 
+                            form.submit(); // Envia o formulário se o usuário confirmar
+                        } else {
+                            alert('Envio do formulário cancelado.'); // Cancela envio caso usuário não confirme
+                        }
+                    } else {
+                        form.submit(); // Envia o formulário diretamente se não houver conflito
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro na validação da sequência:', error);
+                    alert('Ocorreu um erro. Tente novamente mais tarde.');
+                });
+            } else {
+                // Caso não haja sequenciaField, envie o formulário diretamente
+                event.preventDefault();
+                form.submit();
+            }
+        });
+    }
+
+    // Função que configura o campo valor da atividade
+    function ajustaValorAtiv() {
+        const campoValor = document.getElementById('id_valor');
+
+        // Formata o valor inicial do campo
+        if (campoValor) {
+            let valor = campoValor.value;
+            if (valor != '') {
+                campoValor.value = mascaraValorInit(valor);
+            } else {
+                campoValor.value = '';
+            }
         }
-    });
-});
 
-document.addEventListener('DOMContentLoaded', function() {
-    const deleteButtons = document.querySelectorAll('.delete-button');
-    deleteButtons.forEach(button => {
-      button.addEventListener('click', function() {
-        const atividadeId = this.getAttribute('data-atividade-id');
-        showDeleteModal(atividadeId);
-      });
-    });
-  });
-
-function showDeleteModal(atividadeId) {
-    // Adiciona o ID da atividade ao modal para referência futura
-    const deleteModal = document.getElementById('deleteModal');
-    deleteModal.dataset.atividadeId = atividadeId;
-
-    // Exibe o modal
-    deleteModal.style.display = 'block';
-  }
-
-  // Função para fechar o modal
-  function closeDeleteModal() {
-    const deleteModal = document.getElementById('deleteModal');
-    deleteModal.style.display = 'none';
-  }
-
-  // Função para manipular a ação de deletar
-  function handleDeleteAction(action) {
-    const deleteModal = document.getElementById('deleteModal');
-    const atividadeId = deleteModal.dataset.atividadeId;
-
-    if (action === 'atividade') {
-      window.location.href = `/deletar_atividade/${atividadeId}`;
-    } else if (action === 'sequencia') {
-        window.location.href = `/deletar_sequencia/${atividadeId}`;
+        campoValor.addEventListener('change', function() {
+            let valor = campoValor.value;
+            if (valor != '') {
+                valor = valor.replace(/^R\$ /, '').replace(/\s/g, '');
+                this.value = mascaraValor(valor);
+            } else {
+                this.value = '';
+            }
+        });
     }
 
-    // Fecha o modal após a ação
-    closeDeleteModal();
-  }
+    // Função que atualiza classes para manter campos corretos caso usuário ative campo 'Não Remunerado'
+    function ativaNaoRemunerado() {
 
-  // Fecha o modal se o usuário clicar fora do modal
-  window.onclick = function(event) {
-    const deleteModal = document.getElementById('deleteModal');
-    if (event.target === deleteModal) {
-      closeDeleteModal();
+        const checkbox = document.getElementById('id_nao_remunerado');
+        const valor = document.getElementById('id_valor');
+        const divValor = document.getElementById('id_div_valor');
+        const fixoCheck = document.getElementById('id_fixo_mensal_ativ');
+        const divFixo = document.getElementById('id_div_fixo_mensal_ativ');
+
+        checkbox.addEventListener('change', function() {
+            if (checkbox.checked) {
+                valor.value = '';
+                fixoCheck.checked = false;
+                divValor.classList.add('hidden_edit');
+                divFixo.classList.remove('main-forms__valor_checkbox_campo');
+                divFixo.classList.add('hidden_edit');
+            } else {
+                divValor.classList.remove('hidden_edit');
+                divFixo.classList.remove('hidden_edit');
+                divFixo.classList.add('main-forms__valor_checkbox_campo');
+            }
+        });
     }
-  }
 
-  document.addEventListener('DOMContentLoaded', function() {
+    // Função que atualizar classes para exibir campos corretos caso usuário opte por uma sequência personalizada
+    function atualizaCamposSeqPerson() {
+        const seqPersoCheck = document.getElementById('id_seqPersoCheck');
+
+        seqPersoCheck.addEventListener('change', function() {
+            const seqPersoDiv = document.getElementById('id_seqPersoDiv');
+            const seqPersoLabel = document.getElementById('id_seqPersoLabel');
+            const seqDiv = document.getElementById('id_seqDiv'); 
+            const diaFinal = document.getElementById('diafinal');
+
+            const dataAtiv = document.getElementById('id_data').value;
+            const date = new Date(dataAtiv);
+            const diadasemana = getDayOfWeek(date);
+
+            if (seqPersoCheck.checked) {
+                seqPersoDiv.classList.remove('hidden_edit');
+                seqPersoDiv.classList.add('main-forms__sequencia_perso_itens');
+                diafinal.classList.remove('main-forms__sequencia_datafinal_hidden');
+                diafinal.classList.add('main-forms__sequencia_datafinal');    
+                seqDiv.classList.add('hidden_edit');
+                seqDiv.classList.remove('main-forms__sequencia_itens');     
+                seqPersoLabel.textContent = `Selecione quais ${diadasemana}s de cada mês essa atividade deverá ser repetida`;
+            } else {
+                seqPersoDiv.classList.add('hidden_edit');
+                seqPersoDiv.classList.remove('main-forms__sequencia_perso_itens');
+                diafinal.classList.add('main-forms__sequencia_datafinal_hidden');
+                diafinal.classList.remove('main-forms__sequencia_datafinal');
+                seqDiv.classList.add('main-forms__sequencia_itens');
+                seqDiv.classList.remove('hidden_edit');        
+                seqPersoLabel.textContent = ``;
+            }
+        });
+    }
+
+    // Template atividade.html
+
+    // Inicia todas as funções pertinentes ao template 'atividade' assim que DOMContent da página é carregado
+    document.addEventListener('DOMContentLoaded', function() {
+        // Edita atividade solo ou toda sua sequência
+        deletaAtividade();
+    });
+
+    // Função que deleta atividade solo ou toda sua sequência
+    function deletaAtividade() {
+        const deleteButtons = document.getElementById('id_del_ativ');
+        deleteButtons.addEventListener('click', function() {
+            const atividadeId = this.getAttribute('data-atividade-id');
+            showDeleteModal(atividadeId);
+        });
+    }
+
+    // Função que exibe o modal de deleção  
+    function showDeleteModal(atividadeId) {
+        // Adiciona o ID da atividade ao modal para referência futura
+        const deleteModal = document.getElementById('deleteModal');
+        deleteModal.dataset.atividadeId = atividadeId;
+
+        // Exibe o modal
+        deleteModal.style.display = 'block';
+    }
+
+    // Função para que fecha o modal de deleção
+    function closeDeleteModal() {
+        const deleteModal = document.getElementById('deleteModal');
+        deleteModal.style.display = 'none';
+    }
+
+    // Função para manipular a ação de deletar
+    function handleDeleteAction(action) {
+        const deleteModal = document.getElementById('deleteModal');
+        const atividadeId = deleteModal.dataset.atividadeId;
+
+        if (action === 'atividade') {
+        window.location.href = `/deletar_atividade/${atividadeId}`;
+        } else if (action === 'sequencia') {
+            window.location.href = `/deletar_sequencia/${atividadeId}`;
+        }
+
+        // Fecha o modal de deleção após a ação
+        closeDeleteModal();
+    }
+
+    // Fecha o modal de deleção se o usuário clicar fora dele
+    window.onclick = function(event) {
+        const deleteModal = document.getElementById('deleteModal');
+        if (event.target === deleteModal) {
+        closeDeleteModal();
+        }
+    }
+
+    // Template editar_atividade.html 
+
+    // Inicia todas as funções pertinentes ao template 'editar_atividade' assim que DOMContent da página é carregado
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // Configura o campo valor da atividade
+        ajustaValorAtiv();
+
+        // Atualiza classes para manter campos corretos caso usuário ative campo 'Não Remunerado'
+        ativaNaoRemunerado();
+
+        // Atualiza os Event Listeners primeiro
+        setupEventListenerFormataCampoValor();
+
+        // Edita atividade solo ou toda sua sequência
+        editAtividade();
+
+    });
+
+    // Função que edita atividades solo e toda sua sequência
+    function editAtividade() {
         const form = document.getElementById('form_edit_ativ');
         const editModal = document.getElementById('editModal');
         const extraParamField = document.getElementById('extra_param');
         
         form.addEventListener('submit', function(event) {
-            event.preventDefault(); // Cancela o envio se o sinalizador não estiver ativado
+            event.preventDefault(); // Paraliza envio do formulário de edição da atividade
             showEditModal();
         });
 
+        // Função que exibe o modal de edição da atividade
         function showEditModal() {
-            editModal.style.display = 'block'; // Exibe o modal
+            editModal.style.display = 'block';
         }
 
+        // Função que fecha o modal de edição da atividade
         function closeEditModal() {
             editModal.style.display = 'none'; // Fecha o modal
         }
@@ -489,6 +673,7 @@ function showDeleteModal(atividadeId) {
             });
         });
 
+        // Função que atribui valor de parâmetro à sua variavel de acordo com escolha do usuário
         function handleEditAction(action) {
             let param = '0';
             if (action === 'atividade') {
@@ -498,173 +683,106 @@ function showDeleteModal(atividadeId) {
             } else if (action === 'cancelar') {
                 param = '0';
             }
-            closeEditModal(); // Fecha o modal após a escolha
+            closeEditModal(); // Fecha o modal de edição da atividade após a escolha
             return param;
         }
 
-        // Fecha o modal se o usuário clicar fora do modal
+        // Fecha o modal de edição da atividade se o usuário clicar fora dele
         window.onclick = function(event) {
             if (event.target === editModal) {
                 closeEditModal();
             }
         }
+    }
+
+    // Template index.html
+
+    // Inicia todas as funções pertinentes ao template 'index' assim que DOMContent da página é carregado
+    document.addEventListener('DOMContentLoaded', function() {
+            // Exibe o calendário solicitado pelo usuário, diário, semanal ou agenda
+            exibeCalendario();
+
+            // Atualiza Event Listener dos botões da partial 'base_calendario_dia'
+            setupEventListenersBtnDia();
+
+            // Atualiza Event Listener dos botões da partial 'base_calendario_semana'
+            setupEventListenersWeekBack();
     });
 
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('opcoes').addEventListener('change', function() {
-        const opcao = document.getElementById('opcoes').value;
-        const divAgenda = document.getElementById('agenda');
-        const divDia = document.getElementById('agenda_dia');
-        const divSemana = document.getElementById('agenda_semana')
+    // Função que atualiza classes para exibição de calendário diário, semanal ou agenda conforme solicitado pelo usuário
+    function exibeCalendario() {
+        document.getElementById('opcoes').addEventListener('change', function() {
+            const opcao = document.getElementById('opcoes').value;
+            const divAgenda = document.getElementById('agenda');
+            const divDia = document.getElementById('agenda_dia');
+            const divSemana = document.getElementById('agenda_semana')
 
-        if (opcao == 'agenda') {            
-            divAgenda.classList.remove('display');
-            divDia.classList.remove('main-calendario__dia');
-            divSemana.classList.remove('main-calendario__semana')
-            divAgenda.classList.add('main-calendario__agenda');
-            divDia.classList.add('display');
-            divSemana.classList.add('display');
-        } else if (opcao == 'dia') {
-            divAgenda.classList.remove('main-calendario__agenda');
-            divDia.classList.remove('display');
-            divSemana.classList.remove('main-calendario__semana');
-            divAgenda.classList.add('display');
-            divDia.classList.add('main-calendario__dia');
-            divSemana.classList.add('display');
-        } else if (opcao == 'semana') {
-            divAgenda.classList.remove('main-calendario__agenda');
-            divDia.classList.remove('main-calendario__dia');
-            divSemana.classList.remove('display');
-            divAgenda.classList.add('display');
-            divDia.classList.add('display');
-            divSemana.classList.add('main-calendario__semana');
-        }
-    });
-});
-
-function setupEventListeners() {
-    const nextBtnDia = document.getElementById('nextBtn_dia');
-    const backBtndia = document.getElementById('backBtn_dia');
-    const dataDia = document.getElementById('main-dia__dia');
-    if (nextBtnDia) {
-        nextBtnDia.removeEventListener('click', handleNextBtnClick); // Remove event listener para evitar múltiplos eventos
-        nextBtnDia.addEventListener('click', handleNextBtnClick);
-        backBtndia.addEventListener('click', handleBackBtnClick);
-        dataDia.addEventListener('change', handledataDiaChange);
-    } else {
-        console.log('Botão nextBtn_dia não encontrado');
-    }
-}
-
-function handleNextBtnClick() {
-    console.log('Botão nextBtn_dia clicado');
-
-    const diaDataField = document.getElementById('main-dia__data');
-    if (!diaDataField) {
-        console.error('Elemento com id main-dia__data não encontrado');
-        return;
-    }
-
-    const url = new URL('/atualizar_calendario', window.location.origin);
-    url.searchParams.append('data', diaDataField.value);
-    url.searchParams.append('control', 1);
-
-    fetch(url, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
+            if (opcao == 'agenda') {            
+                divAgenda.classList.remove('display');
+                divDia.classList.remove('main-calendario__dia');
+                divSemana.classList.remove('main-calendario__semana')
+                divAgenda.classList.add('main-calendario__agenda');
+                divDia.classList.add('display');
+                divSemana.classList.add('display');
+            } else if (opcao == 'dia') {
+                divAgenda.classList.remove('main-calendario__agenda');
+                divDia.classList.remove('display');
+                divSemana.classList.remove('main-calendario__semana');
+                divAgenda.classList.add('display');
+                divDia.classList.add('main-calendario__dia');
+                divSemana.classList.add('display');
+            } else if (opcao == 'semana') {
+                divAgenda.classList.remove('main-calendario__agenda');
+                divDia.classList.remove('main-calendario__dia');
+                divSemana.classList.remove('display');
+                divAgenda.classList.add('display');
+                divDia.classList.add('display');
+                divSemana.classList.add('main-calendario__semana');
             }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Resposta:', data);
-            if (data.html) {
-                document.getElementById('agenda_dia').innerHTML = data.html;
-                setupEventListeners(); // Configura o evento novamente após a atualização
-                document.getElementById('main-dia__dia').value = data.data_param;
-            } else {
-                console.log('Nenhum conteúdo HTML encontrado.');
-                alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
-            }
-        })
-        .catch(error => {
-            console.error('Erro na validação da sequência:', error);
-            alert('Ocorreu um erro. Tente novamente mais tarde.');
         });
-}
-
-function setupEventListenersBack() {
-    const backBtnDia = document.getElementById('backBtn_dia');
-    const nextBtnDia = document.getElementById('nextBtn_dia');
-    const dataDia = document.getElementById('main-dia__dia');
-    if (backBtnDia) {
-        backBtnDia.removeEventListener('click', handleBackBtnClick); // Remove event listener para evitar múltiplos eventos
-        backBtnDia.addEventListener('click', handleBackBtnClick);
-        nextBtnDia.addEventListener('click', handleNextBtnClick);
-        dataDia.addEventListener('change', handledataDiaChange);
-    } else {
-        console.log('Botão nextBtn_dia não encontrado');
-    }
-}
-
-function handleBackBtnClick() {
-    console.log('Botão nextBtn_dia clicado');
-
-    const diaDataField = document.getElementById('main-dia__data');
-    if (!diaDataField) {
-        console.error('Elemento com id main-dia__data não encontrado');
-        return;
     }
 
-    const url = new URL('/atualizar_calendario', window.location.origin);
-    url.searchParams.append('data', diaDataField.value);
-    url.searchParams.append('control', 2);
+    // Partial 'base_calendario_dia.html'
 
-    fetch(url, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Resposta:', data);
-            if (data.html) {
-                document.getElementById('agenda_dia').innerHTML = data.html;
-                setupEventListenersBack(); // Configura o evento novamente após a atualização
-                document.getElementById('main-dia__dia').value = data.data_param;
-            } else {
-                console.log('Nenhum conteúdo HTML encontrado.');
-                alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
-            }
-        })
-        .catch(error => {
-            console.error('Erro na validação da sequência:', error);
-            alert('Ocorreu um erro. Tente novamente mais tarde.');
-        });
-}
-
-function setupEventListenersData() {
-    const dataDia = document.getElementById('main-dia__dia');
-    const backBtnDia = document.getElementById('backBtn_dia');
-    const nextBtnDia = document.getElementById('nextBtn_dia');
-    if (dataDia) {
-        dataDia.removeEventListener('change', handledataDiaChange); // Remove event listener para evitar múltiplos eventos
-        dataDia.addEventListener('change', handledataDiaChange);
-        backBtnDia.addEventListener('click', handleBackBtnClick);
-        nextBtnDia.addEventListener('click', handleNextBtnClick);
-    } else {
-        console.log('Botão nextBtn_dia não encontrado');
-    }
-}
-
-function handledataDiaChange() {
-    console.log('Data não encontrada');
-
+    // Função que atualiza o Event Listener pertinentes aos botões de escolha da partial 'base_calendario_dia'
+    function setupEventListenersBtnDia() {
+        const nextBtnDia = document.getElementById('nextBtn_dia');
+        const backBtndia = document.getElementById('backBtn_dia');
         const dataDia = document.getElementById('main-dia__dia');
+
+        if (nextBtnDia) {
+            nextBtnDia.removeEventListener('click', handleNextBtnClick);
+            nextBtnDia.addEventListener('click', handleNextBtnClick);
+        } 
+
+        if (backBtndia) {
+            backBtndia.removeEventListener('click', handleBackBtnClick);
+            backBtndia.addEventListener('click', handleBackBtnClick);
+        } 
+
+        if (dataDia) {
+            dataDia.removeEventListener('change', handledataDiaChange);
+            dataDia.addEventListener('change', handledataDiaChange);
+        } 
+
+        if (!nextBtnDia && !backBtndia && !dataDia) {
+            console.log('Dados não encontrados');
+        }
+    }
+
+    // Função que realiza uma requisação AJAX para reinderizar a partial 'base_calendario_dia' baseado no dia seguinte ao dia corrente carregado na página
+    function handleNextBtnClick() {
+        console.log('Botão nextBtn_dia clicado');
+
+        const diaDataField = document.getElementById('main-dia__data');
+        if (!diaDataField) {
+            console.error('Elemento com id main-dia__data não encontrado');
+            return;
+        }
+
         const url = new URL('/atualizar_calendario', window.location.origin);
-        url.searchParams.append('data', dataDia.value);
-        url.searchParams.append('control', 3);
+        url.searchParams.append('data', diaDataField.value);
+        url.searchParams.append('control', 1);
 
         fetch(url, {
                 method: 'GET',
@@ -677,7 +795,7 @@ function handledataDiaChange() {
                 console.log('Resposta:', data);
                 if (data.html) {
                     document.getElementById('agenda_dia').innerHTML = data.html;
-                    setupEventListenersData(); // Configura o evento novamente após a atualização
+                    setupEventListenersBtnDia(); // Configura o evento novamente após a atualização
                     document.getElementById('main-dia__dia').value = data.data_param;
                 } else {
                     console.log('Nenhum conteúdo HTML encontrado.');
@@ -688,232 +806,336 @@ function handledataDiaChange() {
                 console.error('Erro na validação da sequência:', error);
                 alert('Ocorreu um erro. Tente novamente mais tarde.');
             });
-
     }
 
-document.addEventListener('DOMContentLoaded', function() {
-    setupEventListenersData();
-    setupEventListeners();
-    setupEventListenersBack();
-});
+    // Função que realiza uma requisação AJAX para reinderizar a partial 'base_calendario_dia' baseado no dia anterior ao dia corrente carregado na página
+    function handleBackBtnClick() {
+        console.log('Botão backBtn_dia clicado');
 
-function setupEventListenersWeekBack() {
-    const backBtnSem = document.getElementById('backBtn_semana');
-    const nextBtnSem = document.getElementById('nextBtn_semana');
-    if (backBtnSem) {
-        backBtnSem.removeEventListener('click', handleWeekBackBtnClick); // Remove event listener para evitar múltiplos eventos
-        backBtnSem.addEventListener('click', handleWeekBackBtnClick);
-        nextBtnSem.addEventListener('click', handleWeekNextBtnClick);
-    } else {
-        console.log('Botão nextBtn_dia não encontrado');
-    }
-}
+        const diaDataField = document.getElementById('main-dia__data');
+        if (!diaDataField) {
+            console.error('Elemento com id main-dia__data não encontrado');
+            return;
+        }
 
-function handleWeekBackBtnClick() {
-    console.log('Botão backBtn_semana clicado');
+        const url = new URL('/atualizar_calendario', window.location.origin);
+        url.searchParams.append('data', diaDataField.value);
+        url.searchParams.append('control', 2);
 
-    const diaDataField = document.getElementById('main-sem__data');
-    if (!diaDataField) {
-        console.error('Elemento com id main-sem__data não encontrado');
-        return;
-    }
-
-    const url = new URL('/atualizar_calendario_semana', window.location.origin);
-    url.searchParams.append('data', diaDataField.value);
-    url.searchParams.append('control', 1);
-
-    fetch(url, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Resposta:', data);
-            if (data.html) {
-                document.getElementById('agenda_semana').innerHTML = data.html;
-                setupEventListenersWeekBack(); // Configura o evento novamente após a atualização
-            } else {
-                console.log('Nenhum conteúdo HTML encontrado.');
-                alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
-            }
-        })
-        .catch(error => {
-            console.error('Erro na validação da sequência:', error);
-            alert('Ocorreu um erro. Tente novamente mais tarde.');
-        });
-}
-
-function setupEventListenersWeekNext() {
-    const nextBtnSem = document.getElementById('nextBtn_semana');
-    const backBtnSem = document.getElementById('backBtn_semana');
-    if (nextBtnSem) {
-        nextBtnSem.removeEventListener('click', handleWeekNextBtnClick); // Remove event listener para evitar múltiplos eventos
-        nextBtnSem.addEventListener('click', handleWeekNextBtnClick);
-        backBtnSem.addEventListener('click', handleWeekBackBtnClick);
-    } else {
-        console.log('Botão nextBtn_dia não encontrado');
-    }
-}
-
-function handleWeekNextBtnClick() {
-    console.log('Botão backBtn_semana clicado');
-
-    const diaDataField = document.getElementById('main-sem__data');
-    if (!diaDataField) {
-        console.error('Elemento com id main-sem__data não encontrado');
-        return;
+        fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Resposta:', data);
+                if (data.html) {
+                    document.getElementById('agenda_dia').innerHTML = data.html;
+                    setupEventListenersBtnDia(); // Configura o evento novamente após a atualização
+                    document.getElementById('main-dia__dia').value = data.data_param;
+                } else {
+                    console.log('Nenhum conteúdo HTML encontrado.');
+                    alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro na validação da sequência:', error);
+                alert('Ocorreu um erro. Tente novamente mais tarde.');
+            });
     }
 
-    const url = new URL('/atualizar_calendario_semana', window.location.origin);
-    url.searchParams.append('data', diaDataField.value);
-    url.searchParams.append('control', 2);
+    // Função que realiza uma requisação AJAX para reinderizar a partial 'base_calendario_dia' baseado no dia escolhido pelo usuario no campo 'main-dia__dia'
+    function handledataDiaChange() {
+        console.log('Data não encontrada');
 
-    fetch(url, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Resposta:', data);
-            if (data.html) {
-                document.getElementById('agenda_semana').innerHTML = data.html;
-                setupEventListenersWeekNext(); // Configura o evento novamente após a atualização
-            } else {
-                console.log('Nenhum conteúdo HTML encontrado.');
-                alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
-            }
-        })
-        .catch(error => {
-            console.error('Erro na validação da sequência:', error);
-            alert('Ocorreu um erro. Tente novamente mais tarde.');
-        });
-}
+            const dataDia = document.getElementById('main-dia__dia');
+            const url = new URL('/atualizar_calendario', window.location.origin);
+            url.searchParams.append('data', dataDia.value);
+            url.searchParams.append('control', 3);
 
-document.addEventListener('DOMContentLoaded', function() {
-    setupEventListenersWeekBack();
-    setupEventListenersWeekNext();
-});
+            fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Resposta:', data);
+                    if (data.html) {
+                        document.getElementById('agenda_dia').innerHTML = data.html;
+                        setupEventListenersBtnDia(); // Configura o evento novamente após a atualização
+                        document.getElementById('main-dia__dia').value = data.data_param;
+                    } else {
+                        console.log('Nenhum conteúdo HTML encontrado.');
+                        alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro na validação da sequência:', error);
+                    alert('Ocorreu um erro. Tente novamente mais tarde.');
+                });
+        }
 
-$(document).ready(function(){
-        $('#id_tel_inst').mask('(00) 00000-0000');
+    // Partial 'base_calendario_semana.html'
+
+    // Função que atualiza o Event Listener pertinentes aos botões de escolha da partial 'base_calendario_semana'
+    function setupEventListenersWeekBack() {
+        const backBtnSem = document.getElementById('backBtn_semana');
+        const nextBtnSem = document.getElementById('nextBtn_semana');
+
+        if (nextBtnSem) {
+            nextBtnSem.removeEventListener('click', handleWeekNextBtnClick);
+            nextBtnSem.addEventListener('click', handleWeekNextBtnClick);
+        } 
+
+        if (backBtnSem) {
+            backBtnSem.removeEventListener('click', handleWeekBackBtnClick);
+            backBtnSem.addEventListener('click', handleWeekBackBtnClick);
+        }  
+
+        if (!nextBtnSem && !backBtnSem) {
+            console.log('Dados não encontrados');
+        }
+    }
+
+    // Função que realiza uma requisação AJAX para reinderizar a partial 'base_calendario_semana' baseado na semana seguinte à semana corrente carregada na página
+    function handleWeekNextBtnClick() {
+        console.log('Botão backNext_semana clicado');
+
+        const diaDataField = document.getElementById('main-sem__data');
+        if (!diaDataField) {
+            console.error('Elemento com id main-sem__data não encontrado');
+            return;
+        }
+
+        const url = new URL('/atualizar_calendario_semana', window.location.origin);
+        url.searchParams.append('data', diaDataField.value);
+        url.searchParams.append('control', 2);
+
+        fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Resposta:', data);
+                if (data.html) {
+                    document.getElementById('agenda_semana').innerHTML = data.html;
+                    setupEventListenersWeekBack();
+                } else {
+                    console.log('Nenhum conteúdo HTML encontrado.');
+                    alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro na validação da sequência:', error);
+                alert('Ocorreu um erro. Tente novamente mais tarde.');
+            });
+    }
+
+    // Função que realiza uma requisação AJAX para reinderizar a partial 'base_calendario_semana' baseado na semana anterior à semana corrente carregada na página
+    function handleWeekBackBtnClick() {
+
+        const diaDataField = document.getElementById('main-sem__data');
+        if (!diaDataField) {
+            console.error('Elemento com id main-sem__data não encontrado');
+            return;
+        }
+
+        const url = new URL('/atualizar_calendario_semana', window.location.origin);
+        url.searchParams.append('data', diaDataField.value);
+        url.searchParams.append('control', 1);
+
+        fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Resposta:', data);
+                if (data.html) {
+                    document.getElementById('agenda_semana').innerHTML = data.html;
+                    setupEventListenersWeekBack();
+                } else {
+                    console.log('Nenhum conteúdo HTML encontrado.');
+                    alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro na validação da sequência:', error);
+                alert('Ocorreu um erro. Tente novamente mais tarde.');
+            });
+    }
+
+    // Template nova_instituicao.html
+
+    // Inicia todas as funções pertinentes ao template 'nova_instituicao' assim que DOMContent da página é carregado
+    document.addEventListener('DOMContentLoaded', function() {
+        // Configura campos pertinentes ao valor das instituições na exibição da pagina
+        valorInit();
+            
     });
 
-function mascaraValor(valor) {
-    let valorFormatado = `R$ ${parseFloat(valor).toFixed(2)
-    .replace(/\d(?=(\d{3})+(\.|$))/g, '$&,')}`;
 
-    return valorFormatado;
+    // Aplica a mascara no campo telefone assim que o html da página estiver carregado 
+    $(document).ready(function(){
+            $('#id_tel_inst').mask('(00) 00000-0000');
+        });
 
-}
+    // Função que configura campos pertinentes ao valor das instituições na exibição da pagina
+    function valorInit() {
+        const fixoMensalInst = document.getElementById('id_fixo_mensal_inst');
+        const campoValor = document.getElementById('id_valor_inst');
 
-document.addEventListener('DOMContentLoaded', function() {
-    const fixoMensalInst = document.getElementById('id_fixo_mensal_inst');
-    const campoValor = document.getElementById('id_valor_inst');
-
-    ajustaValorInst(fixoMensalInst);
-
-    fixoMensalInst.addEventListener('change', function(){
         ajustaValorInst(fixoMensalInst);
-    });
 
-    // Adiciona um ouvinte de evento para aplicar a máscara quando o valor mudar
-    campoValor.addEventListener('change', function() {
-            if (this.value != '') {
-                let valor = this.value;
-                campoValor.value = mascaraValor(valor);
-            } else {
-                this.value = '';
-            }
-    });
-});
+        fixoMensalInst.addEventListener('change', function(){
+            ajustaValorInst(fixoMensalInst);
+        });
 
-function ajustaValorInst(fixo) {
-    // Seleciona o campo de entrada pelo ID
-    const campoValor = document.getElementById('id_valor_inst');
-    const divValor = document.getElementById('id_div_valor_inst');
-
-    if (fixo.checked) {
-        divValor.classList.remove('hidden_edit');
-
-        // Formata o valor inicial do campo
-        if (campoValor.value != '') {
-            let valor = campoValor.value;
-            campoValor.value = mascaraValor(valor);
-        } else {
-            campoValor.value = '';
-        }
-    } else {
-        campoValor.value = '';
-        divValor.classList.add('hidden_edit');
-    }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Seleciona o campo de entrada pelo ID
-    const campoValor = document.getElementById('id_valor');
-
-    // Formata o valor inicial do campo
-    if (campoValor) {
-        let valor = campoValor.value;
-        if (valor != '') {
-            campoValor.value = mascaraValor(valor);
-        } else {
-            campoValor.value = '';
-        }
+        // Adiciona um ouvinte de evento para aplicar a máscara quando o valor mudar
+        campoValor.addEventListener('change', function() {
+                if (this.value != '') {
+                    let valor = this.value;
+                    campoValor.value = mascaraValor(valor);
+                } else {
+                    this.value = '';
+                }
+        });
     }
 
-    // Adiciona um ouvinte de evento para aplicar a máscara quando o valor mudar
-    campoValor.addEventListener('change', function() {
-        let valor = this.value;
-        if (valor != '') {
-            this.value = mascaraValor(valor);
-        } else {
-            this.value = '';
-        }
-    });
-});
+    // Função que atualiza classes para exibir ou não exibir o campo 'valor' da página da Instituição
+    function ajustaValorInst(fixo) {
+        
+        const campoValor = document.getElementById('id_valor_inst');
+        const divValor = document.getElementById('id_div_valor_inst');
 
-document.addEventListener('DOMContentLoaded', function() {
-    const checkbox = document.getElementById('id_nao_remunerado');
-    const valor = document.getElementById('id_valor');
-    const divValor = document.getElementById('id_div_valor');
-    const fixoCheck = document.getElementById('id_fixo_mensal_ativ');
-    const divFixo = document.getElementById('id_div_fixo_mensal_ativ');
-
-    checkbox.addEventListener('change', function() {
-        if (checkbox.checked) {
-            valor.value = '';
-            fixoCheck.checked = false;
-            divValor.classList.add('hidden_edit');
-            divFixo.classList.remove('main-forms__valor_checkbox_campo');
-            divFixo.classList.add('hidden_edit');
-        } else {
+        if (fixo.checked) {
             divValor.classList.remove('hidden_edit');
-            divFixo.classList.remove('hidden_edit');
-            divFixo.classList.add('main-forms__valor_checkbox_campo');
+
+            // Formata o valor inicial do campo
+            if (campoValor.value != '') {
+                let valor = campoValor.value;
+                campoValor.value = mascaraValorInit(valor);
+            } else {
+                campoValor.value = '';
+            }
+        } else {
+            campoValor.value = '';
+            divValor.classList.add('hidden_edit');
         }
+    }
+
+    // Função que aplica máscara no campo valor importado para o campo através da função get_fixo ou trazer um formulário já instânciado
+    function mascaraValorInit(valor) {
+    
+        let valorFormatado; 
+
+        if (isNaN(valor) || isNaN(parseFloat(valor))) {
+            valorFormatado = 'Valor Inválido!';
+        } else {
+            valorFormatado = `R$ ${parseFloat(valor).toFixed(2)
+                .replace(/\d(?=(\d{3})+(\.|$))/g, '$&,')}`;
+        }
+
+        return valorFormatado;
+    }
+
+    // Função que aplica máscara no campo valor assim que um novo valor é digitado
+    function mascaraValor(valor) {
+        
+        valor = valor.replace(/\./g, '').replace(',', '.'); // Remove pontos e substitui vírgula por ponto
+
+        const numero = parseFloat(valor);
+        
+        if (isNaN(numero)) {
+            return 'Valor Inválido!'; // Retorna mensagem de erro
+        }
+        
+        const valorFormatado = `R$ ${numero.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+        
+        return valorFormatado;
+    }
+
+    // Template financeiro.html
+
+    // Inicia todas as funções pertinentes ao template 'financeiro' assim que DOMContent da página é carregado
+    document.addEventListener('DOMContentLoaded', function() {
+        // Obtém o mês da data do dia
+        getMesAtual();
+
+        // Atualiza as classes para exibir os campos de acordo com o tipo de período que o usuário escolher
+        mudaPeriodo();
+
+        // Atualiza Event Listener do selectfield 'periodoSelect'
+        setupEventListenersPeriodoSelect();
+
+        // Chama função de alterar campo de média exibido a partir do evento 'change' do selectfield 'mediaselect'
+        mudaMedia();
+
+        // Atualiza Event Listener do selectfield 'mediaSelect'
+        setupEventListenersMediaSelect();
+
+        // Aciona a função 'Atualizar Filtro' a partir do evento 'click' do botão de filtro
+        filtraFinanceiro();
+
+        // Atualiza o Event Listenet do botão de filtro do dashboard financeiro
+        setupEventListenersAtualizaFiltro();
+
+        // Aciona a função 'Atualiza Gráfico' a partir do evento 'change' do selectfield do tipo de gráfico
+        mudaGrafico();
+
+            
+        // Atualiza o Event Listenet do selectfield do tipo de gráfico            
+        setupEventListenersAtualizaGrafico();
+
+        // Declara variáveis e chama função que constrói gráfico do dashboard financeiro
+        const tipo = JSON.parse('{{ tipo|escapejs }}');
+        const etiquetas = JSON.parse('{{ etiquetas|escapejs }}');
+        const valores = JSON.parse('{{ valores|escapejs }}');    
+        gerarGraficoFinanceiro(etiquetas, valores, tipo);
+
+            
     });
-});
 
-document.addEventListener('DOMContentLoaded', function() {
-        const selectMes = document.getElementById('mes');
-        const mesAtual = new Date().getMonth() + 1; // getMonth() retorna um valor de 0 (Janeiro) a 11 (Dezembro), por isso somamos 1.
-        selectMes.value = mesAtual;
-});
+    // Função que obtém o mês da data do dia
+    function getMesAtual() {
+            const selectMes = document.getElementById('mes');
+            const mesAtual = new Date().getMonth() + 1; // getMonth() retorna um valor de 0 (Janeiro) a 11 (Dezembro), por isso a soma de 1.
+            selectMes.value = mesAtual;
+    }
 
-document.addEventListener('DOMContentLoaded', function() {
+    // Função que atualiza Event Listener do selectfield 'periodoSelect'
+    function setupEventListenersPeriodoSelect() {
+        const periodoSelect = document.getElementById('periodo');
+        if (periodoSelect) {
+            periodoSelect.removeEventListener('change', selecionaPeriodo); // Remove event listener para evitar múltiplos eventos
+            periodoSelect.addEventListener('change', selecionaPeriodo);
+        } else {
+            console.log('Objeto select não encontrado');
+        }
+    }
+
+    // Função que chama função de alterar campos de pesquisa de acordo com período selecionado exibido a partir do evento 'change' do selectfield 'periodoselect'
+    function mudaPeriodo() {
+
         const periodoSelect = document.getElementById('periodo');
 
         periodoSelect.addEventListener('change', function() {
-            selecionaPeriodo();                
-        });  
-});
+                selecionaPeriodo();
+        });        
+    }
 
+    // Função que atualiza as classes para exibir os campos de acordo com o tipo de período que o usuário escolher
     function selecionaPeriodo() {
+
         const periodoSelect = document.getElementById('periodo');
         const mesSelect = document.getElementById('mes');
         const anoSelect = document.getElementById('ano');
@@ -954,13 +1176,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
     }
 
-    function formatarValor(value) {
-            // Formatar o valor como moeda com separador de milhar e vírgula decimal
-            return 'R$ ' + value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
+    // Declara variável para criar o gráfico do dashboard Financeiro
+    let meuGraficoDeBarras; 
 
-    let meuGraficoDeBarras; // Defina a variável fora da função para torná-la acessível
-
+    // Função para construir o gráfico do dashboard Financeiro
     function gerarGraficoFinanceiro(etiquetas, valores, tipo) {
         const ctx = document.getElementById('grafico').getContext('2d');
 
@@ -1026,186 +1245,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
         }
 
-    document.addEventListener('DOMContentLoaded', function() {
-            const mediaSelect = document.getElementById('media');
-
-            mediaSelect.addEventListener('change', function() {
-                selecionaMedia();              
-
-            });  
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-            const btnFilter = document.getElementById('btn_financeiro_filter');
-
-            btnFilter.addEventListener('click', function() {
-                atualizaFiltro();
-            });
-
-    });
-
-    
-function setupEventListenersAtualizaFiltro() {
-        const btnFilter = document.getElementById('btn_financeiro_filter');
-        if (btnFilter) {
-            btnFilter.removeEventListener('click', atualizaFiltro); // Remove event listener para evitar múltiplos eventos
-            btnFilter.addEventListener('click', atualizaFiltro);
-        } else {
-            console.log('Botão nextBtn_dia não encontrado');
-        }
+    // Função que formata o valor enviado como moeda com separador de milhar e vírgula decimal
+    function formatarValor(value) {
+        return 'R$ ' + value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-function atualizaFiltro() {
-    const periodoSelect = document.getElementById('periodo');
-    const mesSelect = document.getElementById('mes').value;
-    const anoSelect = document.getElementById('ano');
-    const anoOption = anoSelect.options[anoSelect.selectedIndex];
-    const anoText = anoOption.textContent;
-    const dataCustomInicio = document.getElementById('date_periodo_inicio').value;
-    const dataCustomFinal = document.getElementById('date_periodo_final').value;
-    
-    opcao = periodoSelect.value;
+    // Função que chama função de alterar campo de média exibido a partir do evento 'change' do selectfield 'mediaselect'
+    function mudaMedia() {
 
-    const url = new URL('/atualizar_financeiro', window.location.origin);
-    url.searchParams.append('periodoSelect', opcao);
+        const mediaSelect = document.getElementById('media');
 
-    if (opcao == '1') {
-        url.searchParams.append('mesSelect', mesSelect); 
-    } else if (opcao == '2') {
-        url.searchParams.append('anoSelect', anoText);
-    } else if (opcao == '6') {
-        url.searchParams.append('dataInicio', dataCustomInicio);
-        url.searchParams.append('dataFinal', dataCustomFinal);
+        mediaSelect.addEventListener('change', function() {
+                selecionaMedia();
+            });        
     }
 
-    fetch(url, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Resposta:', data);
-            if (data.html) {
-                document.getElementById('main-financeiro__campos').innerHTML = data.html;
-                setupEventListenersMediaSelect();
-                setupEventListenersPeriodoSelect();
-                setupEventListenersAtualizaFiltro();
+    // Função que atualiza classes para exibir o campo de média de acordo com a solicitação do usuário
+    function selecionaMedia() {
 
-                const tipo = data.tipo;
-                const etiquetas = data.etiquetas;
-                const valores = data.valores;
-                gerarGraficoFinanceiro(etiquetas, valores, tipo);
-
-                setupEventListenersAtualizaGrafico();
-            } else {
-                console.log('Nenhum conteúdo HTML encontrado.');
-                alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
-            }
-        })
-        .catch(error => {
-            console.error('Erro na validação da sequência:', error);
-            alert('Ocorreu um erro. Tente novamente mais tarde.');
-        });
-    }
-
-function atualizaGrafico() {
-    const periodoSelect = document.getElementById('periodo');
-    const mesSelect = document.getElementById('mes').value;
-    const anoSelect = document.getElementById('ano');
-    const anoOption = anoSelect.options[anoSelect.selectedIndex];
-    const anoText = anoOption.textContent;
-    const dataCustomInicio = document.getElementById('date_periodo_inicio').value;
-    const dataCustomFinal = document.getElementById('date_periodo_final').value;
-    const graficoSelect = document.getElementById('grafico_select').value;
-    
-    opcao = periodoSelect.value;
-
-    const url = new URL('atualizar_grafico/', window.location.origin);
-    url.searchParams.append('periodoSelect', opcao);
-    url.searchParams.append('graficoSelect', graficoSelect);
-
-    if (opcao == '1') {
-        url.searchParams.append('mesSelect', mesSelect); 
-    } else if (opcao == '2') {
-        url.searchParams.append('anoSelect', anoText);
-    } else if (opcao == '6') {
-        url.searchParams.append('dataInicio', dataCustomInicio);
-        url.searchParams.append('dataFinal', dataCustomFinal);
-    }
-
-    fetch(url, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Resposta:', data);
-            if (data) {
-                setupEventListenersMediaSelect();
-                setupEventListenersPeriodoSelect();
-                setupEventListenersAtualizaFiltro();
-                setupEventListenersAtualizaGrafico();
-                const tipo = data.tipo;
-                const etiquetas = data.etiquetas;
-                const valores = data.valores;
-                gerarGraficoFinanceiro(etiquetas, valores, tipo);
-            } else {
-                console.log('Nenhum conteúdo HTML encontrado.');
-                alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
-            }
-        })
-        .catch(error => {
-            console.error('Erro na validação da sequência:', error);
-            alert('Ocorreu um erro. Tente novamente mais tarde.');
-        });
-    }
-
-document.addEventListener('DOMContentLoaded', function() {
-    const graficoSelect = document.getElementById('grafico_select');
-
-    graficoSelect.addEventListener('change', function() {
-        atualizaGrafico();
-    });
-});
-
-function setupEventListenersAtualizaGrafico() {
-    const graficoSelect = document.getElementById('grafico_select');
-    if (graficoSelect) {
-        if (!graficoSelect.hasAttribute('data-listener-added')) {
-            graficoSelect.addEventListener('change', atualizaGrafico);
-            graficoSelect.setAttribute('data-listener-added', 'true');
-        }
-    } else {
-        console.log('Gráfico não encontrado');
-    }
-}
-
-
-function setupEventListenersMediaSelect() {
-    const mediaSelect = document.getElementById('media');
-    if (mediaSelect) {
-        mediaSelect.removeEventListener('change', selecionaMedia); // Remove event listener para evitar múltiplos eventos
-        mediaSelect.addEventListener('change', selecionaMedia);
-    } else {
-        console.log('Objeto select não encontrado');
-    }
-}
-
-function setupEventListenersPeriodoSelect() {
-    const periodoSelect = document.getElementById('periodo');
-    if (periodoSelect) {
-        periodoSelect.removeEventListener('change', selecionaPeriodo); // Remove event listener para evitar múltiplos eventos
-        periodoSelect.addEventListener('change', selecionaPeriodo);
-    } else {
-        console.log('Objeto select não encontrado');
-    }
-}
-
-function selecionaMedia() {
         const mediaSelect = document.getElementById('media');
         const valorAtiv = document.getElementById('media_atividade');
         const valorHora = document.getElementById('media_hora');
@@ -1237,489 +1294,667 @@ function selecionaMedia() {
                 }
     }
 
-document.addEventListener('DOMContentLoaded', function() {
-    setupEventListenersMediaSelect();
-    setupEventListenersPeriodoSelect();
-    setupEventListenersAtualizaFiltro();
-    setupEventListenersAtualizaGrafico();
-    const tipo = JSON.parse('{{ tipo|escapejs }}');
-    const etiquetas = JSON.parse('{{ etiquetas|escapejs }}');
-    const valores = JSON.parse('{{ valores|escapejs }}');
-    gerarGraficoFinanceiro(etiquetas, valores, tipo);
-});
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    const periodoSelect = document.getElementById('periodo_rotina');
-
-    periodoSelect.addEventListener('change', function() {
-
-        selecionaPeriodoRotina();
-
-    });  
-});
-
-
-function selecionaPeriodoRotina() {
-
-    const periodoSelect = document.getElementById('periodo_rotina');
-    const mesSelect = document.getElementById('mes_rotina');
-    const anoSelect = document.getElementById('ano_rotina');
-    const divCustom = document.getElementById('periodo_rotina_custom');
-
-    opcao = periodoSelect.value;
-
-    if (opcao == '1') {
-        mesSelect.classList.remove('hidden_edit');
-        anoSelect.classList.add('hidden_edit');
-        divCustom.classList.add('hidden_edit');
-        divCustom.classList.remove('main-rotina__periodo_custom');
-    } else if (opcao == '2') {
-        anoSelect.classList.remove('hidden_edit');
-        mesSelect.classList.add('hidden_edit');
-        divCustom.classList.add('hidden_edit');
-        divCustom.classList.remove('main-rotina__periodo_custom');
-    } else if (opcao == '3') {
-        mesSelect.classList.add('hidden_edit');
-        anoSelect.classList.add('hidden_edit');
-        divCustom.classList.add('hidden_edit');
-        divCustom.classList.remove('main-rotina__periodo_custom');
-    } else if (opcao == '4') {
-        mesSelect.classList.add('hidden_edit');
-        anoSelect.classList.add('hidden_edit');
-        divCustom.classList.add('hidden_edit');
-        divCustom.classList.remove('main-rotina__periodo_custom');
-    } else if (opcao == '5') {
-        mesSelect.classList.add('hidden_edit');
-        anoSelect.classList.add('hidden_edit');
-        divCustom.classList.add('hidden_edit');
-        divCustom.classList.remove('main-rotina__periodo_custom');
-    } else if (opcao == '6') {
-        mesSelect.classList.add('hidden_edit');
-        anoSelect.classList.add('hidden_edit');
-        divCustom.classList.remove('hidden_edit');
-        divCustom.classList.add('main-rotina__periodo_custom');
+    // Função que atualiza Event Listener do selectfield 'mediaSelect'
+    function setupEventListenersMediaSelect() {
+        const mediaSelect = document.getElementById('media');
+        if (mediaSelect) {
+            mediaSelect.removeEventListener('change', selecionaMedia);
+            mediaSelect.addEventListener('change', selecionaMedia);
+        } else {
+            console.log('Objeto select não encontrado');
+        }
     }
-}
 
-function setupEventListenersPeridoRotina() {
-    const periodoSelect = document.getElementById('periodo_rotina');
-
-    if (periodoSelect) {
-        periodoSelect.removeEventListener('change', selecionaPeriodoRotina);
-        periodoSelect.addEventListener('change', selecionaPeriodoRotina);
-    } else {
-        console.log('Objeto select não encontrado');
-    }
-}
-            
-
-document.addEventListener('DOMContentLoaded', function() { 
-    const mediaSelect = document.getElementById('media_rotina');
-
-    mediaSelect.addEventListener('change', function() { 
-        selecionaMediaRotina();
-    });
-    
-});
-
-function selecionaMediaRotina() {
-        const mediaSelect = document.getElementById('media_rotina');
-        const horaTrabSem = document.getElementById('rot_media_trab_sem');
-        const horaAtivSem = document.getElementById('rot_media_ativ_sem');
-        const horaLivreSem = document.getElementById('rot_media_livre_sem');
-        const horaTrabDia = document.getElementById('rot_media_trab_dia');
-        const horaAtivDia = document.getElementById('rot_media_ativ_dia');
-        const horaLivreDia = document.getElementById('rot_media_livre_dia');
-        const horaAtiv = document.getElementById('rot_media_ativ');
-
-        opcao = mediaSelect.value;
-
-                if (opcao == '1') {
-                    horaTrabSem.classList.remove('hidden_edit');
-                    horaAtivSem.classList.add('hidden_edit');
-                    horaLivreSem.classList.add('hidden_edit');
-                    horaTrabDia.classList.add('hidden_edit');
-                    horaAtivDia.classList.add('hidden_edit');
-                    horaLivreDia.classList.add('hidden_edit');
-                    horaAtiv.classList.add('hidden_edit');
-                } else if (opcao == '2') {
-                    horaTrabSem.classList.add('hidden_edit');
-                    horaAtivSem.classList.remove('hidden_edit');
-                    horaLivreSem.classList.add('hidden_edit');
-                    horaTrabDia.classList.add('hidden_edit');
-                    horaAtivDia.classList.add('hidden_edit');
-                    horaLivreDia.classList.add('hidden_edit');
-                    horaAtiv.classList.add('hidden_edit');
-                } else if (opcao == '3') {
-                    horaTrabSem.classList.add('hidden_edit');
-                    horaAtivSem.classList.add('hidden_edit');
-                    horaLivreSem.classList.remove('hidden_edit');
-                    horaTrabDia.classList.add('hidden_edit');
-                    horaAtivDia.classList.add('hidden_edit');
-                    horaLivreDia.classList.add('hidden_edit');
-                    horaAtiv.classList.add('hidden_edit');
-                } else if (opcao == '4') {
-                    horaTrabSem.classList.add('hidden_edit');
-                    horaAtivSem.classList.add('hidden_edit');
-                    horaLivreSem.classList.add('hidden_edit');
-                    horaTrabDia.classList.remove('hidden_edit');
-                    horaAtivDia.classList.add('hidden_edit');
-                    horaLivreDia.classList.add('hidden_edit');
-                    horaAtiv.classList.add('hidden_edit');
-                } else if (opcao == '5') {
-                    horaTrabSem.classList.add('hidden_edit');
-                    horaAtivSem.classList.add('hidden_edit');
-                    horaLivreSem.classList.add('hidden_edit');
-                    horaTrabDia.classList.add('hidden_edit');
-                    horaAtivDia.classList.remove('hidden_edit');
-                    horaLivreDia.classList.add('hidden_edit');
-                    horaAtiv.classList.add('hidden_edit');
-                } else if (opcao == '6') {
-                    horaTrabSem.classList.add('hidden_edit');
-                    horaAtivSem.classList.add('hidden_edit');
-                    horaLivreSem.classList.add('hidden_edit');
-                    horaTrabDia.classList.add('hidden_edit');
-                    horaAtivDia.classList.add('hidden_edit');
-                    horaLivreDia.classList.remove('hidden_edit');
-                    horaAtiv.classList.add('hidden_edit');
-                } else if (opcao == '7') {
-                    horaTrabSem.classList.add('hidden_edit');
-                    horaAtivSem.classList.add('hidden_edit');
-                    horaLivreSem.classList.add('hidden_edit');
-                    horaTrabDia.classList.add('hidden_edit');
-                    horaAtivDia.classList.add('hidden_edit');
-                    horaLivreDia.classList.add('hidden_edit');
-                    horaAtiv.classList.remove('hidden_edit');
-                }
-     }
-
-function setupEventListenersMediaRotina() {
-    const mediaSelect = document.getElementById('media_rotina');
-    if (mediaSelect) {
-        mediaSelect.removeEventListener('change', selecionaMediaRotina); // Remove event listener para evitar múltiplos eventos
-        mediaSelect.addEventListener('change', selecionaMediaRotina);
-    } else {
-        console.log('Objeto select não encontrado');
-    }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-        const btnFilter = document.getElementById('btn_rotina_filter');
+    // Função que aciona a função de atualizar filtros do dashboard financeiro a partir do evento de 'click' do botão de filtro
+    function filtraFinanceiro() {
+        const btnFilter = document.getElementById('btn_financeiro_filter');
 
         btnFilter.addEventListener('click', function() {
-                atualizaFiltroRotina();
+            atualizaFiltro();
         });
 
-});
-
-function atualizaFiltroRotina() {
-    const periodoSelect = document.getElementById('periodo_rotina');
-    const mesSelect = document.getElementById('mes_rotina').value;
-    const anoSelect = document.getElementById('ano_rotina');
-    const anoOption = anoSelect.options[anoSelect.selectedIndex];
-    const anoText = anoOption.textContent;
-    const dataCustomInicio = document.getElementById('date_periodo_inicio_rotina').value;
-    const dataCustomFinal = document.getElementById('date_periodo_final_rotina').value;
+    }
     
-    opcao = periodoSelect.value;
-
-    const url = new URL('/atualizar_rotina', window.location.origin);
-    url.searchParams.append('periodoSelect', opcao);
-
-    if (opcao == '1') {
-        url.searchParams.append('mesSelect', mesSelect); 
-    } else if (opcao == '2') {
-        url.searchParams.append('anoSelect', anoText);
-    } else if (opcao == '6') {
-        url.searchParams.append('dataInicio', dataCustomInicio);
-        url.searchParams.append('dataFinal', dataCustomFinal);
+    // Função que atualiza Event Listener do botão de filtro do dashboard financeiro
+    function setupEventListenersAtualizaFiltro() {
+        const btnFilter = document.getElementById('btn_financeiro_filter');
+        if (btnFilter) {
+            btnFilter.removeEventListener('click', atualizaFiltro); 
+            btnFilter.addEventListener('click', atualizaFiltro);
+        } else {
+            console.log('Botão nextBtn_dia não encontrado');
+        }
     }
 
-    fetch(url, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Resposta:', data);
-            if (data.html) {
-                document.getElementById('main-rotina__campos').innerHTML = data.html;
-                setupEventListenersMediaRotina();
-                setupEventListenersPeridoRotina();
-                setupEventListenersAtualizaFiltroRotina();
+    // Função que reinderiza o dashboard Financeiro a partir dos novos parâmetros enviados em uma requisição AJAX
+    function atualizaFiltro() {
+        const periodoSelect = document.getElementById('periodo');
+        const mesSelect = document.getElementById('mes').value;
+        const anoSelect = document.getElementById('ano');
+        const anoOption = anoSelect.options[anoSelect.selectedIndex];
+        const anoText = anoOption.textContent;
+        const dataCustomInicio = document.getElementById('date_periodo_inicio').value;
+        const dataCustomFinal = document.getElementById('date_periodo_final').value;
+        
+        opcao = periodoSelect.value;
 
-                const tipo = data.tipo;
-                const etiquetas = data.etiquetas;
-                const valores = data.valores;
-                gerarGraficoRotina(etiquetas, valores, tipo);
+        const url = new URL('/atualizar_financeiro', window.location.origin);
+        url.searchParams.append('periodoSelect', opcao);
 
-                setupEventListenersAtualizaGraficoRotina();
-            } else {
-                console.log('Nenhum conteúdo HTML encontrado.');
-                alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
-            }
-        })
-        .catch(error => {
-            console.error('Erro na validação da sequência:', error);
-            alert('Ocorreu um erro. Tente novamente mais tarde.');
+        if (opcao == '1') {
+            url.searchParams.append('mesSelect', mesSelect); 
+        } else if (opcao == '2') {
+            url.searchParams.append('anoSelect', anoText);
+        } else if (opcao == '6') {
+            url.searchParams.append('dataInicio', dataCustomInicio);
+            url.searchParams.append('dataFinal', dataCustomFinal);
+        }
+
+        fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Resposta:', data);
+                if (data.html) {
+                    document.getElementById('main-financeiro__campos').innerHTML = data.html;
+                    setupEventListenersMediaSelect();
+                    setupEventListenersPeriodoSelect();
+                    setupEventListenersAtualizaFiltro();
+
+                    const tipo = data.tipo;
+                    const etiquetas = data.etiquetas;
+                    const valores = data.valores;
+                    gerarGraficoFinanceiro(etiquetas, valores, tipo);
+
+                    setupEventListenersAtualizaGrafico();
+                } else {
+                    console.log('Nenhum conteúdo HTML encontrado.');
+                    alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro na validação da sequência:', error);
+                alert('Ocorreu um erro. Tente novamente mais tarde.');
+            });
+        }
+
+    // Função que atualiza gráfico do dashboard financeiro a partir dos parâmentro enviados em uma requisição AJAX
+    function atualizaGrafico() {
+        const periodoSelect = document.getElementById('periodo');
+        const mesSelect = document.getElementById('mes').value;
+        const anoSelect = document.getElementById('ano');
+        const anoOption = anoSelect.options[anoSelect.selectedIndex];
+        const anoText = anoOption.textContent;
+        const dataCustomInicio = document.getElementById('date_periodo_inicio').value;
+        const dataCustomFinal = document.getElementById('date_periodo_final').value;
+        const graficoSelect = document.getElementById('grafico_select').value;
+        
+        opcao = periodoSelect.value;
+
+        const url = new URL('atualizar_grafico/', window.location.origin);
+        url.searchParams.append('periodoSelect', opcao);
+        url.searchParams.append('graficoSelect', graficoSelect);
+
+        if (opcao == '1') {
+            url.searchParams.append('mesSelect', mesSelect); 
+        } else if (opcao == '2') {
+            url.searchParams.append('anoSelect', anoText);
+        } else if (opcao == '6') {
+            url.searchParams.append('dataInicio', dataCustomInicio);
+            url.searchParams.append('dataFinal', dataCustomFinal);
+        }
+
+        fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Resposta:', data);
+                if (data) {
+                    setupEventListenersMediaSelect();
+                    setupEventListenersPeriodoSelect();
+                    setupEventListenersAtualizaFiltro();
+                    setupEventListenersAtualizaGrafico();
+                    const tipo = data.tipo;
+                    const etiquetas = data.etiquetas;
+                    const valores = data.valores;
+                    gerarGraficoFinanceiro(etiquetas, valores, tipo);
+                } else {
+                    console.log('Nenhum conteúdo HTML encontrado.');
+                    alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro na validação da sequência:', error);
+                alert('Ocorreu um erro. Tente novamente mais tarde.');
+            });
+        }
+
+    // Função que chama função de atualização de gráfico do Financeiro a partir do evento de mudança do selectfield 'grafico_select'
+    function mudaGrafico() {
+        const graficoSelect = document.getElementById('grafico_select');
+
+        graficoSelect.addEventListener('change', function() {
+            atualizaGrafico();
         });
-}
-    
-function setupEventListenersAtualizaFiltroRotina() {
-    const btnFilter = document.getElementById('btn_rotina_filter');
-    if (btnFilter) {
-        btnFilter.removeEventListener('click', atualizaFiltroRotina); // Remove event listener para evitar múltiplos eventos
-        btnFilter.addEventListener('click', atualizaFiltroRotina);
-    } else {
-        console.log('Botão não encontrado');
     }
-}
 
-document.addEventListener('DOMContentLoaded', function() {
-    const selectGrafico = document.getElementById('grafico_select_rotina');
+    // Função que atualiza Event Listener do selectfield 'grafico_select'
+    function setupEventListenersAtualizaGrafico() {
+        const graficoSelect = document.getElementById('grafico_select');
+        if (graficoSelect) {
+            if (!graficoSelect.hasAttribute('data-listener-added')) {
+                graficoSelect.addEventListener('change', atualizaGrafico);
+                graficoSelect.setAttribute('data-listener-added', 'true');
+            }
+        } else {
+            console.log('Gráfico não encontrado');
+        }
+    }
 
-    selectGrafico.addEventListener('change', function() {
-        atualizaGraficoRotina();
+
+    // Template rotina.html
+
+    // Inicia todas as funções pertinentes ao template 'rotina' assim que DOMContent da página é carregado
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // Obtém o mês atual
+        getMesAtualRotina();
+
+        // Chama função que alterar campos de pesquisas de acordo com o período que o usuário deseja pesquisar
+        mudaPeriodoRotina();
+
+        // Atualiza o Event Listener do selectfield 'periodo_rotina'
+        setupEventListenersPeridoRotina();
+
+        // Chama função de alterar campos de média exibido a partir do evento 'change' do selectfield 'media_rotina'
+        mudaMediaRotina();
+
+        // Atualiza o Event Listener do selectfield 'media_rotina'
+        setupEventListenersMediaRotina()
+
+        //Chama função de atualização de filtros do dashboard rotina a partir do evento 'click' do botão de filtro
+        filtraRotina();
+
+        // Atualiza o Event Listener do botão 'btn_rotina_filter'
+        setupEventListenersAtualizaFiltroRotina();
+
+        // Chama função de atualização do gráfico do dashboard Rotina 
+        mudaGrafico();
+
+        // Atualiza o Event Listener do selectfield 'grafico_select_rotina'
+        setupEventListenersAtualizaGraficoRotina();
+
+
+        // Prepara variáveis e constrói gráfico do dashboard rotina
+        const tipo = JSON.parse('{{tipo|escapejs}}')
+        const etiquetas = JSON.parse('{{ etiquetas|escapejs }}');
+        const valores = JSON.parse('{{ valores|escapejs }}');
+        gerarGraficoRotina(etiquetas, valores, tipo);
+
     });
 
-});
-
-function atualizaGraficoRotina() {
-    const periodoSelect = document.getElementById('periodo_rotina');
-    const mesSelect = document.getElementById('mes_rotina').value;
-    const anoSelect = document.getElementById('ano_rotina');
-    const anoOption = anoSelect.options[anoSelect.selectedIndex];
-    const anoText = anoOption.textContent;
-    const dataCustomInicio = document.getElementById('date_periodo_inicio_rotina').value;
-    const dataCustomFinal = document.getElementById('date_periodo_final_rotina').value;
-    const graficoSelect = document.getElementById('grafico_select_rotina').value;
-    
-    opcao = periodoSelect.value;
-
-    const url = new URL('atualizar_grafico_rotina/', window.location.origin);
-    url.searchParams.append('periodoSelect', opcao);
-    url.searchParams.append('graficoSelect', graficoSelect);
-
-    if (opcao == '1') {
-        url.searchParams.append('mesSelect', mesSelect); 
-    } else if (opcao == '2') {
-        url.searchParams.append('anoSelect', anoText);
-    } else if (opcao == '6') {
-        url.searchParams.append('dataInicio', dataCustomInicio);
-        url.searchParams.append('dataFinal', dataCustomFinal);
+    // Função que obtém o mês da data do dia
+    function getMesAtualRotina() {
+            const selectMes = document.getElementById('mes_rotina');
+            const mesAtual = new Date().getMonth() + 1; // getMonth() retorna um valor de 0 (Janeiro) a 11 (Dezembro), por isso a soma de 1.
+            selectMes.value = mesAtual;
     }
 
-    fetch(url, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Resposta:', data);
-            if (data) {
-                setupEventListenersMediaRotina();
-                setupEventListenersPeridoRotina();
-                setupEventListenersAtualizaFiltroRotina();
+    // Função que chama função de alterar campos de pesquisa de acordo com período selecionado exibido à partir do evento 'change' do selectfield 'periodo_rotina'
+    function mudaPeriodoRotina() {
+        const periodoSelect = document.getElementById('periodo_rotina');
 
-                const tipo = data.tipo;
-                const etiquetas = data.etiquetas;
-                const valores = data.valores;
-                gerarGraficoRotina(etiquetas, valores, tipo);  
-                
-                setupEventListenersAtualizaGraficoRotina();
-            } else {
-                console.log('Nenhum conteúdo HTML encontrado.');
-                alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
-            }
-        })
-        .catch(error => {
-            console.error('Erro na validação da sequência:', error);
-            alert('Ocorreu um erro. Tente novamente mais tarde.');
-        });
+        periodoSelect.addEventListener('change', function() {
+
+            selecionaPeriodoRotina();
+
+        });  
     }
 
-function setupEventListenersAtualizaGraficoRotina() {
-    const graficoSelect = document.getElementById('grafico_select_rotina');
-    if (graficoSelect) {
-        if (!graficoSelect.hasAttribute('data-listener-added')) {
-            graficoSelect.addEventListener('change', atualizaGraficoRotina);
-            graficoSelect.setAttribute('data-listener-added', 'true');
+    // Função que atualizar classes para exibir os campos de filtro de acordo com período selecionado pelo usuário
+    function selecionaPeriodoRotina() {
+
+        const periodoSelect = document.getElementById('periodo_rotina');
+        const mesSelect = document.getElementById('mes_rotina');
+        const anoSelect = document.getElementById('ano_rotina');
+        const divCustom = document.getElementById('periodo_rotina_custom');
+
+        opcao = periodoSelect.value;
+
+        if (opcao == '1') {
+            mesSelect.classList.remove('hidden_edit');
+            anoSelect.classList.add('hidden_edit');
+            divCustom.classList.add('hidden_edit');
+            divCustom.classList.remove('main-rotina__periodo_custom');
+        } else if (opcao == '2') {
+            anoSelect.classList.remove('hidden_edit');
+            mesSelect.classList.add('hidden_edit');
+            divCustom.classList.add('hidden_edit');
+            divCustom.classList.remove('main-rotina__periodo_custom');
+        } else if (opcao == '3') {
+            mesSelect.classList.add('hidden_edit');
+            anoSelect.classList.add('hidden_edit');
+            divCustom.classList.add('hidden_edit');
+            divCustom.classList.remove('main-rotina__periodo_custom');
+        } else if (opcao == '4') {
+            mesSelect.classList.add('hidden_edit');
+            anoSelect.classList.add('hidden_edit');
+            divCustom.classList.add('hidden_edit');
+            divCustom.classList.remove('main-rotina__periodo_custom');
+        } else if (opcao == '5') {
+            mesSelect.classList.add('hidden_edit');
+            anoSelect.classList.add('hidden_edit');
+            divCustom.classList.add('hidden_edit');
+            divCustom.classList.remove('main-rotina__periodo_custom');
+        } else if (opcao == '6') {
+            mesSelect.classList.add('hidden_edit');
+            anoSelect.classList.add('hidden_edit');
+            divCustom.classList.remove('hidden_edit');
+            divCustom.classList.add('main-rotina__periodo_custom');
         }
-    } else {
-        console.log('Gráfico não encontrado');
     }
-}
 
-let meuGraficoRotina; // Defina a variável fora da função para torná-la acessível
+    // Função que atualiza o Event Listener do selectfield 'periodo_rotina'
+    function setupEventListenersPeridoRotina() {
+        const periodoSelect = document.getElementById('periodo_rotina');
 
-function gerarGraficoRotina(etiquetas, valores, tipo) {
-    const ctx = document.getElementById('grafico_rotina').getContext('2d');
+        if (periodoSelect) {
+            periodoSelect.removeEventListener('change', selecionaPeriodoRotina);
+            periodoSelect.addEventListener('change', selecionaPeriodoRotina);
+        } else {
+            console.log('Objeto select não encontrado');
+        }
+    }
+            
+    // Função que chama função de alterar campos de média exibido a partir do evento 'change' do selectfield 'media_rotina'
+    function mudaMediaRotina() { 
+        const mediaSelect = document.getElementById('media_rotina');
 
-    if (meuGraficoRotina) {
-        meuGraficoRotina.destroy(); // Destroi o gráfico existente antes de criar um novo
-    }                
-    // Configuração dos dados e opções do gráfico
-    meuGraficoRotina = new Chart(ctx, {
-                        type: tipo,  // Tipo do gráfico
-                        data: {
-                            labels: etiquetas, // Etiquetas do eixo X
-                            datasets: [{
-                                label: '',
-                                data: valores,  // Dados de cada barra
-                                backgroundColor: [
-                                    'rgba(255, 99, 132, 0.2)',
-                                    'rgba(54, 162, 235, 0.2)',
-                                    'rgba(255, 206, 86, 0.2)',
-                                    'rgba(75, 192, 192, 0.2)',
-                                    'rgba(153, 102, 255, 0.2)',
-                                    'rgba(255, 159, 64, 0.2)'
-                                ],
-                                borderColor: [
-                                    'rgba(255, 99, 132, 1)',
-                                    'rgba(54, 162, 235, 1)',
-                                    'rgba(255, 206, 86, 1)',
-                                    'rgba(75, 192, 192, 1)',
-                                    'rgba(153, 102, 255, 1)',
-                                    'rgba(255, 159, 64, 1)'
-                                ],
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                        plugins: {
+        mediaSelect.addEventListener('change', function() { 
+            selecionaMediaRotina();
+        });
+        
+    }
 
-                            legend: {
-                                display: false  // Desativa a exibição da legenda
+    // Função que atualizar classes para exibir os campos de média de acordo com o solicitado pelo usuário
+    function selecionaMediaRotina() {
+            const mediaSelect = document.getElementById('media_rotina');
+            const horaTrabSem = document.getElementById('rot_media_trab_sem');
+            const horaAtivSem = document.getElementById('rot_media_ativ_sem');
+            const horaLivreSem = document.getElementById('rot_media_livre_sem');
+            const horaTrabDia = document.getElementById('rot_media_trab_dia');
+            const horaAtivDia = document.getElementById('rot_media_ativ_dia');
+            const horaLivreDia = document.getElementById('rot_media_livre_dia');
+            const horaAtiv = document.getElementById('rot_media_ativ');
+
+            opcao = mediaSelect.value;
+
+                    if (opcao == '1') {
+                        horaTrabSem.classList.remove('hidden_edit');
+                        horaAtivSem.classList.add('hidden_edit');
+                        horaLivreSem.classList.add('hidden_edit');
+                        horaTrabDia.classList.add('hidden_edit');
+                        horaAtivDia.classList.add('hidden_edit');
+                        horaLivreDia.classList.add('hidden_edit');
+                        horaAtiv.classList.add('hidden_edit');
+                    } else if (opcao == '2') {
+                        horaTrabSem.classList.add('hidden_edit');
+                        horaAtivSem.classList.remove('hidden_edit');
+                        horaLivreSem.classList.add('hidden_edit');
+                        horaTrabDia.classList.add('hidden_edit');
+                        horaAtivDia.classList.add('hidden_edit');
+                        horaLivreDia.classList.add('hidden_edit');
+                        horaAtiv.classList.add('hidden_edit');
+                    } else if (opcao == '3') {
+                        horaTrabSem.classList.add('hidden_edit');
+                        horaAtivSem.classList.add('hidden_edit');
+                        horaLivreSem.classList.remove('hidden_edit');
+                        horaTrabDia.classList.add('hidden_edit');
+                        horaAtivDia.classList.add('hidden_edit');
+                        horaLivreDia.classList.add('hidden_edit');
+                        horaAtiv.classList.add('hidden_edit');
+                    } else if (opcao == '4') {
+                        horaTrabSem.classList.add('hidden_edit');
+                        horaAtivSem.classList.add('hidden_edit');
+                        horaLivreSem.classList.add('hidden_edit');
+                        horaTrabDia.classList.remove('hidden_edit');
+                        horaAtivDia.classList.add('hidden_edit');
+                        horaLivreDia.classList.add('hidden_edit');
+                        horaAtiv.classList.add('hidden_edit');
+                    } else if (opcao == '5') {
+                        horaTrabSem.classList.add('hidden_edit');
+                        horaAtivSem.classList.add('hidden_edit');
+                        horaLivreSem.classList.add('hidden_edit');
+                        horaTrabDia.classList.add('hidden_edit');
+                        horaAtivDia.classList.remove('hidden_edit');
+                        horaLivreDia.classList.add('hidden_edit');
+                        horaAtiv.classList.add('hidden_edit');
+                    } else if (opcao == '6') {
+                        horaTrabSem.classList.add('hidden_edit');
+                        horaAtivSem.classList.add('hidden_edit');
+                        horaLivreSem.classList.add('hidden_edit');
+                        horaTrabDia.classList.add('hidden_edit');
+                        horaAtivDia.classList.add('hidden_edit');
+                        horaLivreDia.classList.remove('hidden_edit');
+                        horaAtiv.classList.add('hidden_edit');
+                    } else if (opcao == '7') {
+                        horaTrabSem.classList.add('hidden_edit');
+                        horaAtivSem.classList.add('hidden_edit');
+                        horaLivreSem.classList.add('hidden_edit');
+                        horaTrabDia.classList.add('hidden_edit');
+                        horaAtivDia.classList.add('hidden_edit');
+                        horaLivreDia.classList.add('hidden_edit');
+                        horaAtiv.classList.remove('hidden_edit');
+                    }
+    }
+
+    // Função que atualiza o Event Listener do selectfield 'media_rotina'
+    function setupEventListenersMediaRotina() {
+        const mediaSelect = document.getElementById('media_rotina');
+        if (mediaSelect) {
+            mediaSelect.removeEventListener('change', selecionaMediaRotina); // Remove event listener para evitar múltiplos eventos
+            mediaSelect.addEventListener('change', selecionaMediaRotina);
+        } else {
+            console.log('Objeto select não encontrado');
+        }
+    }
+
+    //Função que chama função de atualização de filtros do dashboard rotina a partir do evento 'click' do botão de filtro da página
+    function filtraRotina() {
+            const btnFilter = document.getElementById('btn_rotina_filter');
+
+            btnFilter.addEventListener('click', function() {
+                    atualizaFiltroRotina();
+            });
+
+    }
+
+    // Função que reinderiza a página rotina.html a partir de parâmetros enviados através de uma requisição AJAX
+    function atualizaFiltroRotina() {
+        const periodoSelect = document.getElementById('periodo_rotina');
+        const mesSelect = document.getElementById('mes_rotina').value;
+        const anoSelect = document.getElementById('ano_rotina');
+        const anoOption = anoSelect.options[anoSelect.selectedIndex];
+        const anoText = anoOption.textContent;
+        const dataCustomInicio = document.getElementById('date_periodo_inicio_rotina').value;
+        const dataCustomFinal = document.getElementById('date_periodo_final_rotina').value;
+        
+        opcao = periodoSelect.value;
+
+        const url = new URL('/atualizar_rotina', window.location.origin);
+        url.searchParams.append('periodoSelect', opcao);
+
+        if (opcao == '1') {
+            url.searchParams.append('mesSelect', mesSelect); 
+        } else if (opcao == '2') {
+            url.searchParams.append('anoSelect', anoText);
+        } else if (opcao == '6') {
+            url.searchParams.append('dataInicio', dataCustomInicio);
+            url.searchParams.append('dataFinal', dataCustomFinal);
+        }
+
+        fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Resposta:', data);
+                if (data.html) {
+                    document.getElementById('main-rotina__campos').innerHTML = data.html;
+                    setupEventListenersMediaRotina();
+                    setupEventListenersPeridoRotina();
+                    setupEventListenersAtualizaFiltroRotina();
+
+                    const tipo = data.tipo;
+                    const etiquetas = data.etiquetas;
+                    const valores = data.valores;
+                    gerarGraficoRotina(etiquetas, valores, tipo);
+
+                    setupEventListenersAtualizaGraficoRotina();
+                } else {
+                    console.log('Nenhum conteúdo HTML encontrado.');
+                    alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro na validação da sequência:', error);
+                alert('Ocorreu um erro. Tente novamente mais tarde.');
+            });
+    }
+    
+    // Função que atualiza o Event Listener do botão 'btn_rotina_filter'
+    function setupEventListenersAtualizaFiltroRotina() {
+        const btnFilter = document.getElementById('btn_rotina_filter');
+        if (btnFilter) {
+            btnFilter.removeEventListener('click', atualizaFiltroRotina); // Remove event listener para evitar múltiplos eventos
+            btnFilter.addEventListener('click', atualizaFiltroRotina);
+        } else {
+            console.log('Botão não encontrado');
+        }
+    }
+
+    // Função que chama função de atualização do gráfico do dashboard Rotina 
+    function mudaGrafico() {
+        const selectGrafico = document.getElementById('grafico_select_rotina');
+
+        selectGrafico.addEventListener('change', function() {
+            atualizaGraficoRotina();
+        });
+
+    }
+
+    // Função que atualiza gráfico do dashboard rotina a partir de parâmetros enviados através de uma requisição AJAX
+    function atualizaGraficoRotina() {
+        const periodoSelect = document.getElementById('periodo_rotina');
+        const mesSelect = document.getElementById('mes_rotina').value;
+        const anoSelect = document.getElementById('ano_rotina');
+        const anoOption = anoSelect.options[anoSelect.selectedIndex];
+        const anoText = anoOption.textContent;
+        const dataCustomInicio = document.getElementById('date_periodo_inicio_rotina').value;
+        const dataCustomFinal = document.getElementById('date_periodo_final_rotina').value;
+        const graficoSelect = document.getElementById('grafico_select_rotina').value;
+        
+        opcao = periodoSelect.value;
+
+        const url = new URL('atualizar_grafico_rotina/', window.location.origin);
+        url.searchParams.append('periodoSelect', opcao);
+        url.searchParams.append('graficoSelect', graficoSelect);
+
+        if (opcao == '1') {
+            url.searchParams.append('mesSelect', mesSelect); 
+        } else if (opcao == '2') {
+            url.searchParams.append('anoSelect', anoText);
+        } else if (opcao == '6') {
+            url.searchParams.append('dataInicio', dataCustomInicio);
+            url.searchParams.append('dataFinal', dataCustomFinal);
+        }
+
+        fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Resposta:', data);
+                if (data) {
+                    setupEventListenersMediaRotina();
+                    setupEventListenersPeridoRotina();
+                    setupEventListenersAtualizaFiltroRotina();
+
+                    const tipo = data.tipo;
+                    const etiquetas = data.etiquetas;
+                    const valores = data.valores;
+                    gerarGraficoRotina(etiquetas, valores, tipo);  
+                    
+                    setupEventListenersAtualizaGraficoRotina();
+                } else {
+                    console.log('Nenhum conteúdo HTML encontrado.');
+                    alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro na validação da sequência:', error);
+                alert('Ocorreu um erro. Tente novamente mais tarde.');
+            });
+        }
+
+    // Função que atualiza o Event Listener do selectfield 'grafico_select_rotina'
+    function setupEventListenersAtualizaGraficoRotina() {
+        const graficoSelect = document.getElementById('grafico_select_rotina');
+        if (graficoSelect) {
+            if (!graficoSelect.hasAttribute('data-listener-added')) {
+                graficoSelect.addEventListener('change', atualizaGraficoRotina);
+                graficoSelect.setAttribute('data-listener-added', 'true');
+            }
+        } else {
+            console.log('Gráfico não encontrado');
+        }
+    }
+
+    // Define variável usada para a contrução do gráfico do dashboard rotina
+    let meuGraficoRotina; 
+
+    // Função que constrório o gráfico do dashboard rotina
+    function gerarGraficoRotina(etiquetas, valores, tipo) {
+        const ctx = document.getElementById('grafico_rotina').getContext('2d');
+
+        if (meuGraficoRotina) {
+            meuGraficoRotina.destroy(); // Destroi o gráfico existente antes de criar um novo
+        }                
+        // Configuração dos dados e opções do gráfico
+        meuGraficoRotina = new Chart(ctx, {
+                            type: tipo,  // Tipo do gráfico
+                            data: {
+                                labels: etiquetas, // Etiquetas do eixo X
+                                datasets: [{
+                                    label: '',
+                                    data: valores,  // Dados de cada barra
+                                    backgroundColor: [
+                                        'rgba(255, 99, 132, 0.2)',
+                                        'rgba(54, 162, 235, 0.2)',
+                                        'rgba(255, 206, 86, 0.2)',
+                                        'rgba(75, 192, 192, 0.2)',
+                                        'rgba(153, 102, 255, 0.2)',
+                                        'rgba(255, 159, 64, 0.2)'
+                                    ],
+                                    borderColor: [
+                                        'rgba(255, 99, 132, 1)',
+                                        'rgba(54, 162, 235, 1)',
+                                        'rgba(255, 206, 86, 1)',
+                                        'rgba(75, 192, 192, 1)',
+                                        'rgba(153, 102, 255, 1)',
+                                        'rgba(255, 159, 64, 1)'
+                                    ],
+                                    borderWidth: 1
+                                }]
                             },
-                            
-                            datalabels: {
-                                color: '#000',  // Cor dos rótulos
-                                anchor: 'end',  // Posição do rótulo em relação à barra
-                                align: 'top',   // Alinhamento do rótulo
-                                formatter: function(value) {
-                                    if (value) {
-                                        return  value + ' hrs' ;  // Mostra o valor diretamente
-                                    } else {
-                                        return value;
+                            options: {
+                            plugins: {
+
+                                legend: {
+                                    display: false  // Desativa a exibição da legenda
+                                },
+                                
+                                datalabels: {
+                                    color: '#000',  // Cor dos rótulos
+                                    anchor: 'end',  // Posição do rótulo em relação à barra
+                                    align: 'top',   // Alinhamento do rótulo
+                                    formatter: function(value) {
+                                        if (value) {
+                                            return  value + ' hrs' ;  // Mostra o valor diretamente
+                                        } else {
+                                            return value;
+                                        }
+                                        
                                     }
-                                    
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    suggestedMax: Math.max(...valores) * 1.1 // Adiciona 10% de margem acima do valor máximo
                                 }
                             }
                         },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                suggestedMax: Math.max(...valores) * 1.1 // Adiciona 10% de margem acima do valor máximo
-                            }
-                        }
-                    },
-                    plugins: [ChartDataLabels]
-                });
+                        plugins: [ChartDataLabels]
+                    });
     }
 
-document.addEventListener('DOMContentLoaded', function() {
-    const selectMes = document.getElementById('mes_rotina');
-    const mesAtual = new Date().getMonth() + 1; // getMonth() retorna um valor de 0 (Janeiro) a 11 (Dezembro), por isso somamos 1.
-    selectMes.value = mesAtual;
 
-    const tipo = JSON.parse('{{tipo|escapejs}}')
-    const etiquetas = JSON.parse('{{ etiquetas|escapejs }}');
-    const valores = JSON.parse('{{ valores|escapejs }}');
-    gerarGraficoRotina(etiquetas, valores, tipo);
+    // Template preferencias.html
 
-    setupEventListenersAtualizaFiltroRotina();
-    setupEventListenersMediaRotina();
-    setupEventListenersPeridoRotina();
-    setupEventListenersAtualizaGraficoRotina();
-});
+    // Inicia todas as funções pertinentes ao template 'preferencias' assim que DOMContent da página é carregado
+    document.addEventListener('DOMContentLoaded', function() {
+            // Atualiza classes para exibir label 'idTaskLabel' no momento que usuário muda hora de envio de agenda diária
+            atualizaLabelHoraEnvio();            
+        });
 
-document.addEventListener('DOMContentLoaded', function() {
-    const seqPersoCheck = document.getElementById('id_seqPersoCheck');
+    // Função que atualiza classes para exibir label 'idTaskLabel' no momento que usuário muda horário de envio de agenda diária 
+    function atualizaLabelHoraEnvio() { 
+        const horaEnvio = document.getElementById('idHoraEnvio');
+        const horaEnvioLabel = document.getElementById('idTaskLabel');
 
-    seqPersoCheck.addEventListener('change', function() {
-        const seqPersoDiv = document.getElementById('id_seqPersoDiv');
-        const seqPersoLabel = document.getElementById('id_seqPersoLabel');
-        const seqDiv = document.getElementById('id_seqDiv'); 
-        const diaFinal = document.getElementById('diafinal');
+        horaEnvioLabel.classList.add('hidden_edit');
 
-        const dataAtiv = document.getElementById('id_data').value;
-        const date = new Date(dataAtiv);
-        const diadasemana = getDayOfWeek(date);
+        horaEnvio.addEventListener('change', function() {
+            horaEnvioLabel.classList.remove('hidden_edit');
+        });
+    }
+    
 
-        if (seqPersoCheck.checked) {
-            seqPersoDiv.classList.remove('hidden_edit');
-            seqPersoDiv.classList.add('main-forms__sequencia_perso_itens');
-            diafinal.classList.remove('main-forms__sequencia_datafinal_hidden');
-            diafinal.classList.add('main-forms__sequencia_datafinal');    
-            seqDiv.classList.add('hidden_edit');
-            seqDiv.classList.remove('main-forms__sequencia_itens');     
-            seqPersoLabel.textContent = `Selecione quais ${diadasemana}s de cada mês essa atividade deverá ser repetida`;
-        } else {
-            seqPersoDiv.classList.add('hidden_edit');
-            seqPersoDiv.classList.remove('main-forms__sequencia_perso_itens');
-            diafinal.classList.add('main-forms__sequencia_datafinal_hidden');
-            diafinal.classList.remove('main-forms__sequencia_datafinal');
-            seqDiv.classList.add('main-forms__sequencia_itens');
-            seqDiv.classList.remove('hidden_edit');        
-            seqPersoLabel.textContent = ``;
-        }
-    });
-});
+    // Template buscar.html
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Configura os event listeners primeiro
-    setupEventListenersFormataCampoValor();
+    // Inicia todas as funções pertinentes ao template 'buscar' assim que DOMContent da página é carregado
+    document.addEventListener('DOMContentLoaded', function() {
 
-    // Depois, chama a função formataCampoValor
-    formataCampoValor();
-});
+        // Reinderiza a página atividades.html a partir de metodo request.GET onde os cards de atividade serão filtrados à partir dos parâmetros da pesquisa realizada
+        pesquisa();
 
-document.addEventListener('DOMContentLoaded', function() {
-
-    const formPesquisa = document.getElementById('headerFormPesquisa');
-
-    formPesquisa.addEventListener('submit', function(event) {
-        const inputPesquisa = document.getElementById('pesquisa');
-        const valor = inputPesquisa.value;
-
-        // Recupera a ação do formulário (a URL para onde o formulário será enviado)
-        const urlDestino = new URL(formPesquisa.action);
-        
-        // Salva o valor no localStorage se a URL de destino contiver 'buscar'
-        if (urlDestino.href.includes('buscar')) {
-            localStorage.setItem('valorPesquisa', valor);
-        } else {
-            // Se a URL não contiver 'buscar', remove o item do localStorage
-            localStorage.removeItem('valorPesquisa');
-        }
     });
 
-    // Restaura o valor salvo ao carregar a página, se houver e se a URL atual contiver 'buscar'
-    if (window.location.href.includes('buscar')) {
-        const inputPesquisa = document.getElementById('pesquisa');
-        const valorSalvo = localStorage.getItem('valorPesquisa');
-        if (valorSalvo) {
-            inputPesquisa.value = valorSalvo;
+    // Função que reinderiza a página atividades.html a partir de metodo request.GET onde os cards de atividade serão filtrados à partir dos parâmetros da pesquisa realizada
+    function pesquisa() {
+
+        const formPesquisa = document.getElementById('headerFormPesquisa');
+
+        formPesquisa.addEventListener('submit', function(event) {
+            const inputPesquisa = document.getElementById('pesquisa');
+            const valor = inputPesquisa.value;
+
+            // Recupera a ação do formulário (a URL para onde o formulário será enviado)
+            const urlDestino = new URL(formPesquisa.action);
+            
+            // Salva o valor no localStorage se a URL de destino contiver 'buscar'
+            if (urlDestino.href.includes('buscar')) {
+                localStorage.setItem('valorPesquisa', valor);
+            } else {
+                // Se a URL não contiver 'buscar', remove o item do localStorage
+                localStorage.removeItem('valorPesquisa');
+            }
+        });
+
+        // Restaura o valor salvo ao carregar a página, se houver e se a URL atual contiver 'buscar'
+        if (window.location.href.includes('buscar')) {
+            const inputPesquisa = document.getElementById('pesquisa');
+            const valorSalvo = localStorage.getItem('valorPesquisa');
+            if (valorSalvo) {
+                inputPesquisa.value = valorSalvo;
+            }
         }
     }
-
-});
-
-document.addEventListener('DOMContentLoaded', function() { 
-    const horaEnvio = document.getElementById('idHoraEnvio');
-    const horaEnvioLabel = document.getElementById('idTaskLabel');
-
-    horaEnvioLabel.classList.add('hidden_edit');
-
-    horaEnvio.addEventListener('change', function() {
-        horaEnvioLabel.classList.remove('hidden_edit');
-    });
-});
 
 </script>
 </body>
