@@ -200,7 +200,7 @@ def agendar(instituicao, tipo, data, entrada, saida, valor, sequencia, data_fina
 
     cod = gerar_cod() # Gera código único para tratamento unificado para atividades de mesma sequência
 
-    if h_ent < h_saida: # Checa se a atividade passa da meia-noite
+    if h_ent < h_saida: # Checa se finaliza no mesmo dia
         
         # Caso sim, atribui range de horas transcorridas da atividade em uma váriavel
         horas = range(h_ent, h_saida + 1)
@@ -252,8 +252,8 @@ def agendar(instituicao, tipo, data, entrada, saida, valor, sequencia, data_fina
             while data_atividade <= data_final:
                 if data_atividade not in data_except:
                     agendado = criar_e_agendar_atividade(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod, nao_remunerado, fixo_mensal, seq_perso, horas, horasS, virada)
-                        
-                data_atividade = data_atividade + relativedelta(month=1)
+
+                data_atividade = data_atividade + relativedelta(months=1)
 
     elif seq_perso: # Para sequência personalizada
 
@@ -261,15 +261,13 @@ def agendar(instituicao, tipo, data, entrada, saida, valor, sequencia, data_fina
         lista_personalizada = gerar_lista_personalizada(data_atividade, data_final, seq_perso)
 
         for data_perso in lista_personalizada:
-
             data_perso = datetime.strptime(data_perso, '%Y-%m-%d').date()
 
             if data_perso not in data_except:
-                agendado = criar_e_agendar_atividade(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod, nao_remunerado, fixo_mensal, seq_perso, horas, horasS, virada)
+                agendado = criar_e_agendar_atividade(instituicao, tipo, data_perso, entrada, saida, valor, sequencia, data_final, obs, cod, nao_remunerado, fixo_mensal, seq_perso, horas, horasS, virada)
 
     else: # Para caso não haja sequência
-        if not virada:
-            agendado = criar_e_agendar_atividade(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod, nao_remunerado, fixo_mensal, seq_perso, horas, horasS, virada)
+        agendado = criar_e_agendar_atividade(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod, nao_remunerado, fixo_mensal, seq_perso, horas, horasS, virada) 
 
     return agendado
 
@@ -405,13 +403,13 @@ def criar_e_agendar_atividade(instituicao, tipo, data_atividade, entrada, saida,
     if not virada:
         id_vir = gerar_id_vir() # Gera código único para tratamento unificado de atividade que passem da meia-noite
 
-        agendado = gerar_atividade(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso, horas, horasS)
+        agendado = gerar_atividade(instituicao, tipo, data_atividade, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso, horas)
     else:
         id_vir = gerar_id_vir() # Gera código único para tratamento unificado de atividade que passem da meia-noite
 
-        agendado = gerar_atividade(instituicao, tipo, data_atividade, entrada, 24, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso, horas, horasS)
+        agendado = gerar_atividade(instituicao, tipo, data_atividade, entrada, 24, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso, horas)
 
-        agendado = gerar_atividade(instituicao, tipo, data_atividade + timedelta(days=1), 0, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso, horas, horasS)
+        agendado = gerar_atividade(instituicao, tipo, data_atividade + timedelta(days=1), 0, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso, horasS)
 
     return agendado
 
@@ -472,7 +470,7 @@ def gerar_lista_personalizada(data_inicio, data_final, ordinal):
 
     return lista_personalizada
 
-def gerar_atividade(instituicao, tipo, data, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso_ativ, horas, horasS):
+def gerar_atividade(instituicao, tipo, data, entrada, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso_ativ, horas):
 
     """
     View que realiza cadastro de novas atividades e chama função para agendamento dessas atividades em suas respectivas horas
@@ -544,9 +542,9 @@ def gerar_atividade(instituicao, tipo, data, entrada, saida, valor, sequencia, d
     )
 
     # Garante agendamento da atividade em seu respectivos horários
-    return gerar_agendamento(atividade, data, horas, horasS) 
+    return gerar_agendamento(atividade, data, horas) 
 
-def gerar_agendamento(atividade, data, horas, horasS):
+def gerar_agendamento(atividade, data, horas):
 
     """
     View para gerar agendamento das atividades em suas respectivas horas no Calendário.
@@ -558,18 +556,13 @@ def gerar_agendamento(atividade, data, horas, horasS):
     data : str
         Data da atividade no formato DD-MM-YYYY
     horas : list of int
-        Lista com range com as horas em que ocorreram a atividade. Para o caso de atividade que passem da meia-noite, a variavel range finalizará em 24.
-    horasS : list of int
-        Lista completamentar com o range de horas sempre iniciando em 0 e finalizando no horário de saída da unidade, para casos de atividades que passem da meia-noite        
+        Lista com o range das horas em que ocorrerão a atividade.
 
     Retorna:
     --------
     boolean
         Retorna True para o caso do agendamento ter sido realizado com sucesso e False cao contrário
     
-    Notas:
-    ------------
-    - A data para o agendamento do range horaS, quando há, é somada com 1 dia (data + 1).
     """
 
     agendado = False
@@ -580,16 +573,6 @@ def gerar_agendamento(atividade, data, horas, horasS):
         calendario.atividades.add(atividade)
         calendario.save()
         agendado = True
-
-    if horasS:
-        data = data + timedelta(days=1) # Ajusta o dia para cadastros das horas que passam da meia noite
-        for hora in horasS:
-            calendario = Calendario.objects.filter(dia=data, range=hora).first()
-            calendario.ocupado = True
-            calendario.atividades.add(atividade)
-            calendario.save()
-            agendado = True
-
 
     return agendado
     

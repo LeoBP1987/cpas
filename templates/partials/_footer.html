@@ -1004,7 +1004,7 @@
         campoValor.addEventListener('change', function() {
                 if (this.value != '') {
                     let valor = this.value;
-                    campoValor.value = mascaraValorInit(valor);
+                    campoValor.value = mascaraValor(valor);
                 } else {
                     this.value = '';
                 }
@@ -1091,18 +1091,15 @@
 
         // Aciona a função 'Atualiza Gráfico' a partir do evento 'change' do selectfield do tipo de gráfico
         mudaGrafico();
-
             
         // Atualiza o Event Listenet do selectfield do tipo de gráfico            
         setupEventListenersAtualizaGrafico();
 
         // Declara variáveis e chama função que constrói gráfico do dashboard financeiro
-        const tipo = JSON.parse('{{ tipo|escapejs }}');
+        const tipo = JSON.parse('{{tipo|escapejs}}');
         const etiquetas = JSON.parse('{{ etiquetas|escapejs }}');
-        const valores = JSON.parse('{{ valores|escapejs }}');    
+        const valores = JSON.parse('{{ valores|escapejs }}');
         gerarGraficoFinanceiro(etiquetas, valores, tipo);
-
-            
     });
 
     // Função que obtém o mês da data do dia
@@ -1110,17 +1107,6 @@
             const selectMes = document.getElementById('mes');
             const mesAtual = new Date().getMonth() + 1; // getMonth() retorna um valor de 0 (Janeiro) a 11 (Dezembro), por isso a soma de 1.
             selectMes.value = mesAtual;
-    }
-
-    // Função que atualiza Event Listener do selectfield 'periodoSelect'
-    function setupEventListenersPeriodoSelect() {
-        const periodoSelect = document.getElementById('periodo');
-        if (periodoSelect) {
-            periodoSelect.removeEventListener('change', selecionaPeriodo); // Remove event listener para evitar múltiplos eventos
-            periodoSelect.addEventListener('change', selecionaPeriodo);
-        } else {
-            console.log('Objeto select não encontrado');
-        }
     }
 
     // Função que chama função de alterar campos de pesquisa de acordo com período selecionado exibido a partir do evento 'change' do selectfield 'periodoselect'
@@ -1176,11 +1162,248 @@
                 }
     }
 
+
+    // Função que atualiza Event Listener do selectfield 'periodoSelect'
+    function setupEventListenersPeriodoSelect() {
+        const periodoSelect = document.getElementById('periodo');
+        if (periodoSelect) {
+            periodoSelect.removeEventListener('change', selecionaPeriodo); // Remove event listener para evitar múltiplos eventos
+            periodoSelect.addEventListener('change', selecionaPeriodo);
+        } else {
+            console.log('Objeto select não encontrado');
+        }
+    }
+
+
+    // Função que chama função de alterar campo de média exibido a partir do evento 'change' do selectfield 'mediaselect'
+    function mudaMedia() {
+
+        const mediaSelect = document.getElementById('media');
+
+        mediaSelect.addEventListener('change', function() {
+                selecionaMedia();
+            });        
+    }
+
+
+    // Função que atualiza classes para exibir o campo de média de acordo com a solicitação do usuário
+    function selecionaMedia() {
+
+        const mediaSelect = document.getElementById('media');
+        const valorAtiv = document.getElementById('media_atividade');
+        const valorHora = document.getElementById('media_hora');
+        const valorDiaTrab = document.getElementById('media_dia_trab');
+        const valormes = document.getElementById('media_mes');
+
+        opcao = mediaSelect.value;
+
+                if (opcao == '1') {
+                    valorAtiv.classList.remove('hidden_edit');
+                    valorHora.classList.add('hidden_edit');
+                    valorDiaTrab.classList.add('hidden_edit');
+                    valormes.classList.add('hidden_edit');
+                } else if (opcao == '2') {
+                    valorAtiv.classList.add('hidden_edit');
+                    valorHora.classList.remove('hidden_edit');
+                    valorDiaTrab.classList.add('hidden_edit');
+                    valormes.classList.add('hidden_edit');
+                } else if (opcao == '3') {
+                    valorAtiv.classList.add('hidden_edit');
+                    valorHora.classList.add('hidden_edit');
+                    valorDiaTrab.classList.remove('hidden_edit');
+                    valormes.classList.add('hidden_edit');
+                } else if (opcao == '4') {
+                    valorAtiv.classList.add('hidden_edit');
+                    valorHora.classList.add('hidden_edit');
+                    valorDiaTrab.classList.add('hidden_edit');
+                    valormes.classList.remove('hidden_edit');
+                }
+    }
+
+
+    // Função que atualiza Event Listener do selectfield 'mediaSelect'
+    function setupEventListenersMediaSelect() {
+        const mediaSelect = document.getElementById('media');
+        if (mediaSelect) {
+            mediaSelect.removeEventListener('change', selecionaMedia);
+            mediaSelect.addEventListener('change', selecionaMedia);
+        } else {
+            console.log('Objeto select não encontrado');
+        }
+    }
+    
+
+    // Função que aciona a função de atualizar filtros do dashboard financeiro a partir do evento de 'click' do botão de filtro
+    function filtraFinanceiro() {
+        const btnFilter = document.getElementById('btn_financeiro_filter');
+
+        btnFilter.addEventListener('click', function() {
+            atualizaFiltro();
+        });
+
+    }
+
+
+    // Função que reinderiza o dashboard Financeiro a partir dos novos parâmetros enviados em uma requisição AJAX
+    function atualizaFiltro() {
+        const periodoSelect = document.getElementById('periodo');
+        const mesSelect = document.getElementById('mes').value;
+        const anoSelect = document.getElementById('ano');
+        const anoOption = anoSelect.options[anoSelect.selectedIndex];
+        const anoText = anoOption.textContent;
+        const dataCustomInicio = document.getElementById('date_periodo_inicio').value;
+        const dataCustomFinal = document.getElementById('date_periodo_final').value;
+        
+        opcao = periodoSelect.value;
+
+        const url = new URL('/atualizar_financeiro', window.location.origin);
+        url.searchParams.append('periodoSelect', opcao);
+
+        if (opcao == '1') {
+            url.searchParams.append('mesSelect', mesSelect); 
+        } else if (opcao == '2') {
+            url.searchParams.append('anoSelect', anoText);
+        } else if (opcao == '6') {
+            url.searchParams.append('dataInicio', dataCustomInicio);
+            url.searchParams.append('dataFinal', dataCustomFinal);
+        }
+
+        fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Resposta:', data);
+                if (data.html) {
+                    document.getElementById('main-financeiro__campos').innerHTML = data.html;
+                    setupEventListenersMediaSelect();
+                    setupEventListenersPeriodoSelect();
+                    setupEventListenersAtualizaFiltro();
+
+                    const tipo = data.tipo;
+                    const etiquetas = data.etiquetas;
+                    const valores = data.valores;
+                    gerarGraficoFinanceiro(etiquetas, valores, tipo);
+
+                    setupEventListenersAtualizaGrafico();
+                } else {
+                    console.log('Nenhum conteúdo HTML encontrado.');
+                    alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro na validação da sequência:', error);
+                alert('Ocorreu um erro. Tente novamente mais tarde.');
+            });
+    }
+
+
+    // Função que atualiza Event Listener do botão de filtro do dashboard financeiro
+    function setupEventListenersAtualizaFiltro() {
+        const btnFilter = document.getElementById('btn_financeiro_filter');
+        if (btnFilter) {
+            btnFilter.removeEventListener('click', atualizaFiltro); 
+            btnFilter.addEventListener('click', atualizaFiltro);
+        } else {
+            console.log('Botão nextBtn_dia não encontrado');
+        }
+    }
+
+    // Função que chama função de atualização de gráfico do Financeiro a partir do evento de mudança do selectfield 'grafico_select'
+    function mudaGrafico() {
+        const graficoSelect = document.getElementById('grafico_select');
+
+        graficoSelect.addEventListener('change', function() {
+            atualizaGrafico();
+        });
+    }
+
+
+    // Função que atualiza gráfico do dashboard financeiro a partir dos parâmentro enviados em uma requisição AJAX
+    function atualizaGrafico() {
+        const periodoSelect = document.getElementById('periodo');
+        const mesSelect = document.getElementById('mes').value;
+        const anoSelect = document.getElementById('ano');
+        const anoOption = anoSelect.options[anoSelect.selectedIndex];
+        const anoText = anoOption.textContent;
+        const dataCustomInicio = document.getElementById('date_periodo_inicio').value;
+        const dataCustomFinal = document.getElementById('date_periodo_final').value;
+        const graficoSelect = document.getElementById('grafico_select').value;
+        
+        opcao = periodoSelect.value;
+
+        const url = new URL('atualizar_grafico/', window.location.origin);
+        url.searchParams.append('periodoSelect', opcao);
+        url.searchParams.append('graficoSelect', graficoSelect);
+
+        if (opcao == '1') {
+            url.searchParams.append('mesSelect', mesSelect); 
+        } else if (opcao == '2') {
+            url.searchParams.append('anoSelect', anoText);
+        } else if (opcao == '6') {
+            url.searchParams.append('dataInicio', dataCustomInicio);
+            url.searchParams.append('dataFinal', dataCustomFinal);
+        }
+
+        fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Resposta:', data);
+                if (data) {
+                    setupEventListenersMediaSelect();
+                    setupEventListenersPeriodoSelect();
+                    setupEventListenersAtualizaFiltro();
+                    setupEventListenersAtualizaGrafico();
+                    const tipo = data.tipo;
+                    const etiquetas = data.etiquetas;
+                    const valores = data.valores;
+                    gerarGraficoFinanceiro(etiquetas, valores, tipo);
+                } else {
+                    console.log('Nenhum conteúdo HTML encontrado.');
+                    alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro na validação da sequência:', error);
+                alert('Ocorreu um erro. Tente novamente mais tarde.');
+            });
+    }
+
+
+    // Função que atualiza Event Listener do selectfield 'grafico_select'
+    function setupEventListenersAtualizaGrafico() {
+        const graficoSelect = document.getElementById('grafico_select');
+        if (graficoSelect) {
+            if (!graficoSelect.hasAttribute('data-listener-added')) {
+                graficoSelect.addEventListener('change', atualizaGrafico);
+                graficoSelect.setAttribute('data-listener-added', 'true');
+            }
+        } else {
+            console.log('Gráfico não encontrado');
+        }
+    }
+
+
+    // Função que formata o valor enviado como moeda com separador de milhar e vírgula decimal
+    function formatarValor(value) {
+        return 'R$ ' + value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
     // Declara variável para criar o gráfico do dashboard Financeiro
     let meuGraficoDeBarras; 
 
+
     // Função para construir o gráfico do dashboard Financeiro
     function gerarGraficoFinanceiro(etiquetas, valores, tipo) {
+
         const ctx = document.getElementById('grafico').getContext('2d');
 
         if (meuGraficoDeBarras) {
@@ -1244,227 +1467,13 @@
                     });
 
         }
-
-    // Função que formata o valor enviado como moeda com separador de milhar e vírgula decimal
-    function formatarValor(value) {
-        return 'R$ ' + value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    // Função que chama função de alterar campo de média exibido a partir do evento 'change' do selectfield 'mediaselect'
-    function mudaMedia() {
-
-        const mediaSelect = document.getElementById('media');
-
-        mediaSelect.addEventListener('change', function() {
-                selecionaMedia();
-            });        
-    }
-
-    // Função que atualiza classes para exibir o campo de média de acordo com a solicitação do usuário
-    function selecionaMedia() {
-
-        const mediaSelect = document.getElementById('media');
-        const valorAtiv = document.getElementById('media_atividade');
-        const valorHora = document.getElementById('media_hora');
-        const valorDiaTrab = document.getElementById('media_dia_trab');
-        const valormes = document.getElementById('media_mes');
-
-        opcao = mediaSelect.value;
-
-                if (opcao == '1') {
-                    valorAtiv.classList.remove('hidden_edit');
-                    valorHora.classList.add('hidden_edit');
-                    valorDiaTrab.classList.add('hidden_edit');
-                    valormes.classList.add('hidden_edit');
-                } else if (opcao == '2') {
-                    valorAtiv.classList.add('hidden_edit');
-                    valorHora.classList.remove('hidden_edit');
-                    valorDiaTrab.classList.add('hidden_edit');
-                    valormes.classList.add('hidden_edit');
-                } else if (opcao == '3') {
-                    valorAtiv.classList.add('hidden_edit');
-                    valorHora.classList.add('hidden_edit');
-                    valorDiaTrab.classList.remove('hidden_edit');
-                    valormes.classList.add('hidden_edit');
-                } else if (opcao == '4') {
-                    valorAtiv.classList.add('hidden_edit');
-                    valorHora.classList.add('hidden_edit');
-                    valorDiaTrab.classList.add('hidden_edit');
-                    valormes.classList.remove('hidden_edit');
-                }
-    }
-
-    // Função que atualiza Event Listener do selectfield 'mediaSelect'
-    function setupEventListenersMediaSelect() {
-        const mediaSelect = document.getElementById('media');
-        if (mediaSelect) {
-            mediaSelect.removeEventListener('change', selecionaMedia);
-            mediaSelect.addEventListener('change', selecionaMedia);
-        } else {
-            console.log('Objeto select não encontrado');
-        }
-    }
-
-    // Função que aciona a função de atualizar filtros do dashboard financeiro a partir do evento de 'click' do botão de filtro
-    function filtraFinanceiro() {
-        const btnFilter = document.getElementById('btn_financeiro_filter');
-
-        btnFilter.addEventListener('click', function() {
-            atualizaFiltro();
-        });
-
-    }
     
-    // Função que atualiza Event Listener do botão de filtro do dashboard financeiro
-    function setupEventListenersAtualizaFiltro() {
-        const btnFilter = document.getElementById('btn_financeiro_filter');
-        if (btnFilter) {
-            btnFilter.removeEventListener('click', atualizaFiltro); 
-            btnFilter.addEventListener('click', atualizaFiltro);
-        } else {
-            console.log('Botão nextBtn_dia não encontrado');
-        }
-    }
-
-    // Função que reinderiza o dashboard Financeiro a partir dos novos parâmetros enviados em uma requisição AJAX
-    function atualizaFiltro() {
-        const periodoSelect = document.getElementById('periodo');
-        const mesSelect = document.getElementById('mes').value;
-        const anoSelect = document.getElementById('ano');
-        const anoOption = anoSelect.options[anoSelect.selectedIndex];
-        const anoText = anoOption.textContent;
-        const dataCustomInicio = document.getElementById('date_periodo_inicio').value;
-        const dataCustomFinal = document.getElementById('date_periodo_final').value;
-        
-        opcao = periodoSelect.value;
-
-        const url = new URL('/atualizar_financeiro', window.location.origin);
-        url.searchParams.append('periodoSelect', opcao);
-
-        if (opcao == '1') {
-            url.searchParams.append('mesSelect', mesSelect); 
-        } else if (opcao == '2') {
-            url.searchParams.append('anoSelect', anoText);
-        } else if (opcao == '6') {
-            url.searchParams.append('dataInicio', dataCustomInicio);
-            url.searchParams.append('dataFinal', dataCustomFinal);
-        }
-
-        fetch(url, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Resposta:', data);
-                if (data.html) {
-                    document.getElementById('main-financeiro__campos').innerHTML = data.html;
-                    setupEventListenersMediaSelect();
-                    setupEventListenersPeriodoSelect();
-                    setupEventListenersAtualizaFiltro();
-
-                    const tipo = data.tipo;
-                    const etiquetas = data.etiquetas;
-                    const valores = data.valores;
-                    gerarGraficoFinanceiro(etiquetas, valores, tipo);
-
-                    setupEventListenersAtualizaGrafico();
-                } else {
-                    console.log('Nenhum conteúdo HTML encontrado.');
-                    alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
-                }
-            })
-            .catch(error => {
-                console.error('Erro na validação da sequência:', error);
-                alert('Ocorreu um erro. Tente novamente mais tarde.');
-            });
-        }
-
-    // Função que atualiza gráfico do dashboard financeiro a partir dos parâmentro enviados em uma requisição AJAX
-    function atualizaGrafico() {
-        const periodoSelect = document.getElementById('periodo');
-        const mesSelect = document.getElementById('mes').value;
-        const anoSelect = document.getElementById('ano');
-        const anoOption = anoSelect.options[anoSelect.selectedIndex];
-        const anoText = anoOption.textContent;
-        const dataCustomInicio = document.getElementById('date_periodo_inicio').value;
-        const dataCustomFinal = document.getElementById('date_periodo_final').value;
-        const graficoSelect = document.getElementById('grafico_select').value;
-        
-        opcao = periodoSelect.value;
-
-        const url = new URL('atualizar_grafico/', window.location.origin);
-        url.searchParams.append('periodoSelect', opcao);
-        url.searchParams.append('graficoSelect', graficoSelect);
-
-        if (opcao == '1') {
-            url.searchParams.append('mesSelect', mesSelect); 
-        } else if (opcao == '2') {
-            url.searchParams.append('anoSelect', anoText);
-        } else if (opcao == '6') {
-            url.searchParams.append('dataInicio', dataCustomInicio);
-            url.searchParams.append('dataFinal', dataCustomFinal);
-        }
-
-        fetch(url, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Resposta:', data);
-                if (data) {
-                    setupEventListenersMediaSelect();
-                    setupEventListenersPeriodoSelect();
-                    setupEventListenersAtualizaFiltro();
-                    setupEventListenersAtualizaGrafico();
-                    const tipo = data.tipo;
-                    const etiquetas = data.etiquetas;
-                    const valores = data.valores;
-                    gerarGraficoFinanceiro(etiquetas, valores, tipo);
-                } else {
-                    console.log('Nenhum conteúdo HTML encontrado.');
-                    alert(data.error || 'Ocorreu um erro. Tente novamente mais tarde.');
-                }
-            })
-            .catch(error => {
-                console.error('Erro na validação da sequência:', error);
-                alert('Ocorreu um erro. Tente novamente mais tarde.');
-            });
-        }
-
-    // Função que chama função de atualização de gráfico do Financeiro a partir do evento de mudança do selectfield 'grafico_select'
-    function mudaGrafico() {
-        const graficoSelect = document.getElementById('grafico_select');
-
-        graficoSelect.addEventListener('change', function() {
-            atualizaGrafico();
-        });
-    }
-
-    // Função que atualiza Event Listener do selectfield 'grafico_select'
-    function setupEventListenersAtualizaGrafico() {
-        const graficoSelect = document.getElementById('grafico_select');
-        if (graficoSelect) {
-            if (!graficoSelect.hasAttribute('data-listener-added')) {
-                graficoSelect.addEventListener('change', atualizaGrafico);
-                graficoSelect.setAttribute('data-listener-added', 'true');
-            }
-        } else {
-            console.log('Gráfico não encontrado');
-        }
-    }
 
 
     // Template rotina.html
 
     // Inicia todas as funções pertinentes ao template 'rotina' assim que DOMContent da página é carregado
     document.addEventListener('DOMContentLoaded', function() {
-
         // Obtém o mês atual
         getMesAtualRotina();
 
@@ -1487,11 +1496,10 @@
         setupEventListenersAtualizaFiltroRotina();
 
         // Chama função de atualização do gráfico do dashboard Rotina 
-        mudaGrafico();
+        mudaGraficoRotina();
 
         // Atualiza o Event Listener do selectfield 'grafico_select_rotina'
         setupEventListenersAtualizaGraficoRotina();
-
 
         // Prepara variáveis e constrói gráfico do dashboard rotina
         const tipo = JSON.parse('{{tipo|escapejs}}')
@@ -1745,7 +1753,7 @@
     }
 
     // Função que chama função de atualização do gráfico do dashboard Rotina 
-    function mudaGrafico() {
+    function mudaGraficoRotina() {
         const selectGrafico = document.getElementById('grafico_select_rotina');
 
         selectGrafico.addEventListener('change', function() {

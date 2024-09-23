@@ -614,7 +614,8 @@ def nova_atividade(request):
             entrada = forms['entrada'].value()
             saida = forms['saida'].value()
             valor = forms['valor'].value()
-            valor = str(valor).replace('R$ ', '').replace(',', '').strip() # coloca mascará no campo valor
+            valor = str(valor).replace('R$ ', '').replace('.', '').replace(',', '').strip() 
+            valor = (valor[:-2] + '.' + valor[-2:]) if len(valor) > 2 else valor
             sequencia = forms['sequencia'].value()
             data_final = forms['data_final_seq'].value()
             obs = forms['obs'].value()
@@ -623,7 +624,7 @@ def nova_atividade(request):
             seq_perso = forms['seq_perso'].value()
 
             if not data_final:
-                data_final = data
+                data_final = data 
 
             agendamento = agendar(instituicao, tipo, data, entrada, saida, valor, sequencia, data_final, obs, nao_remunerado, fixo_mensal, seq_perso)
 
@@ -699,7 +700,8 @@ def editar_atividade(request, id_atividade):
 
             param = forms['extra_param'].value()
             valor = forms['valor'].value()
-            valor = str(valor).replace('R$ ', '').replace(',', '').strip() # Coloca mascará no campo valor
+            valor = str(valor).replace('R$ ', '').replace('.', '').replace(',', '').strip() 
+            valor = (valor[:-2] + '.' + valor[-2:]) if len(valor) > 2 else valor
             nao_remunerado = forms['nao_remunerado'].value()
 
             if param == '1':
@@ -1521,8 +1523,8 @@ def financeiro(request):
 
     mes = datetime.today().month
 
-    preferencias = Preferencias.objects.get(id=1)
-    tipo_grafico = preferencias.tipo_grafico        
+    preferencias = get_preferencias()
+    tipo = preferencias['tipo_grafico']        
 
     dict_financ = filtrar_mes(mes)
 
@@ -1530,7 +1532,7 @@ def financeiro(request):
     valores = dict_financ['valores']
     dict_financ = dict_financ['dict_financ']
 
-    return render(request, 'atividades/financeiro.html', {'financeiro': dict_financ, 'etiquetas': json.dumps(etiquetas), 'valores': json.dumps(valores), 'tipo': json.dumps(tipo_grafico)})
+    return render(request, 'atividades/financeiro.html', {'financeiro': dict_financ, 'etiquetas': json.dumps(etiquetas), 'valores': json.dumps(valores), 'tipo': json.dumps(tipo)})
 
 @require_GET
 def atualizar_financeiro(request):
