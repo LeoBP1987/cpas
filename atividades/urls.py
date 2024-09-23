@@ -4,7 +4,7 @@ from atividades.views import atividades, novo_tipo, nova_instituicao, nova_ativi
                             deletar_instituicao, editar_atividade, deletar_atividade, deletar_sequencia, \
                             atividade, instituicao, financeiro, rotina, atualizar_financeiro, atualizar_grafico, \
                             atualizar_rotina, atualizar_grafico_rotina, categorias, nova_categoria, editar_categoria, \
-                            deletar_categoria, preferencias, editar_preferencias, buscar
+                            deletar_categoria, preferencias, editar_preferencias, buscar, get_data_max
 
 urlpatterns = [
     path('atividades/', atividades, name='atividades'),
@@ -21,6 +21,7 @@ urlpatterns = [
     path('deletar_atividade/<int:id_atividade>', deletar_atividade, name='deletar_atividade'),
     path('deletar_sequencia/<int:id_atividade>', deletar_sequencia, name='deletar_sequencia'),
     path('nova_atividade/get_valor_fixo/<int:instituicao_id>/', get_valor_fixo, name='get_valor_fixo'),
+    path('nova_atividade/get_data_max/', get_data_max, name='get_data_max'),
     path('editar_atividade/get_valor_fixo/<int:instituicao_id>/', get_valor_fixo, name='get_valor_fixo_edit'),
     path('atividade/<int:id_atividade>', atividade, name='atividade'),
     path('instituicao/<int:id_instituicao>', instituicao, name='instituicao'),

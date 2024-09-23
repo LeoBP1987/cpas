@@ -10,6 +10,9 @@
         // carrega o label do dia da semana da data da atividade
         diaSemanaLabel();
 
+        //recupera data máxima gerada no calendário do sistema
+        get_data_max('id_data');
+        
         // Ajusta a data mínima aceita pelo campo Data Final da sequência quando a data da atividade é alterada
         ajustaDataFinalSeqDataAtiv();
 
@@ -146,8 +149,25 @@
     function dataFinalSeqMin(){
         var dataFinalSeqField = document.getElementById('id_data_final_seq');
         selectedDate = ajustaData();
-            
+        
         dataFinalSeqField.min = selectedDate
+        get_data_max('id_data_final_seq');
+    }
+
+    // Função que recupera data máxima gerada no calendário do sistema
+    function get_data_max(id) {
+
+        const campo_data = document.getElementById(id);
+
+        fetch(`get_data_max/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.data_max) {
+                        campo_data.max = data.data_max;
+                    } else {
+                        alert('Erro ao consultar Calendário. Favor entrar em contato com o administrador do sistema.');
+                    }
+                });
     }
 
     // Obtém data mínima a ser aceita pelo campo Data Final da sequência baseado na data da atividade escolhida pelo usuário

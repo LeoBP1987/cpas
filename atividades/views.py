@@ -367,6 +367,11 @@ def nova_instituicao(request):
         if forms.is_valid():
             instituicao = forms.save(commit=False)
             instituicao.cod_fixo = gerar_cod_fixo()
+
+            if instituicao.fixo_mensal_inst:
+                valor = str(instituicao.valor_fixo).replace('R$ ', '').replace('.', '').replace(',', '').strip() 
+                valor = (valor[:-2] + '.' + valor[-2:]) if len(valor) > 2 else valor
+                instituicao.valor_fixo = valor
             instituicao.save()
             messages.success(request,'Nova Instituição Cadastrada com Sucesso!')
             return redirect('instituicoes')
@@ -408,7 +413,14 @@ def editar_instituicao(request, id_inst):
         forms = InstituicaoForms(request.POST, instance=inst)
 
         if forms.is_valid():
-            forms.save()
+            inst_edit = forms.save(commit=False)
+
+            if inst_edit.fixo_mensal_inst:
+                valor = inst_edit.valor_fixo
+                valor = str(valor).replace('R$ ', '').replace('.', '').replace(',', '').strip() 
+                inst_edit.valor_fixo = (valor[:-2] + '.' + valor[-2:]) if len(valor) > 2 else valor
+            
+            inst_edit.save()
             messages.success(request, 'Edição realizada com sucesso')
             return redirect('instituicoes')
         else:
@@ -686,8 +698,7 @@ def editar_atividade(request, id_atividade):
     - O campo id_vir é destinado a unificar o tratamento de atividades que foram 'quebradas' em duas por passarem da meia-noite. Para maiores entendimenos, ler a documentação da view 'criar_e_agendar_atividade' do app calendário.
     """
 
-    data_atual = datetime.today().date()
-    
+    data_atual = datetime.today().date()    
     data_control = data_atual - timedelta(days=1)
 
     atividade = get_object_or_404(Atividades, id=id_atividade)
@@ -828,11 +839,11 @@ def deletar_sequencia(request, id_atividade):
     data_atual = datetime.today().date()
     data_control = data_atual - timedelta(days=1)
 
-    atividade = Atividades.objects.filter(id=id_atividade, data__gt=data_control).first()
+    get_object_or_404(Atividades, id=id_atividade)
     
     cod = atividade.cod    
 
-    atividades = Atividades.objects.filter(cod=cod)
+    atividades = Atividades.objects.filter(cod=cod, data__gt=data_control)
 
     if atividades:
         for atividade in atividades:
@@ -1008,6 +1019,39 @@ def get_valor_fixo(request, instituicao_id):
     except Instituicao.DoesNotExist:
 
         return JsonResponse({'valor_padrao': ''}, status=404)
+
+def get_data_max(request):
+
+    """
+    View que obtém a data máxima disponível no calenário do sistema
+
+    Parâmetros:
+    -----------
+    request : HttpRequest
+        Objeto da requisição HTTP que contém os dados do cliente (como o método, cabeçalhos e corpo).
+
+    Retorno:
+    --------
+    JsonResponse
+        Retorna o campo 'data_max' que é a data máxima disponível no calendário do sistema.
+
+    Tratamento de erros:
+    --------
+    - Caso ainda não haja datas disponíveis no modelo calendário, a função retorna o dia de hoje.
+
+    """
+
+    data_ref = Calendario.objects.order_by('-dia').first()
+
+    if data_ref:  
+        data_max = data_ref.dia
+
+        return JsonResponse({'data_max': data_max})
+    
+    else:
+        data_max = date.today()
+
+        return JsonResponse({'data_max': data_max})
     
 def filtrar_financeiro(atividades):
 

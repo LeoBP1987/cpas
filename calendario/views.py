@@ -60,6 +60,8 @@ def configuracoes(request):
     """
     View para renderizar a página com o menu de configurações do sistema.
 
+    Essa função checa se há calendário disponível para ser gerado no sistema.
+
     Parâmetros:
     -----------
     request : HttpRequest
@@ -68,14 +70,26 @@ def configuracoes(request):
     Retorna:
     --------
     HttpResponse
-        Renderiza a página HTML 'configuracoes/index.html'
+        Renderiza a página HTML 'configuracoes/index.html' com um dicionario contendo um boolean que informa True para caso haja calendário disponível para ser gerado no sistema e False em caso contrário.
     
     Notas:
     ------------
     - Por esse página o usuario poderá acessar as opções de configurações como preferências, gerar novos calendários, cadastrar tipos de atividades e outros.
+    - A página só exibirá o botão de geração de novos Calendários caso haja calendário disponível para geração no sistema. Além dos Calendários para o ano corrente o sistema disponibiliza o calendário para o ano seguinte a partir do mês 07 do ano corrente.
     """
 
-    return render(request, 'calendario/configuracoes.html')
+    calendario_disponivel = False
+
+    ano_atual = date.today().year
+    mes_atual = date.today().month
+
+    if not Calendario.objects.filter(ano=ano_atual).exists():
+        calendario_disponivel = True
+
+    if (mes_atual >= 7) and ( not Calendario.objects.filter(ano=(ano_atual + 1)).exists()):
+        calendario_disponivel = True
+
+    return render(request, 'calendario/configuracoes.html', {'calendario':calendario_disponivel})
 
 def gerar_calendario(request):
 
@@ -94,35 +108,66 @@ def gerar_calendario(request):
     Notas:
     ------------
     - A função povoa o model calendario com objetos referentes a cada uma das vinte e quatro horas de cada dia do ano de referencia.
-    - O calendário do ano só pode ser gerado para o ano atual, ou seja, não é possível gerar calendário para anos futuros.
-    - Caso o usuario tente gerar um calendário para um ano que já tenha sido gerado, o sistema redirecionará o usuario para a path 'configuracoes' com a informação de o ano atual já possui calendario gerado.
+    - O calendário pode ser gerado para o ano atual.
+    - O calendário para o ano seguinte só poderá ser gerado a partir do mês 07 do ano atual.
     - Nessa versão do sistema as atividades só poderam ser agendadas em horas completas, não sendo aceitos quebras por minutos.
 
     """
 
     ano_atual = date.today().year
+    ano_seguinte = ano_atual + 1
+    mes_atual = date.today().month
 
-    calendario = Calendario.objects.filter(ano=ano_atual)
 
-    if not calendario.exists():
-
+    if not Calendario.objects.filter(ano=ano_atual).exists():
+        
         data_registro = date.today()
 
-        while data_registro.year == ano_atual:
-            for hora in range(0, 25):
-                Calendario.objects.create(
-                    ano=ano_atual,
-                    dia=data_registro,
-                    range=hora, # hora do dia
-                    ocupado=False, # Indicador se a hora esta ocupada
-                )
-            data_registro = data_registro + timedelta(days=1)
+        if mes_atual < 7:
+            while data_registro.year == ano_atual:
+                for hora in range(0, 25):
+                    Calendario.objects.create(
+                        ano=ano_atual,
+                        dia=data_registro,
+                        range=hora, # hora do dia
+                        ocupado=False, # Indicador se a hora esta ocupada
+                    )
+                data_registro = data_registro + timedelta(days=1)
+            messages.success(request, f'O calendário disponível já foi gerado com sucesso!')
+            return redirect('configuracoes')
 
-        messages.success(request, f'Calendário para o ano de {ano_atual} gerado com sucesso!')
+        else:
+
+            while (data_registro.year == ano_atual) or (data_registro.year == ano_seguinte):
+                for hora in range(0, 25):
+                    Calendario.objects.create(
+                        ano=data_registro.year,
+                        dia=data_registro,
+                        range=hora, # hora do dia
+                        ocupado=False, # Indicador se a hora esta ocupada
+                    )
+                data_registro = data_registro + timedelta(days=1)
+                
+        messages.success(request, f'O calendário disponível já foi gerado com sucesso!')
         return redirect('configuracoes')
+
     else:
-        messages.error(request,f'O calendário para o ano de {ano_atual} já foi gerado')
+
+        data_ref = Calendario.objects.order_by('-dia').first()
+        data_max = data_ref + timedelta(days=1)
+
+        while (data_max.year == ano_seguinte):
+                for hora in range(0, 25):
+                    Calendario.objects.create(
+                        ano=data_max.year,
+                        dia=data_max,
+                        range=hora, # hora do dia
+                        ocupado=False, # Indicador se a hora esta ocupada
+                    )
+                data_max = data_max + timedelta(days=1)
+        messages.success(request, f'O calendário disponível já foi gerado com sucesso!')
         return redirect('configuracoes')
+
 
 def apagar():
 
@@ -407,9 +452,12 @@ def criar_e_agendar_atividade(instituicao, tipo, data_atividade, entrada, saida,
     else:
         id_vir = gerar_id_vir() # Gera código único para tratamento unificado de atividade que passem da meia-noite
 
+        data_virada = data_atividade + timedelta(days=1)
+
         agendado = gerar_atividade(instituicao, tipo, data_atividade, entrada, 24, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso, horas)
 
-        agendado = gerar_atividade(instituicao, tipo, data_atividade + timedelta(days=1), 0, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso, horasS)
+        if Calendario.objects.filter(dia=data_virada).exists():
+            agendado = gerar_atividade(instituicao, tipo, data_virada, 0, saida, valor, sequencia, data_final, obs, cod, id_vir, nao_remunerado, fixo_mensal, seq_perso, horasS)
 
     return agendado
 

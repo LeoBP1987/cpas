@@ -9,7 +9,9 @@
             <a href="{% url 'preferencias' %}" class="main-config__botoes_botao">PREFERÊNCIAS</a>
             <a href="{% url 'categorias' %}" class="main-config__botoes_botao">CATEGORIAS</a>
             <a href="{% url 'tipos' %}" class="main-config__botoes_botao">TIPOS DE ATIVIDADE</a>
-            <a href="{% url 'gerar_calendario' %}" class="main-config__botoes_botao">GERAR CALENDÁRIO PARA NOVO ANO CORRENTE</a>
+            {% if calendario %}
+                <a href="{% url 'gerar_calendario' %}" class="main-config__botoes_botao">GERAR CALENDÁRIO PARA NOVO ANO CORRENTE</a>
+            {% endif %}
         </div>
     </main>
     {% endblock %}
